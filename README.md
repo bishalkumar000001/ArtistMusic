@@ -5,9 +5,9 @@
 <br>
 <br><br>
 
-[![Stars](https://img.shields.io/github/stars/elevenyts/ArtistMusic?style=for-the-badge&logo=starship&logoColor=white&color=A960FF&labelColor=0D1117)](https://github.com/elevenyts/ArtistMusic)
-[![Forks](https://img.shields.io/github/forks/elevenyts/ArtistMusic?style=for-the-badge&logo=git&logoColor=white&color=7C3AED&labelColor=0D1117)](https://github.com/elevenyts/ArtistMusic)
-[![Issues](https://img.shields.io/github/issues/elevenyts/ArtistMusic?style=for-the-badge&logo=github&logoColor=white&color=FF6B6B&labelColor=0D1117)](https://github.com/elevenyts/ArtistMusic/issues)
+[![Stars](https://img.shields.io/github/stars/elevenyts/ArtistMusic?style=for-the-badge&logo=starship&logoColor=white&color=A960FF&labelColor=0D1117)](https://github.com/bishalkumar000001/ArtistMusic)
+[![Forks](https://img.shields.io/github/forks/elevenyts/ArtistMusic?style=for-the-badge&logo=git&logoColor=white&color=7C3AED&labelColor=0D1117)](https://github.com/bishalkumar000001/ArtistMusic)
+[![Issues](https://img.shields.io/github/issues/elevenyts/ArtistMusic?style=for-the-badge&logo=github&logoColor=white&color=FF6B6B&labelColor=0D1117)](https://github.com/bishalkumar000001/ArtistMusic/issues)
 [![License](https://img.shields.io/badge/License-MIT-A960FF?style=for-the-badge&logo=opensourceinitiative&logoColor=white&labelColor=0D1117)](LICENSE)
 
 <br>
@@ -23,7 +23,7 @@
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                   ✦  ARTISTMUSIC MUSIC BOT  ✦
+                   ✦  VELOCITYBOTS MUSIC BOT  ✦
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -45,7 +45,7 @@
 
 ## 〔 ✦ 〕 Overview
 
-> **ArtistMusic** is a next-generation Telegram Voice Chat Music Bot engineered for performance, stability, and scale.
+> **VelocityBots Music** is a next-generation Telegram Voice Chat Music Bot engineered for performance, stability, and scale.
 > Built on **Pyrogram** · **PyTgCalls** · **MongoDB** — delivering crystal-clear audio with powerful admin tooling and multi-language support across global communities.
 
 <br>
@@ -156,8 +156,8 @@
 | `MONGO_DB_URI` | ✅ | MongoDB connection string |
 | `LOGGER_ID` | ✅ | Telegram group ID for logs |
 | `OWNER_ID` | ✅ | Your Telegram user ID |
-| `ARTISTBOTS_API_URL` | ⚙️ | ArtistBots API endpoint |
-| `ARTISTBOTS_KEY` | ⚙️ | API key — [@ArtistApibot](https://t.me/ArtistApibot) |
+| `ARTISTBOTS_API_URL` | ⚙️ | VelocityBots API endpoint |
+| `ARTISTBOTS_KEY` | ⚙️ | API key — [@JanhvixmusicRobot](https://t.me/ArtistApibot) |
 | `SUPPORT_CHAT` | 🔵 | Support group link (optional) |
 | `SUPPORT_CHANNEL` | 🔵 | Updates channel link (optional) |
 | `START_IMG` | 🔵 | Start message image URL (optional) |
@@ -239,7 +239,7 @@ apt update && apt upgrade -y
 apt install python3 python3-pip ffmpeg git -y
 
 # Clone repo
-git clone https://github.com/elevenyts/ArtistMusic
+git clone https://github.com/bishalkumar000001/ArtistMusic
 cd ArtistMusic
 
 # Install requirements
@@ -381,14 +381,14 @@ docker run -d --env-file .env --name artistmusic artistmusic
 
 Built on the shoulders of giants:
 
-`Pyrogram` · `PyTgCalls` · `MongoDB` · `Telegram Bot API` · `ArtistBots`
+`Pyrogram` · `PyTgCalls` · `MongoDB` · `Telegram Bot API` · `VelocityBots`
 
 <br>
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-         Made with ❤️  by  Artist  ·  Powered by ArtistBots
-                   © 2026 ArtistMusic · MIT License
+         Made with ❤️  by  ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢  ·  Powered by VelocityBots
+                   © 2026 VelocityBots Music · MIT License
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

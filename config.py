@@ -1,14 +1,14 @@
 # ==========================================================
-# Copyright (c) 2026 ArtistBots
+# Copyright (c) 2026 VelocityBots
 # All Rights Reserved.
 #
-# Project      : ArtistBots API Telegram Music Bot
-# Powered By   : Artist 
+# Project      : VelocityBots API Telegram Music Bot
+# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢ 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @ArtistApibot
-# Channel      : https://t.me/artistbots
-# GitHub       : https://github.com/elevenyts/ArtistMusic
+# Bot          : @JanhvixmusicRobot
+# Channel      : https://t.me/VelocityBots
+# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
@@ -56,7 +56,7 @@ class Config:
         self.VIDEO_PLAY: bool = self._str_to_bool(getenv("VIDEO_PLAY", "True"))
         self.VIDEO_MAX_HEIGHT: int = self._parse_video_height()
 
-        # ArtistBots API @ArtistApibot
+        # VelocityBots API @JanhvixmusicRobot
         self.ARTISTBOTS_API_URL: str = getenv("ARTISTBOTS_API_URL", "https://api.artistbots.workers.dev")
         self.ARTISTBOTS_KEY: str = getenv("ARTISTBOTS_KEY", "Artistbots")
         self.ENABLE_API: bool = self._str_to_bool(getenv("ENABLE_API", "True"))
