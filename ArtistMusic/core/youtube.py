@@ -1,14 +1,14 @@
 # ==========================================================
-# Copyright (c) 2026 ArtistBots
+# Copyright (c) 2026 VelocityBots
 # All Rights Reserved.
 #
-# Project      : ArtistBots API Telegram Music Bot
-# Powered By   : Artist
+# Project      : VelocityBots API Telegram Music Bot
+# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @ArtistApibot
-# Channel      : https://t.me/artistbots
-# GitHub       : https://github.com/elevenyts/ArtistMusic
+# Bot          : @JanhvixmusicRobot
+# Channel      : https://t.me/VelocityBots
+# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
@@ -182,7 +182,7 @@ class YouTube:
 
     async def download_via_api(self, link: str, video: bool = False) -> Optional[str]:
         """
-        Download audio/video using ArtistBots API (Primary Method).
+        Download audio/video using VelocityBots API (Primary Method).
         
         Args:
             link: YouTube URL or video ID
@@ -225,7 +225,7 @@ class YouTube:
 
         try:
             download_type = "video" if video else "audio"
-            logger.info(f"🚀 [API PRIMARY] Trying ArtistBots API for {video_id} (type: {download_type})")
+            logger.info(f"🚀 [API PRIMARY] Trying VelocityBots API for {video_id} (type: {download_type})")
             
             # Prepare API parameters
             params = {
@@ -238,7 +238,7 @@ class YouTube:
                 params["api_key"] = self.artistbots_key
                 logger.debug(f"Using API key: {self.artistbots_key[:8]}...")
             else:
-                logger.warning("No ArtistBots API key configured!")
+                logger.warning("No VelocityBots API key configured!")
                 return None
             
             async with aiohttp.ClientSession() as session:

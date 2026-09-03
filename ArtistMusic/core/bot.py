@@ -1,14 +1,14 @@
 # ==========================================================
-# Copyright (c) 2026 ArtistBots
+# Copyright (c) 2026 VelocityBots
 # All Rights Reserved.
 #
-# Project      : ArtistBots API Telegram Music Bot
-# Powered By   : Artist
+# Project      : VelocityBots API Telegram Music Bot
+# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @ArtistApibot
-# Channel      : https://t.me/artistbots
-# GitHub       : https://github.com/elevenyts/ArtistMusic
+# Bot          : @JanhvixmusicRobot
+# Channel      : https://t.me/VelocityBots
+# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
@@ -41,7 +41,7 @@ class Bot(pyrogram.Client):
     def __init__(self):
         """Initialize the bot client with configuration settings."""
         super().__init__(
-            name="ArtistMusic",
+            name="VelocityBots Music",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             bot_token=config.BOT_TOKEN,
