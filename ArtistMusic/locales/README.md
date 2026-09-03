@@ -53,15 +53,15 @@ This bot comes pre-configured with **22 language localizations** stored in the `
 
 <div align="center">
 
-Made with ❤️ by **Artist** · Powered by **ArtistBots**
+Made with ❤️ by **Artist** · Powered by **VelocityBots**
 
 `Pyrogram` · `PyTgCalls` · `MongoDB` · `Telegram Bot API`
 
-📢 Channel: [t.me/artistbots](https://t.me/artistbots) · 💬 Support: [t.me/Artistbot](https://t.me/Artistbot)
+📢 Channel: [t.me/artistbots](https://t.me/VelocityBots) · 💬 Support: [t.me/Artistbot](https://t.me/Artistbot)
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                © 2026 ArtistMusic · MIT License
+                © 2026 VelocityBots Music · MIT License
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
