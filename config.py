@@ -57,8 +57,8 @@ class Config:
         self.VIDEO_MAX_HEIGHT: int = self._parse_video_height()
 
         # VelocityBots API @JanhvixmusicRobot
-        self.ARTISTBOTS_API_URL: str = getenv("ARTISTBOTS_API_URL", "http://127.0.0.1:8001")
-        self.ARTISTBOTS_KEY: str = getenv("ARTISTBOTS_KEY", "jx_live_9Ev7z1a2tIfaIozPHqyu2nOXG8nWZGhM_pzdEDjjEDHnIxsk")
+        self.ARTISTBOTS_API_URL: str = getenv("ARTISTBOTS_API_URL", "https://accounting-suddenly-katrina-comparisons.trycloudflare.com")
+        self.ARTISTBOTS_KEY: str = getenv("ARTISTBOTS_KEY", "jx_live_F7hKpPd-Vnrxd8RT-eHubo5Gvq0wHRz-6PS4vEgvxz4SDCkt")
         self.ENABLE_API: bool = self._str_to_bool(getenv("ENABLE_API", "True"))
         self.ENABLE_COOKIES_FALLBACK: bool = self._str_to_bool(getenv("ENABLE_COOKIES_FALLBACK", "True"))
         self.API_TIMEOUT: int = int(getenv("API_TIMEOUT", "60"))
