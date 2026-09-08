@@ -1,120 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-from collections import defaultdict, deque
-from typing import Union
-
-from ._dataclass import Media, Track
-
-# MediaItem can be either a Media or Track object
-MediaItem = Union[Media, Track]
-
-
-class Queue:
-    def __init__(self):
-        """Initialize the queue manager with empty queues for all chats."""
-        # Dictionary mapping chat_id to its queue (deque of Media/Track items)
-        # defaultdict automatically creates a new deque for new chat_ids
-        self.queues: dict[int, deque[MediaItem]] = defaultdict(deque)
-
-    def add(self, chat_id: int, item: MediaItem) -> int:
-        """Add a song to the end of the queue and return its position."""
-        self.queues[chat_id].append(item)  # Add to end of queue
-        return len(self.queues[chat_id]) - 1  # Return position (0-based index)
-
-    def check_item(self, chat_id: int, item_id: str) -> tuple[int, MediaItem | None]:
-        """Check if an item with the given ID exists in the queue."""
-        pos, track = next(
-            (
-                (i, track)
-                for i, track in enumerate(list(self.queues[chat_id]))
-                if track.id == item_id
-            ),
-            (-1, None),
-        )
-        return pos, track
-
-    def force_add(
-        self, chat_id: int, item: MediaItem, remove: int | bool = False
-    ) -> None:
-        """Replace the currently playing item with a new one."""
-        self.remove_current(chat_id)
-        self.queues[chat_id].appendleft(item)
-        if remove:
-            self.queues[chat_id].rotate(-remove)
-            self.queues[chat_id].popleft()
-            self.queues[chat_id].rotate(remove)
-
-    def get_current(self, chat_id: int) -> MediaItem | None:
-        """Return the currently playing item (first in queue), if any."""
-        return self.queues[chat_id][0] if self.queues[chat_id] else None
-
-    def get_next(self, chat_id: int, check: bool = False) -> MediaItem | None:
-        """Remove current item and return the next one, or None if empty."""
-        if not self.queues[chat_id]:
-            return None
-        if check:
-            return self.queues[chat_id][1] if len(self.queues[chat_id]) > 1 else None
-
-        self.queues[chat_id].popleft()
-        return self.queues[chat_id][0] if self.queues[chat_id] else None
-
-    def get_queue(self, chat_id: int) -> list[MediaItem]:
-        """Return the full queue including the currently playing item."""
-        return list(self.queues[chat_id])
-    
-    def get_all(self, chat_id: int) -> list[MediaItem]:
-        """Alias for get_queue() - return the full queue including currently playing item."""
-        return self.get_queue(chat_id)
-
-    def remove_current(self, chat_id: int) -> None:
-        """Remove the currently playing item only (if exists)."""
-        if self.queues[chat_id]:
-            self.queues[chat_id].popleft()
-
-    def clear(self, chat_id: int) -> None:
-        """Clear the entire queue."""
-        self.queues[chat_id].clear()
-
-    def peek_next(self, chat_id: int, count: int = 2) -> list[MediaItem]:
-        """
-        Return next N upcoming tracks without removing them from queue.
-        
-        Args:
-            chat_id: The chat ID to peek queue for
-            count: Number of upcoming tracks to return (default: 2)
-            
-        Returns:
-            List of upcoming MediaItem objects (excluding currently playing track)
-        """
-        if not self.queues[chat_id] or len(self.queues[chat_id]) <= 1:
-            return []
-        
-        # Convert deque to list and skip first item (currently playing)
-        queue_list = list(self.queues[chat_id])
-        return queue_list[1:min(len(queue_list), count + 1)]
-    
-    @staticmethod
-    def is_downloaded(item: MediaItem) -> bool:
-        """
-        Check if a track has already been downloaded.
-        
-        Args:
-            item: MediaItem or Track object to check
-            
-        Returns:
-            True if file_path exists and is not empty, False otherwise
-        """
-        return bool(getattr(item, 'file_path', None))
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmZyb20gY29sbGVjdGlvbnMgaW1wb3J0IGRlZmF1bHRkaWN0LCBkZXF1ZQpmcm9tIHR5cGluZyBpbXBvcnQgVW5pb24KCmZyb20gLl9kYXRhY2xhc3MgaW1wb3J0IE1lZGlhLCBUcmFjawoKIyBNZWRpYUl0ZW0gY2FuIGJlIGVpdGhlciBhIE1lZGlhIG9yIFRyYWNrIG9iamVjdApNZWRpYUl0ZW0gPSBVbmlvbltNZWRpYSwgVHJhY2tdCgoKY2xhc3MgUXVldWU6CiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgIiIiSW5pdGlhbGl6ZSB0aGUgcXVldWUgbWFuYWdlciB3aXRoIGVtcHR5IHF1ZXVlcyBmb3IgYWxsIGNoYXRzLiIiIgogICAgICAgICMgRGljdGlvbmFyeSBtYXBwaW5nIGNoYXRfaWQgdG8gaXRzIHF1ZXVlIChkZXF1ZSBvZiBNZWRpYS9UcmFjayBpdGVtcykKICAgICAgICAjIGRlZmF1bHRkaWN0IGF1dG9tYXRpY2FsbHkgY3JlYXRlcyBhIG5ldyBkZXF1ZSBmb3IgbmV3IGNoYXRfaWRzCiAgICAgICAgc2VsZi5xdWV1ZXM6IGRpY3RbaW50LCBkZXF1ZVtNZWRpYUl0ZW1dXSA9IGRlZmF1bHRkaWN0KGRlcXVlKQoKICAgIGRlZiBhZGQoc2VsZiwgY2hhdF9pZDogaW50LCBpdGVtOiBNZWRpYUl0ZW0pIC0+IGludDoKICAgICAgICAiIiJBZGQgYSBzb25nIHRvIHRoZSBlbmQgb2YgdGhlIHF1ZXVlIGFuZCByZXR1cm4gaXRzIHBvc2l0aW9uLiIiIgogICAgICAgIHNlbGYucXVldWVzW2NoYXRfaWRdLmFwcGVuZChpdGVtKSAgIyBBZGQgdG8gZW5kIG9mIHF1ZXVlCiAgICAgICAgcmV0dXJuIGxlbihzZWxmLnF1ZXVlc1tjaGF0X2lkXSkgLSAxICAjIFJldHVybiBwb3NpdGlvbiAoMC1iYXNlZCBpbmRleCkKCiAgICBkZWYgY2hlY2tfaXRlbShzZWxmLCBjaGF0X2lkOiBpbnQsIGl0ZW1faWQ6IHN0cikgLT4gdHVwbGVbaW50LCBNZWRpYUl0ZW0gfCBOb25lXToKICAgICAgICAiIiJDaGVjayBpZiBhbiBpdGVtIHdpdGggdGhlIGdpdmVuIElEIGV4aXN0cyBpbiB0aGUgcXVldWUuIiIiCiAgICAgICAgcG9zLCB0cmFjayA9IG5leHQoCiAgICAgICAgICAgICgKICAgICAgICAgICAgICAgIChpLCB0cmFjaykKICAgICAgICAgICAgICAgIGZvciBpLCB0cmFjayBpbiBlbnVtZXJhdGUobGlzdChzZWxmLnF1ZXVlc1tjaGF0X2lkXSkpCiAgICAgICAgICAgICAgICBpZiB0cmFjay5pZCA9PSBpdGVtX2lkCiAgICAgICAgICAgICksCiAgICAgICAgICAgICgtMSwgTm9uZSksCiAgICAgICAgKQogICAgICAgIHJldHVybiBwb3MsIHRyYWNrCgogICAgZGVmIGZvcmNlX2FkZCgKICAgICAgICBzZWxmLCBjaGF0X2lkOiBpbnQsIGl0ZW06IE1lZGlhSXRlbSwgcmVtb3ZlOiBpbnQgfCBib29sID0gRmFsc2UKICAgICkgLT4gTm9uZToKICAgICAgICAiIiJSZXBsYWNlIHRoZSBjdXJyZW50bHkgcGxheWluZyBpdGVtIHdpdGggYSBuZXcgb25lLiIiIgogICAgICAgIHNlbGYucmVtb3ZlX2N1cnJlbnQoY2hhdF9pZCkKICAgICAgICBzZWxmLnF1ZXVlc1tjaGF0X2lkXS5hcHBlbmRsZWZ0KGl0ZW0pCiAgICAgICAgaWYgcmVtb3ZlOgogICAgICAgICAgICBzZWxmLnF1ZXVlc1tjaGF0X2lkXS5yb3RhdGUoLXJlbW92ZSkKICAgICAgICAgICAgc2VsZi5xdWV1ZXNbY2hhdF9pZF0ucG9wbGVmdCgpCiAgICAgICAgICAgIHNlbGYucXVldWVzW2NoYXRfaWRdLnJvdGF0ZShyZW1vdmUpCgogICAgZGVmIGdldF9jdXJyZW50KHNlbGYsIGNoYXRfaWQ6IGludCkgLT4gTWVkaWFJdGVtIHwgTm9uZToKICAgICAgICAiIiJSZXR1cm4gdGhlIGN1cnJlbnRseSBwbGF5aW5nIGl0ZW0gKGZpcnN0IGluIHF1ZXVlKSwgaWYgYW55LiIiIgogICAgICAgIHJldHVybiBzZWxmLnF1ZXVlc1tjaGF0X2lkXVswXSBpZiBzZWxmLnF1ZXVlc1tjaGF0X2lkXSBlbHNlIE5vbmUKCiAgICBkZWYgZ2V0X25leHQoc2VsZiwgY2hhdF9pZDogaW50LCBjaGVjazogYm9vbCA9IEZhbHNlKSAtPiBNZWRpYUl0ZW0gfCBOb25lOgogICAgICAgICIiIlJlbW92ZSBjdXJyZW50IGl0ZW0gYW5kIHJldHVybiB0aGUgbmV4dCBvbmUsIG9yIE5vbmUgaWYgZW1wdHkuIiIiCiAgICAgICAgaWYgbm90IHNlbGYucXVldWVzW2NoYXRfaWRdOgogICAgICAgICAgICByZXR1cm4gTm9uZQogICAgICAgIGlmIGNoZWNrOgogICAgICAgICAgICByZXR1cm4gc2VsZi5xdWV1ZXNbY2hhdF9pZF1bMV0gaWYgbGVuKHNlbGYucXVldWVzW2NoYXRfaWRdKSA+IDEgZWxzZSBOb25lCgogICAgICAgIHNlbGYucXVldWVzW2NoYXRfaWRdLnBvcGxlZnQoKQogICAgICAgIHJldHVybiBzZWxmLnF1ZXVlc1tjaGF0X2lkXVswXSBpZiBzZWxmLnF1ZXVlc1tjaGF0X2lkXSBlbHNlIE5vbmUKCiAgICBkZWYgZ2V0X3F1ZXVlKHNlbGYsIGNoYXRfaWQ6IGludCkgLT4gbGlzdFtNZWRpYUl0ZW1dOgogICAgICAgICIiIlJldHVybiB0aGUgZnVsbCBxdWV1ZSBpbmNsdWRpbmcgdGhlIGN1cnJlbnRseSBwbGF5aW5nIGl0ZW0uIiIiCiAgICAgICAgcmV0dXJuIGxpc3Qoc2VsZi5xdWV1ZXNbY2hhdF9pZF0pCiAgICAKICAgIGRlZiBnZXRfYWxsKHNlbGYsIGNoYXRfaWQ6IGludCkgLT4gbGlzdFtNZWRpYUl0ZW1dOgogICAgICAgICIiIkFsaWFzIGZvciBnZXRfcXVldWUoKSAtIHJldHVybiB0aGUgZnVsbCBxdWV1ZSBpbmNsdWRpbmcgY3VycmVudGx5IHBsYXlpbmcgaXRlbS4iIiIKICAgICAgICByZXR1cm4gc2VsZi5nZXRfcXVldWUoY2hhdF9pZCkKCiAgICBkZWYgcmVtb3ZlX2N1cnJlbnQoc2VsZiwgY2hhdF9pZDogaW50KSAtPiBOb25lOgogICAgICAgICIiIlJlbW92ZSB0aGUgY3VycmVudGx5IHBsYXlpbmcgaXRlbSBvbmx5IChpZiBleGlzdHMpLiIiIgogICAgICAgIGlmIHNlbGYucXVldWVzW2NoYXRfaWRdOgogICAgICAgICAgICBzZWxmLnF1ZXVlc1tjaGF0X2lkXS5wb3BsZWZ0KCkKCiAgICBkZWYgY2xlYXIoc2VsZiwgY2hhdF9pZDogaW50KSAtPiBOb25lOgogICAgICAgICIiIkNsZWFyIHRoZSBlbnRpcmUgcXVldWUuIiIiCiAgICAgICAgc2VsZi5xdWV1ZXNbY2hhdF9pZF0uY2xlYXIoKQoKICAgIGRlZiBwZWVrX25leHQoc2VsZiwgY2hhdF9pZDogaW50LCBjb3VudDogaW50ID0gMikgLT4gbGlzdFtNZWRpYUl0ZW1dOgogICAgICAgICIiIgogICAgICAgIFJldHVybiBuZXh0IE4gdXBjb21pbmcgdHJhY2tzIHdpdGhvdXQgcmVtb3ZpbmcgdGhlbSBmcm9tIHF1ZXVlLgogICAgICAgIAogICAgICAgIEFyZ3M6CiAgICAgICAgICAgIGNoYXRfaWQ6IFRoZSBjaGF0IElEIHRvIHBlZWsgcXVldWUgZm9yCiAgICAgICAgICAgIGNvdW50OiBOdW1iZXIgb2YgdXBjb21pbmcgdHJhY2tzIHRvIHJldHVybiAoZGVmYXVsdDogMikKICAgICAgICAgICAgCiAgICAgICAgUmV0dXJuczoKICAgICAgICAgICAgTGlzdCBvZiB1cGNvbWluZyBNZWRpYUl0ZW0gb2JqZWN0cyAoZXhjbHVkaW5nIGN1cnJlbnRseSBwbGF5aW5nIHRyYWNrKQogICAgICAgICIiIgogICAgICAgIGlmIG5vdCBzZWxmLnF1ZXVlc1tjaGF0X2lkXSBvciBsZW4oc2VsZi5xdWV1ZXNbY2hhdF9pZF0pIDw9IDE6CiAgICAgICAgICAgIHJldHVybiBbXQogICAgICAgIAogICAgICAgICMgQ29udmVydCBkZXF1ZSB0byBsaXN0IGFuZCBza2lwIGZpcnN0IGl0ZW0gKGN1cnJlbnRseSBwbGF5aW5nKQogICAgICAgIHF1ZXVlX2xpc3QgPSBsaXN0KHNlbGYucXVldWVzW2NoYXRfaWRdKQogICAgICAgIHJldHVybiBxdWV1ZV9saXN0WzE6bWluKGxlbihxdWV1ZV9saXN0KSwgY291bnQgKyAxKV0KICAgIAogICAgQHN0YXRpY21ldGhvZAogICAgZGVmIGlzX2Rvd25sb2FkZWQoaXRlbTogTWVkaWFJdGVtKSAtPiBib29sOgogICAgICAgICIiIgogICAgICAgIENoZWNrIGlmIGEgdHJhY2sgaGFzIGFscmVhZHkgYmVlbiBkb3dubG9hZGVkLgogICAgICAgIAogICAgICAgIEFyZ3M6CiAgICAgICAgICAgIGl0ZW06IE1lZGlhSXRlbSBvciBUcmFjayBvYmplY3QgdG8gY2hlY2sKICAgICAgICAgICAgCiAgICAgICAgUmV0dXJuczoKICAgICAgICAgICAgVHJ1ZSBpZiBmaWxlX3BhdGggZXhpc3RzIGFuZCBpcyBub3QgZW1wdHksIEZhbHNlIG90aGVyd2lzZQogICAgICAgICIiIgogICAgICAgIHJldHVybiBib29sKGdldGF0dHIoaXRlbSwgJ2ZpbGVfcGF0aCcsIE5vbmUpKQo=").decode("utf-8"))

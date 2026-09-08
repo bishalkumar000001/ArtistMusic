@@ -1,90 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-
-import time
-
-from pyrogram import filters, types
-
-from ArtistMusic import app, db, lang
-from ArtistMusic.helpers import admin_check, is_admin, utils
-
-
-@app.on_message(filters.command(["auth", "unauth"]) & filters.group & ~app.bl_users)
-@lang.language()
-@admin_check
-async def _auth(_, m: types.Message):
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    user = await utils.extract_user(m)
-    if not user:
-        return await utils.safe_text(m, m.lang["user_not_found"])
-
-    if m.command[0] == "auth":
-        if await is_admin(m.chat.id, user.id):
-            return await utils.safe_text(m, m.lang["auth_is_admin"])
-
-        await db.add_auth(m.chat.id, user.id)
-        await utils.safe_text(m, m.lang["auth_added"].format(user.mention))
-    else:
-        await db.rm_auth(m.chat.id, user.id)
-        await utils.safe_text(m, m.lang["auth_removed"].format(user.mention))
-
-
-@app.on_message(filters.command(["authlist"]) & filters.group & ~app.bl_users)
-@lang.language()
-@admin_check
-async def _authlist(_, m: types.Message):
-    """Display the authorized users for the chat."""
-    auth_users = await db._get_auth(m.chat.id)
-    if not auth_users:
-        return await utils.safe_text(m, m.lang["auth_empty"])
-
-    auth_txt = m.lang["auth_list"].format(m.chat.title)
-    for idx, user_id in enumerate(sorted(auth_users), start=1):
-        auth_txt += f"\n{idx}. <a href=\"tg://user?id={user_id}\">{user_id}</a>"
-
-    await utils.safe_text(m, auth_txt)
-
-
-rel_hist = {}
-
-
-@app.on_message(filters.command(["admincache", "reload"]) & filters.group & ~app.bl_users)
-@lang.language()
-async def _admincache(_, m: types.Message):
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    # Check if message is from anonymous admin
-    if not m.from_user:
-        return
-    
-    if m.from_user.id in rel_hist:
-        if time.time() < rel_hist[m.from_user.id]:
-            return await utils.safe_text(m, m.lang["admin_cache_wait"])
-
-    rel_hist[m.from_user.id] = time.time() + 600
-    sent = await utils.safe_text(m, m.lang["admin_cache_reloading"])
-    await db.get_admins(m.chat.id, reload=True)
-    if not await utils.safe_edit(sent, m.lang["admin_cache_reloaded"]):
-        await utils.safe_text(m, m.lang["admin_cache_reloaded"])
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgppbXBvcnQgdGltZQoKZnJvbSBweXJvZ3JhbSBpbXBvcnQgZmlsdGVycywgdHlwZXMKCmZyb20gRWxldmVueXRzIGltcG9ydCBhcHAsIGRiLCBsYW5nCmZyb20gRWxldmVueXRzLmhlbHBlcnMgaW1wb3J0IGFkbWluX2NoZWNrLCBpc19hZG1pbiwgdXRpbHMKCgpAYXBwLm9uX21lc3NhZ2UoZmlsdGVycy5jb21tYW5kKFsiYXV0aCIsICJ1bmF1dGgiXSkgJiBmaWx0ZXJzLmdyb3VwICYgfmFwcC5ibF91c2VycykKQGxhbmcubGFuZ3VhZ2UoKQpAYWRtaW5fY2hlY2sKYXN5bmMgZGVmIF9hdXRoKF8sIG06IHR5cGVzLk1lc3NhZ2UpOgogICAgIyBBdXRvLWRlbGV0ZSBjb21tYW5kIG1lc3NhZ2UKICAgIHRyeToKICAgICAgICBhd2FpdCBtLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgdXNlciA9IGF3YWl0IHV0aWxzLmV4dHJhY3RfdXNlcihtKQogICAgaWYgbm90IHVzZXI6CiAgICAgICAgcmV0dXJuIGF3YWl0IHV0aWxzLnNhZmVfdGV4dChtLCBtLmxhbmdbInVzZXJfbm90X2ZvdW5kIl0pCgogICAgaWYgbS5jb21tYW5kWzBdID09ICJhdXRoIjoKICAgICAgICBpZiBhd2FpdCBpc19hZG1pbihtLmNoYXQuaWQsIHVzZXIuaWQpOgogICAgICAgICAgICByZXR1cm4gYXdhaXQgdXRpbHMuc2FmZV90ZXh0KG0sIG0ubGFuZ1siYXV0aF9pc19hZG1pbiJdKQoKICAgICAgICBhd2FpdCBkYi5hZGRfYXV0aChtLmNoYXQuaWQsIHVzZXIuaWQpCiAgICAgICAgYXdhaXQgdXRpbHMuc2FmZV90ZXh0KG0sIG0ubGFuZ1siYXV0aF9hZGRlZCJdLmZvcm1hdCh1c2VyLm1lbnRpb24pKQogICAgZWxzZToKICAgICAgICBhd2FpdCBkYi5ybV9hdXRoKG0uY2hhdC5pZCwgdXNlci5pZCkKICAgICAgICBhd2FpdCB1dGlscy5zYWZlX3RleHQobSwgbS5sYW5nWyJhdXRoX3JlbW92ZWQiXS5mb3JtYXQodXNlci5tZW50aW9uKSkKCgpAYXBwLm9uX21lc3NhZ2UoZmlsdGVycy5jb21tYW5kKFsiYXV0aGxpc3QiXSkgJiBmaWx0ZXJzLmdyb3VwICYgfmFwcC5ibF91c2VycykKQGxhbmcubGFuZ3VhZ2UoKQpAYWRtaW5fY2hlY2sKYXN5bmMgZGVmIF9hdXRobGlzdChfLCBtOiB0eXBlcy5NZXNzYWdlKToKICAgICIiIkRpc3BsYXkgdGhlIGF1dGhvcml6ZWQgdXNlcnMgZm9yIHRoZSBjaGF0LiIiIgogICAgYXV0aF91c2VycyA9IGF3YWl0IGRiLl9nZXRfYXV0aChtLmNoYXQuaWQpCiAgICBpZiBub3QgYXV0aF91c2VyczoKICAgICAgICByZXR1cm4gYXdhaXQgdXRpbHMuc2FmZV90ZXh0KG0sIG0ubGFuZ1siYXV0aF9lbXB0eSJdKQoKICAgIGF1dGhfdHh0ID0gbS5sYW5nWyJhdXRoX2xpc3QiXS5mb3JtYXQobS5jaGF0LnRpdGxlKQogICAgZm9yIGlkeCwgdXNlcl9pZCBpbiBlbnVtZXJhdGUoc29ydGVkKGF1dGhfdXNlcnMpLCBzdGFydD0xKToKICAgICAgICBhdXRoX3R4dCArPSBmIlxue2lkeH0uIDxhIGhyZWY9XCJ0ZzovL3VzZXI/aWQ9e3VzZXJfaWR9XCI+e3VzZXJfaWR9PC9hPiIKCiAgICBhd2FpdCB1dGlscy5zYWZlX3RleHQobSwgYXV0aF90eHQpCgoKcmVsX2hpc3QgPSB7fQoKCkBhcHAub25fbWVzc2FnZShmaWx0ZXJzLmNvbW1hbmQoWyJhZG1pbmNhY2hlIiwgInJlbG9hZCJdKSAmIGZpbHRlcnMuZ3JvdXAgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCmFzeW5jIGRlZiBfYWRtaW5jYWNoZShfLCBtOiB0eXBlcy5NZXNzYWdlKToKICAgICMgQXV0by1kZWxldGUgY29tbWFuZCBtZXNzYWdlCiAgICB0cnk6CiAgICAgICAgYXdhaXQgbS5kZWxldGUoKQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICBwYXNzCiAgICAKICAgICMgQ2hlY2sgaWYgbWVzc2FnZSBpcyBmcm9tIGFub255bW91cyBhZG1pbgogICAgaWYgbm90IG0uZnJvbV91c2VyOgogICAgICAgIHJldHVybgogICAgCiAgICBpZiBtLmZyb21fdXNlci5pZCBpbiByZWxfaGlzdDoKICAgICAgICBpZiB0aW1lLnRpbWUoKSA8IHJlbF9oaXN0W20uZnJvbV91c2VyLmlkXToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHV0aWxzLnNhZmVfdGV4dChtLCBtLmxhbmdbImFkbWluX2NhY2hlX3dhaXQiXSkKCiAgICByZWxfaGlzdFttLmZyb21fdXNlci5pZF0gPSB0aW1lLnRpbWUoKSArIDYwMAogICAgc2VudCA9IGF3YWl0IHV0aWxzLnNhZmVfdGV4dChtLCBtLmxhbmdbImFkbWluX2NhY2hlX3JlbG9hZGluZyJdKQogICAgYXdhaXQgZGIuZ2V0X2FkbWlucyhtLmNoYXQuaWQsIHJlbG9hZD1UcnVlKQogICAgaWYgbm90IGF3YWl0IHV0aWxzLnNhZmVfZWRpdChzZW50LCBtLmxhbmdbImFkbWluX2NhY2hlX3JlbG9hZGVkIl0pOgogICAgICAgIGF3YWl0IHV0aWxzLnNhZmVfdGV4dChtLCBtLmxhbmdbImFkbWluX2NhY2hlX3JlbG9hZGVkIl0pCg==").decode("utf-8"))

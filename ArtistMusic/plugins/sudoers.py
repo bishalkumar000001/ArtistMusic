@@ -1,89 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-from pyrogram import filters, types
-
-from ArtistMusic import app, db, lang
-from ArtistMusic.helpers import utils
-
-
-@app.on_message(filters.command(["addsudo", "delsudo", "rmsudo"]) & app.sudo_filter)
-@lang.language()
-async def _sudo(_, m: types.Message):
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    user = await utils.extract_user(m)
-    if not user:
-        return await m.reply_text(m.lang["user_not_found"])
-
-    if m.command[0] == "addsudo":
-        if user.id in app.sudoers:
-            return await m.reply_text(m.lang["sudo_already"].format(user.mention))
-
-        app.sudoers.add(user.id)
-        app.sudo_filter.update([user.id])
-        await db.add_sudo(user.id)
-        await m.reply_text(m.lang["sudo_added"].format(user.mention))
-    else:
-        if user.id not in app.sudoers:
-            return await m.reply_text(m.lang["sudo_not"].format(user.mention))
-
-        app.sudoers.discard(user.id)
-        app.sudo_filter.update([])  # Reset filter
-        app.sudo_filter.update(app.sudoers)  # Rebuild with remaining users
-        await db.del_sudo(user.id)
-        await m.reply_text(m.lang["sudo_removed"].format(user.mention))
-
-
-o_mention = None
-
-
-@app.on_message(filters.command(["listsudo", "sudolist"]) & app.sudo_filter)
-@lang.language()
-async def _listsudo(_, m: types.Message):
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    sent = await m.reply_text(m.lang["sudo_fetching"])
-
-    # Always fetch fresh owner info with ID
-    owner_user = await app.get_users(app.owner)
-    o_mention = f"{owner_user.mention} ({app.owner})"
-    
-    txt = m.lang["sudo_owner"].format(o_mention)
-    sudoers = await db.get_sudoers()
-    
-    if sudoers:
-        sudo_list = ""
-        for user_id in sudoers:
-            try:
-                user = await app.get_users(user_id)
-                sudo_list += f"\n- {user.mention} ({user_id})"
-            except:
-                # Deleted account or inaccessible user
-                sudo_list += f"\n- Deleted Account ({user_id})"
-                continue
-        
-        if sudo_list:
-            txt += f"<blockquote><u><b>ꜱᴜᴅᴏ ᴜꜱᴇʀꜱ:</b></u>{sudo_list}\n\n</blockquote>"
-
-    await sent.edit_text(txt)
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmZyb20gcHlyb2dyYW0gaW1wb3J0IGZpbHRlcnMsIHR5cGVzCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgYXBwLCBkYiwgbGFuZwpmcm9tIEVsZXZlbnl0cy5oZWxwZXJzIGltcG9ydCB1dGlscwoKCkBhcHAub25fbWVzc2FnZShmaWx0ZXJzLmNvbW1hbmQoWyJhZGRzdWRvIiwgImRlbHN1ZG8iLCAicm1zdWRvIl0pICYgYXBwLnN1ZG9fZmlsdGVyKQpAbGFuZy5sYW5ndWFnZSgpCmFzeW5jIGRlZiBfc3VkbyhfLCBtOiB0eXBlcy5NZXNzYWdlKToKICAgICMgQXV0by1kZWxldGUgY29tbWFuZCBtZXNzYWdlCiAgICB0cnk6CiAgICAgICAgYXdhaXQgbS5kZWxldGUoKQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICBwYXNzCiAgICAKICAgIHVzZXIgPSBhd2FpdCB1dGlscy5leHRyYWN0X3VzZXIobSkKICAgIGlmIG5vdCB1c2VyOgogICAgICAgIHJldHVybiBhd2FpdCBtLnJlcGx5X3RleHQobS5sYW5nWyJ1c2VyX25vdF9mb3VuZCJdKQoKICAgIGlmIG0uY29tbWFuZFswXSA9PSAiYWRkc3VkbyI6CiAgICAgICAgaWYgdXNlci5pZCBpbiBhcHAuc3Vkb2VyczoKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IG0ucmVwbHlfdGV4dChtLmxhbmdbInN1ZG9fYWxyZWFkeSJdLmZvcm1hdCh1c2VyLm1lbnRpb24pKQoKICAgICAgICBhcHAuc3Vkb2Vycy5hZGQodXNlci5pZCkKICAgICAgICBhcHAuc3Vkb19maWx0ZXIudXBkYXRlKFt1c2VyLmlkXSkKICAgICAgICBhd2FpdCBkYi5hZGRfc3Vkbyh1c2VyLmlkKQogICAgICAgIGF3YWl0IG0ucmVwbHlfdGV4dChtLmxhbmdbInN1ZG9fYWRkZWQiXS5mb3JtYXQodXNlci5tZW50aW9uKSkKICAgIGVsc2U6CiAgICAgICAgaWYgdXNlci5pZCBub3QgaW4gYXBwLnN1ZG9lcnM6CiAgICAgICAgICAgIHJldHVybiBhd2FpdCBtLnJlcGx5X3RleHQobS5sYW5nWyJzdWRvX25vdCJdLmZvcm1hdCh1c2VyLm1lbnRpb24pKQoKICAgICAgICBhcHAuc3Vkb2Vycy5kaXNjYXJkKHVzZXIuaWQpCiAgICAgICAgYXBwLnN1ZG9fZmlsdGVyLnVwZGF0ZShbXSkgICMgUmVzZXQgZmlsdGVyCiAgICAgICAgYXBwLnN1ZG9fZmlsdGVyLnVwZGF0ZShhcHAuc3Vkb2VycykgICMgUmVidWlsZCB3aXRoIHJlbWFpbmluZyB1c2VycwogICAgICAgIGF3YWl0IGRiLmRlbF9zdWRvKHVzZXIuaWQpCiAgICAgICAgYXdhaXQgbS5yZXBseV90ZXh0KG0ubGFuZ1sic3Vkb19yZW1vdmVkIl0uZm9ybWF0KHVzZXIubWVudGlvbikpCgoKb19tZW50aW9uID0gTm9uZQoKCkBhcHAub25fbWVzc2FnZShmaWx0ZXJzLmNvbW1hbmQoWyJsaXN0c3VkbyIsICJzdWRvbGlzdCJdKSAmIGFwcC5zdWRvX2ZpbHRlcikKQGxhbmcubGFuZ3VhZ2UoKQphc3luYyBkZWYgX2xpc3RzdWRvKF8sIG06IHR5cGVzLk1lc3NhZ2UpOgogICAgIyBBdXRvLWRlbGV0ZSBjb21tYW5kIG1lc3NhZ2UKICAgIHRyeToKICAgICAgICBhd2FpdCBtLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgc2VudCA9IGF3YWl0IG0ucmVwbHlfdGV4dChtLmxhbmdbInN1ZG9fZmV0Y2hpbmciXSkKCiAgICAjIEFsd2F5cyBmZXRjaCBmcmVzaCBvd25lciBpbmZvIHdpdGggSUQKICAgIG93bmVyX3VzZXIgPSBhd2FpdCBhcHAuZ2V0X3VzZXJzKGFwcC5vd25lcikKICAgIG9fbWVudGlvbiA9IGYie293bmVyX3VzZXIubWVudGlvbn0gKHthcHAub3duZXJ9KSIKICAgIAogICAgdHh0ID0gbS5sYW5nWyJzdWRvX293bmVyIl0uZm9ybWF0KG9fbWVudGlvbikKICAgIHN1ZG9lcnMgPSBhd2FpdCBkYi5nZXRfc3Vkb2VycygpCiAgICAKICAgIGlmIHN1ZG9lcnM6CiAgICAgICAgc3Vkb19saXN0ID0gIiIKICAgICAgICBmb3IgdXNlcl9pZCBpbiBzdWRvZXJzOgogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICB1c2VyID0gYXdhaXQgYXBwLmdldF91c2Vycyh1c2VyX2lkKQogICAgICAgICAgICAgICAgc3Vkb19saXN0ICs9IGYiXG4tIHt1c2VyLm1lbnRpb259ICh7dXNlcl9pZH0pIgogICAgICAgICAgICBleGNlcHQ6CiAgICAgICAgICAgICAgICAjIERlbGV0ZWQgYWNjb3VudCBvciBpbmFjY2Vzc2libGUgdXNlcgogICAgICAgICAgICAgICAgc3Vkb19saXN0ICs9IGYiXG4tIERlbGV0ZWQgQWNjb3VudCAoe3VzZXJfaWR9KSIKICAgICAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgCiAgICAgICAgaWYgc3Vkb19saXN0OgogICAgICAgICAgICB0eHQgKz0gZiI8YmxvY2txdW90ZT48dT48Yj7qnLHhtJzhtIXhtI8g4bSc6pyx4bSHyoDqnLE6PC9iPjwvdT57c3Vkb19saXN0fVxuXG48L2Jsb2NrcXVvdGU+IgoKICAgIGF3YWl0IHNlbnQuZWRpdF90ZXh0KHR4dCkK").decode("utf-8"))

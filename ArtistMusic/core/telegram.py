@@ -1,162 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-
-import asyncio
-import os
-import time
-
-from pyrogram import types
-
-from ArtistMusic import config
-from ArtistMusic.helpers import Media, buttons, utils
-
-
-class Telegram:
-    def __init__(self):
-        """Initialize the Telegram download handler."""
-        self.active = [
-        ]  # List of currently downloading file IDs (prevent duplicates)
-        self.events = {}  # Dictionary of download events for cancellation
-        # Track last progress update time (for rate limiting)
-        self.last_edit = {}
-        self.active_tasks = {}  # Active download tasks for cancellation
-        self.sleep = 5  # Minimum seconds between progress updates
-
-    def get_media(self, msg: types.Message) -> bool:
-        """Check if message contains downloadable media."""
-        return any([msg.audio, msg.document, msg.voice, msg.video])
-
-    async def download(self, msg: types.Message, sent: types.Message) -> Media | None:
-        """
-        Download media from a Telegram message with progress tracking.
-
-        Args:
-            msg: The message containing the media
-            sent: The status message to update with progress
-
-        Returns:
-            Media object if successful, None if failed or cancelled
-        """
-        msg_id = sent.id
-        event = asyncio.Event()  # Event for cancellation
-        self.events[msg_id] = event
-        self.last_edit[msg_id] = 0  # Initialize last edit time
-        start_time = time.time()  # Track download start time
-
-        # Extract media information from message
-        media = msg.audio or msg.voice or msg.video or msg.document
-        # Detect if this is a video file
-        is_video = bool(msg.video) or (msg.document and getattr(msg.document, "mime_type", "").startswith("video/"))
-        # Unique file identifier
-        file_id = getattr(media, "file_unique_id", None)
-        file_ext = getattr(media, "file_name", "").split(
-            ".")[-1]  # File extension
-        file_size = getattr(media, "file_size", 0)  # File size in bytes
-        file_title = getattr(
-            media, "title", "Telegram File") or "Telegram File"  # Media title
-        duration = getattr(media, "duration", 0)  # Duration in seconds
-
-        # Validate duration limit (configured in config.py)
-        if duration > config.DURATION_LIMIT:
-            await sent.edit_text(sent.lang["play_duration_limit"].format(config.DURATION_LIMIT // 60))
-            return await sent.stop_propagation()
-
-        # Validate file size (max 200 MB)
-        if file_size > 200 * 1024 * 1024:
-            await sent.edit_text(sent.lang["dl_limit"])
-            return await sent.stop_propagation()
-
-        async def progress(current, total):
-            if event.is_set():
-                return
-
-            now = time.time()
-            if now - self.last_edit[msg_id] < self.sleep:
-                return
-
-            self.last_edit[msg_id] = now
-            percent = current * 100 / total
-            speed = current / (now - start_time or 1e-6)
-            eta = utils.format_eta(int((total - current) / speed))
-            text = sent.lang["dl_progress"].format(
-                utils.format_size(current),
-                utils.format_size(total),
-                percent,
-                utils.format_size(speed),
-                eta,
-            )
-
-            await sent.edit_text(
-                text, reply_markup=buttons.cancel_dl(sent.lang["cancel"])
-            )
-
-        try:
-            file_path = f"downloads/{file_id}.{file_ext}"
-            if not os.path.exists(file_path):
-                if file_id in self.active:
-                    await sent.edit_text(sent.lang["dl_active"])
-                    return await sent.stop_propagation()
-
-                self.active.append(file_id)
-                task = asyncio.create_task(
-                    msg.download(file_name=file_path, progress=progress)
-                )
-                self.active_tasks[msg_id] = task
-                await task
-                self.active.remove(file_id)
-                self.active_tasks.pop(msg_id, None)
-                await sent.edit_text(
-                    sent.lang["dl_complete"].format(
-                        round(time.time() - start_time, 2))
-                )
-
-            # Format duration with hours support
-            if duration >= 3600:
-                duration_str = time.strftime("%H:%M:%S", time.gmtime(duration))
-            else:
-                duration_str = time.strftime("%M:%S", time.gmtime(duration))
-
-            return Media(
-                id=file_id,
-                duration=duration_str,
-                duration_sec=duration,
-                file_path=file_path,
-                message_id=sent.id,
-                url=msg.link,
-                title=file_title[:25],
-                video=is_video,
-            )
-        except asyncio.CancelledError:
-            return await sent.stop_propagation()
-        finally:
-            self.events.pop(msg_id, None)
-            self.last_edit.pop(msg_id, None)
-            self.active = [f for f in self.active if f != file_id]
-
-    async def cancel(self, query: types.CallbackQuery):
-        event = self.events.get(query.message.id)
-        task = self.active_tasks.pop(query.message.id, None)
-        if event:
-            event.set()
-
-        if task and not task.done():
-            task.cancel()
-        if event or task:
-            await query.edit_message_text(
-                query.lang["dl_cancel"].format(query.from_user.mention)
-            )
-        else:
-            await query.answer(query.lang["dl_not_found"], show_alert=True)
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgppbXBvcnQgYXN5bmNpbwppbXBvcnQgb3MKaW1wb3J0IHRpbWUKCmZyb20gcHlyb2dyYW0gaW1wb3J0IHR5cGVzCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgY29uZmlnCmZyb20gRWxldmVueXRzLmhlbHBlcnMgaW1wb3J0IE1lZGlhLCBidXR0b25zLCB1dGlscwoKCmNsYXNzIFRlbGVncmFtOgogICAgZGVmIF9faW5pdF9fKHNlbGYpOgogICAgICAgICIiIkluaXRpYWxpemUgdGhlIFRlbGVncmFtIGRvd25sb2FkIGhhbmRsZXIuIiIiCiAgICAgICAgc2VsZi5hY3RpdmUgPSBbCiAgICAgICAgXSAgIyBMaXN0IG9mIGN1cnJlbnRseSBkb3dubG9hZGluZyBmaWxlIElEcyAocHJldmVudCBkdXBsaWNhdGVzKQogICAgICAgIHNlbGYuZXZlbnRzID0ge30gICMgRGljdGlvbmFyeSBvZiBkb3dubG9hZCBldmVudHMgZm9yIGNhbmNlbGxhdGlvbgogICAgICAgICMgVHJhY2sgbGFzdCBwcm9ncmVzcyB1cGRhdGUgdGltZSAoZm9yIHJhdGUgbGltaXRpbmcpCiAgICAgICAgc2VsZi5sYXN0X2VkaXQgPSB7fQogICAgICAgIHNlbGYuYWN0aXZlX3Rhc2tzID0ge30gICMgQWN0aXZlIGRvd25sb2FkIHRhc2tzIGZvciBjYW5jZWxsYXRpb24KICAgICAgICBzZWxmLnNsZWVwID0gNSAgIyBNaW5pbXVtIHNlY29uZHMgYmV0d2VlbiBwcm9ncmVzcyB1cGRhdGVzCgogICAgZGVmIGdldF9tZWRpYShzZWxmLCBtc2c6IHR5cGVzLk1lc3NhZ2UpIC0+IGJvb2w6CiAgICAgICAgIiIiQ2hlY2sgaWYgbWVzc2FnZSBjb250YWlucyBkb3dubG9hZGFibGUgbWVkaWEuIiIiCiAgICAgICAgcmV0dXJuIGFueShbbXNnLmF1ZGlvLCBtc2cuZG9jdW1lbnQsIG1zZy52b2ljZSwgbXNnLnZpZGVvXSkKCiAgICBhc3luYyBkZWYgZG93bmxvYWQoc2VsZiwgbXNnOiB0eXBlcy5NZXNzYWdlLCBzZW50OiB0eXBlcy5NZXNzYWdlKSAtPiBNZWRpYSB8IE5vbmU6CiAgICAgICAgIiIiCiAgICAgICAgRG93bmxvYWQgbWVkaWEgZnJvbSBhIFRlbGVncmFtIG1lc3NhZ2Ugd2l0aCBwcm9ncmVzcyB0cmFja2luZy4KCiAgICAgICAgQXJnczoKICAgICAgICAgICAgbXNnOiBUaGUgbWVzc2FnZSBjb250YWluaW5nIHRoZSBtZWRpYQogICAgICAgICAgICBzZW50OiBUaGUgc3RhdHVzIG1lc3NhZ2UgdG8gdXBkYXRlIHdpdGggcHJvZ3Jlc3MKCiAgICAgICAgUmV0dXJuczoKICAgICAgICAgICAgTWVkaWEgb2JqZWN0IGlmIHN1Y2Nlc3NmdWwsIE5vbmUgaWYgZmFpbGVkIG9yIGNhbmNlbGxlZAogICAgICAgICIiIgogICAgICAgIG1zZ19pZCA9IHNlbnQuaWQKICAgICAgICBldmVudCA9IGFzeW5jaW8uRXZlbnQoKSAgIyBFdmVudCBmb3IgY2FuY2VsbGF0aW9uCiAgICAgICAgc2VsZi5ldmVudHNbbXNnX2lkXSA9IGV2ZW50CiAgICAgICAgc2VsZi5sYXN0X2VkaXRbbXNnX2lkXSA9IDAgICMgSW5pdGlhbGl6ZSBsYXN0IGVkaXQgdGltZQogICAgICAgIHN0YXJ0X3RpbWUgPSB0aW1lLnRpbWUoKSAgIyBUcmFjayBkb3dubG9hZCBzdGFydCB0aW1lCgogICAgICAgICMgRXh0cmFjdCBtZWRpYSBpbmZvcm1hdGlvbiBmcm9tIG1lc3NhZ2UKICAgICAgICBtZWRpYSA9IG1zZy5hdWRpbyBvciBtc2cudm9pY2Ugb3IgbXNnLnZpZGVvIG9yIG1zZy5kb2N1bWVudAogICAgICAgICMgRGV0ZWN0IGlmIHRoaXMgaXMgYSB2aWRlbyBmaWxlCiAgICAgICAgaXNfdmlkZW8gPSBib29sKG1zZy52aWRlbykgb3IgKG1zZy5kb2N1bWVudCBhbmQgZ2V0YXR0cihtc2cuZG9jdW1lbnQsICJtaW1lX3R5cGUiLCAiIikuc3RhcnRzd2l0aCgidmlkZW8vIikpCiAgICAgICAgIyBVbmlxdWUgZmlsZSBpZGVudGlmaWVyCiAgICAgICAgZmlsZV9pZCA9IGdldGF0dHIobWVkaWEsICJmaWxlX3VuaXF1ZV9pZCIsIE5vbmUpCiAgICAgICAgZmlsZV9leHQgPSBnZXRhdHRyKG1lZGlhLCAiZmlsZV9uYW1lIiwgIiIpLnNwbGl0KAogICAgICAgICAgICAiLiIpWy0xXSAgIyBGaWxlIGV4dGVuc2lvbgogICAgICAgIGZpbGVfc2l6ZSA9IGdldGF0dHIobWVkaWEsICJmaWxlX3NpemUiLCAwKSAgIyBGaWxlIHNpemUgaW4gYnl0ZXMKICAgICAgICBmaWxlX3RpdGxlID0gZ2V0YXR0cigKICAgICAgICAgICAgbWVkaWEsICJ0aXRsZSIsICJUZWxlZ3JhbSBGaWxlIikgb3IgIlRlbGVncmFtIEZpbGUiICAjIE1lZGlhIHRpdGxlCiAgICAgICAgZHVyYXRpb24gPSBnZXRhdHRyKG1lZGlhLCAiZHVyYXRpb24iLCAwKSAgIyBEdXJhdGlvbiBpbiBzZWNvbmRzCgogICAgICAgICMgVmFsaWRhdGUgZHVyYXRpb24gbGltaXQgKGNvbmZpZ3VyZWQgaW4gY29uZmlnLnB5KQogICAgICAgIGlmIGR1cmF0aW9uID4gY29uZmlnLkRVUkFUSU9OX0xJTUlUOgogICAgICAgICAgICBhd2FpdCBzZW50LmVkaXRfdGV4dChzZW50LmxhbmdbInBsYXlfZHVyYXRpb25fbGltaXQiXS5mb3JtYXQoY29uZmlnLkRVUkFUSU9OX0xJTUlUIC8vIDYwKSkKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHNlbnQuc3RvcF9wcm9wYWdhdGlvbigpCgogICAgICAgICMgVmFsaWRhdGUgZmlsZSBzaXplIChtYXggMjAwIE1CKQogICAgICAgIGlmIGZpbGVfc2l6ZSA+IDIwMCAqIDEwMjQgKiAxMDI0OgogICAgICAgICAgICBhd2FpdCBzZW50LmVkaXRfdGV4dChzZW50LmxhbmdbImRsX2xpbWl0Il0pCiAgICAgICAgICAgIHJldHVybiBhd2FpdCBzZW50LnN0b3BfcHJvcGFnYXRpb24oKQoKICAgICAgICBhc3luYyBkZWYgcHJvZ3Jlc3MoY3VycmVudCwgdG90YWwpOgogICAgICAgICAgICBpZiBldmVudC5pc19zZXQoKToKICAgICAgICAgICAgICAgIHJldHVybgoKICAgICAgICAgICAgbm93ID0gdGltZS50aW1lKCkKICAgICAgICAgICAgaWYgbm93IC0gc2VsZi5sYXN0X2VkaXRbbXNnX2lkXSA8IHNlbGYuc2xlZXA6CiAgICAgICAgICAgICAgICByZXR1cm4KCiAgICAgICAgICAgIHNlbGYubGFzdF9lZGl0W21zZ19pZF0gPSBub3cKICAgICAgICAgICAgcGVyY2VudCA9IGN1cnJlbnQgKiAxMDAgLyB0b3RhbAogICAgICAgICAgICBzcGVlZCA9IGN1cnJlbnQgLyAobm93IC0gc3RhcnRfdGltZSBvciAxZS02KQogICAgICAgICAgICBldGEgPSB1dGlscy5mb3JtYXRfZXRhKGludCgodG90YWwgLSBjdXJyZW50KSAvIHNwZWVkKSkKICAgICAgICAgICAgdGV4dCA9IHNlbnQubGFuZ1siZGxfcHJvZ3Jlc3MiXS5mb3JtYXQoCiAgICAgICAgICAgICAgICB1dGlscy5mb3JtYXRfc2l6ZShjdXJyZW50KSwKICAgICAgICAgICAgICAgIHV0aWxzLmZvcm1hdF9zaXplKHRvdGFsKSwKICAgICAgICAgICAgICAgIHBlcmNlbnQsCiAgICAgICAgICAgICAgICB1dGlscy5mb3JtYXRfc2l6ZShzcGVlZCksCiAgICAgICAgICAgICAgICBldGEsCiAgICAgICAgICAgICkKCiAgICAgICAgICAgIGF3YWl0IHNlbnQuZWRpdF90ZXh0KAogICAgICAgICAgICAgICAgdGV4dCwgcmVwbHlfbWFya3VwPWJ1dHRvbnMuY2FuY2VsX2RsKHNlbnQubGFuZ1siY2FuY2VsIl0pCiAgICAgICAgICAgICkKCiAgICAgICAgdHJ5OgogICAgICAgICAgICBmaWxlX3BhdGggPSBmImRvd25sb2Fkcy97ZmlsZV9pZH0ue2ZpbGVfZXh0fSIKICAgICAgICAgICAgaWYgbm90IG9zLnBhdGguZXhpc3RzKGZpbGVfcGF0aCk6CiAgICAgICAgICAgICAgICBpZiBmaWxlX2lkIGluIHNlbGYuYWN0aXZlOgogICAgICAgICAgICAgICAgICAgIGF3YWl0IHNlbnQuZWRpdF90ZXh0KHNlbnQubGFuZ1siZGxfYWN0aXZlIl0pCiAgICAgICAgICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHNlbnQuc3RvcF9wcm9wYWdhdGlvbigpCgogICAgICAgICAgICAgICAgc2VsZi5hY3RpdmUuYXBwZW5kKGZpbGVfaWQpCiAgICAgICAgICAgICAgICB0YXNrID0gYXN5bmNpby5jcmVhdGVfdGFzaygKICAgICAgICAgICAgICAgICAgICBtc2cuZG93bmxvYWQoZmlsZV9uYW1lPWZpbGVfcGF0aCwgcHJvZ3Jlc3M9cHJvZ3Jlc3MpCiAgICAgICAgICAgICAgICApCiAgICAgICAgICAgICAgICBzZWxmLmFjdGl2ZV90YXNrc1ttc2dfaWRdID0gdGFzawogICAgICAgICAgICAgICAgYXdhaXQgdGFzawogICAgICAgICAgICAgICAgc2VsZi5hY3RpdmUucmVtb3ZlKGZpbGVfaWQpCiAgICAgICAgICAgICAgICBzZWxmLmFjdGl2ZV90YXNrcy5wb3AobXNnX2lkLCBOb25lKQogICAgICAgICAgICAgICAgYXdhaXQgc2VudC5lZGl0X3RleHQoCiAgICAgICAgICAgICAgICAgICAgc2VudC5sYW5nWyJkbF9jb21wbGV0ZSJdLmZvcm1hdCgKICAgICAgICAgICAgICAgICAgICAgICAgcm91bmQodGltZS50aW1lKCkgLSBzdGFydF90aW1lLCAyKSkKICAgICAgICAgICAgICAgICkKCiAgICAgICAgICAgICMgRm9ybWF0IGR1cmF0aW9uIHdpdGggaG91cnMgc3VwcG9ydAogICAgICAgICAgICBpZiBkdXJhdGlvbiA+PSAzNjAwOgogICAgICAgICAgICAgICAgZHVyYXRpb25fc3RyID0gdGltZS5zdHJmdGltZSgiJUg6JU06JVMiLCB0aW1lLmdtdGltZShkdXJhdGlvbikpCiAgICAgICAgICAgIGVsc2U6CiAgICAgICAgICAgICAgICBkdXJhdGlvbl9zdHIgPSB0aW1lLnN0cmZ0aW1lKCIlTTolUyIsIHRpbWUuZ210aW1lKGR1cmF0aW9uKSkKCiAgICAgICAgICAgIHJldHVybiBNZWRpYSgKICAgICAgICAgICAgICAgIGlkPWZpbGVfaWQsCiAgICAgICAgICAgICAgICBkdXJhdGlvbj1kdXJhdGlvbl9zdHIsCiAgICAgICAgICAgICAgICBkdXJhdGlvbl9zZWM9ZHVyYXRpb24sCiAgICAgICAgICAgICAgICBmaWxlX3BhdGg9ZmlsZV9wYXRoLAogICAgICAgICAgICAgICAgbWVzc2FnZV9pZD1zZW50LmlkLAogICAgICAgICAgICAgICAgdXJsPW1zZy5saW5rLAogICAgICAgICAgICAgICAgdGl0bGU9ZmlsZV90aXRsZVs6MjVdLAogICAgICAgICAgICAgICAgdmlkZW89aXNfdmlkZW8sCiAgICAgICAgICAgICkKICAgICAgICBleGNlcHQgYXN5bmNpby5DYW5jZWxsZWRFcnJvcjoKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHNlbnQuc3RvcF9wcm9wYWdhdGlvbigpCiAgICAgICAgZmluYWxseToKICAgICAgICAgICAgc2VsZi5ldmVudHMucG9wKG1zZ19pZCwgTm9uZSkKICAgICAgICAgICAgc2VsZi5sYXN0X2VkaXQucG9wKG1zZ19pZCwgTm9uZSkKICAgICAgICAgICAgc2VsZi5hY3RpdmUgPSBbZiBmb3IgZiBpbiBzZWxmLmFjdGl2ZSBpZiBmICE9IGZpbGVfaWRdCgogICAgYXN5bmMgZGVmIGNhbmNlbChzZWxmLCBxdWVyeTogdHlwZXMuQ2FsbGJhY2tRdWVyeSk6CiAgICAgICAgZXZlbnQgPSBzZWxmLmV2ZW50cy5nZXQocXVlcnkubWVzc2FnZS5pZCkKICAgICAgICB0YXNrID0gc2VsZi5hY3RpdmVfdGFza3MucG9wKHF1ZXJ5Lm1lc3NhZ2UuaWQsIE5vbmUpCiAgICAgICAgaWYgZXZlbnQ6CiAgICAgICAgICAgIGV2ZW50LnNldCgpCgogICAgICAgIGlmIHRhc2sgYW5kIG5vdCB0YXNrLmRvbmUoKToKICAgICAgICAgICAgdGFzay5jYW5jZWwoKQogICAgICAgIGlmIGV2ZW50IG9yIHRhc2s6CiAgICAgICAgICAgIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV90ZXh0KAogICAgICAgICAgICAgICAgcXVlcnkubGFuZ1siZGxfY2FuY2VsIl0uZm9ybWF0KHF1ZXJ5LmZyb21fdXNlci5tZW50aW9uKQogICAgICAgICAgICApCiAgICAgICAgZWxzZToKICAgICAgICAgICAgYXdhaXQgcXVlcnkuYW5zd2VyKHF1ZXJ5LmxhbmdbImRsX25vdF9mb3VuZCJdLCBzaG93X2FsZXJ0PVRydWUpCg==").decode("utf-8"))

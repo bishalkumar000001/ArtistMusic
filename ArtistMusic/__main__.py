@@ -1,14 +1,14 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
-# 
+#
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
@@ -35,9 +35,9 @@ if sys.platform != "win32":
     except Exception:
         pass
 
-from ArtistMusic import (tune, app, config, db,
+from Elevenyts import (tune, app, config, db,
                    logger, stop, userbot, yt)
-from ArtistMusic.plugins import all_modules
+from Elevenyts.plugins import all_modules
 
 
 # HTTP Server for Render health checks
@@ -93,7 +93,7 @@ async def main():
         # Step 7: Load all plugin modules (commands like /play, /pause, etc.)
         for module in all_modules:
             try:
-                importlib.import_module(f"ArtistMusic.plugins.{module}")
+                importlib.import_module(f"Elevenyts.plugins.{module}")
             except Exception as e:
                 logger.error(f"Failed to load plugin {module}: {e}", exc_info=True)
         logger.info(f"🔌 Loaded {len(all_modules)} plugin modules.")

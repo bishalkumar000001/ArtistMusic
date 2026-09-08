@@ -1,74 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-
-import asyncio
-import logging
-from pyrogram import filters, types
-from pyrogram.errors import ChatSendPlainForbidden, ChatWriteForbidden
-
-from ArtistMusic import tune, app, db, lang
-from ArtistMusic.helpers import can_manage_vc
-
-logger = logging.getLogger(__name__)
-
-
-@app.on_message(filters.command(["end", "stop", "cend", "cstop"]) & filters.group & ~app.bl_users)
-@lang.language()
-@can_manage_vc
-async def _stop(_, m: types.Message):
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    if len(m.command) > 1:
-        return
-    
-    # Check for channel play mode
-    is_channel = m.command[0].lower() in ["cend", "cstop"]
-    chat_id = m.chat.id
-    
-    if is_channel:
-        channel_id = await db.get_cmode(m.chat.id)
-        if channel_id is None:
-            return await m.reply_text("Channel play is not enabled. Use /channelplay to enable.")
-        chat_id = channel_id
-    
-    if not await db.get_call(chat_id):
-        try:
-            return await m.reply_text("Nothing is playing.")
-        except (ChatSendPlainForbidden, ChatWriteForbidden):
-            logger.warning("Cannot send text in this chat, skipping reply.")
-            return
-        except Exception as e:
-            logger.error(f"Failed to send reply: {e}")
-            return
-
-    await tune.stop(chat_id)
-    try:
-        sent_msg = await m.reply_text(f"Stopped by {m.from_user.mention}")
-    except (ChatSendPlainForbidden, ChatWriteForbidden):
-        logger.warning("Cannot send text in this chat, stream stopped silently.")
-        return
-    except Exception as e:
-        logger.error(f"Failed to send stop confirmation: {e}")
-        return
-    
-    await asyncio.sleep(5)
-    try:
-        await sent_msg.delete()
-    except Exception:
-        pass
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgppbXBvcnQgYXN5bmNpbwppbXBvcnQgbG9nZ2luZwpmcm9tIHB5cm9ncmFtIGltcG9ydCBmaWx0ZXJzLCB0eXBlcwpmcm9tIHB5cm9ncmFtLmVycm9ycyBpbXBvcnQgQ2hhdFNlbmRQbGFpbkZvcmJpZGRlbiwgQ2hhdFdyaXRlRm9yYmlkZGVuCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgdHVuZSwgYXBwLCBkYiwgbGFuZwpmcm9tIEVsZXZlbnl0cy5oZWxwZXJzIGltcG9ydCBjYW5fbWFuYWdlX3ZjCgpsb2dnZXIgPSBsb2dnaW5nLmdldExvZ2dlcihfX25hbWVfXykKCgpAYXBwLm9uX21lc3NhZ2UoZmlsdGVycy5jb21tYW5kKFsiZW5kIiwgInN0b3AiLCAiY2VuZCIsICJjc3RvcCJdKSAmIGZpbHRlcnMuZ3JvdXAgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCkBjYW5fbWFuYWdlX3ZjCmFzeW5jIGRlZiBfc3RvcChfLCBtOiB0eXBlcy5NZXNzYWdlKToKICAgIHRyeToKICAgICAgICBhd2FpdCBtLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgaWYgbGVuKG0uY29tbWFuZCkgPiAxOgogICAgICAgIHJldHVybgogICAgCiAgICAjIENoZWNrIGZvciBjaGFubmVsIHBsYXkgbW9kZQogICAgaXNfY2hhbm5lbCA9IG0uY29tbWFuZFswXS5sb3dlcigpIGluIFsiY2VuZCIsICJjc3RvcCJdCiAgICBjaGF0X2lkID0gbS5jaGF0LmlkCiAgICAKICAgIGlmIGlzX2NoYW5uZWw6CiAgICAgICAgY2hhbm5lbF9pZCA9IGF3YWl0IGRiLmdldF9jbW9kZShtLmNoYXQuaWQpCiAgICAgICAgaWYgY2hhbm5lbF9pZCBpcyBOb25lOgogICAgICAgICAgICByZXR1cm4gYXdhaXQgbS5yZXBseV90ZXh0KCJDaGFubmVsIHBsYXkgaXMgbm90IGVuYWJsZWQuIFVzZSAvY2hhbm5lbHBsYXkgdG8gZW5hYmxlLiIpCiAgICAgICAgY2hhdF9pZCA9IGNoYW5uZWxfaWQKICAgIAogICAgaWYgbm90IGF3YWl0IGRiLmdldF9jYWxsKGNoYXRfaWQpOgogICAgICAgIHRyeToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IG0ucmVwbHlfdGV4dCgiTm90aGluZyBpcyBwbGF5aW5nLiIpCiAgICAgICAgZXhjZXB0IChDaGF0U2VuZFBsYWluRm9yYmlkZGVuLCBDaGF0V3JpdGVGb3JiaWRkZW4pOgogICAgICAgICAgICBsb2dnZXIud2FybmluZygiQ2Fubm90IHNlbmQgdGV4dCBpbiB0aGlzIGNoYXQsIHNraXBwaW5nIHJlcGx5LiIpCiAgICAgICAgICAgIHJldHVybgogICAgICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAgICAgbG9nZ2VyLmVycm9yKGYiRmFpbGVkIHRvIHNlbmQgcmVwbHk6IHtlfSIpCiAgICAgICAgICAgIHJldHVybgoKICAgIGF3YWl0IHR1bmUuc3RvcChjaGF0X2lkKQogICAgdHJ5OgogICAgICAgIHNlbnRfbXNnID0gYXdhaXQgbS5yZXBseV90ZXh0KGYiU3RvcHBlZCBieSB7bS5mcm9tX3VzZXIubWVudGlvbn0iKQogICAgZXhjZXB0IChDaGF0U2VuZFBsYWluRm9yYmlkZGVuLCBDaGF0V3JpdGVGb3JiaWRkZW4pOgogICAgICAgIGxvZ2dlci53YXJuaW5nKCJDYW5ub3Qgc2VuZCB0ZXh0IGluIHRoaXMgY2hhdCwgc3RyZWFtIHN0b3BwZWQgc2lsZW50bHkuIikKICAgICAgICByZXR1cm4KICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICBsb2dnZXIuZXJyb3IoZiJGYWlsZWQgdG8gc2VuZCBzdG9wIGNvbmZpcm1hdGlvbjoge2V9IikKICAgICAgICByZXR1cm4KICAgIAogICAgYXdhaXQgYXN5bmNpby5zbGVlcCg1KQogICAgdHJ5OgogICAgICAgIGF3YWl0IHNlbnRfbXNnLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MK").decode("utf-8"))

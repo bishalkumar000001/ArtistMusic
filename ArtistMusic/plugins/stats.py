@@ -1,83 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import os
-import platform
-import sys
-
-import psutil
-from pyrogram import __version__, filters, types
-from pytgcalls import __version__ as pytgver
-
-from ArtistMusic import app, config, db, lang, userbot
-from ArtistMusic.plugins import all_modules
-
-
-@app.on_message(filters.command(["stats"]) & ~app.bl_users)
-@lang.language()
-async def _stats(_, m: types.Message):
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    # Check if user is sudo
-    if m.from_user.id not in app.sudoers:
-        return
-    
-    sent = await m.reply_photo(
-        photo=config.PING_IMG,
-        caption=m.lang["stats_fetching"],
-    )
-
-    pid = os.getpid()
-    cpu_percent = psutil.cpu_percent(interval=0.5)
-    cpu_count = psutil.cpu_count()
-    
-    # Get memory info
-    mem = psutil.virtual_memory()
-    used_mem = round(mem.used / (1024 ** 3), 2)  # Convert to GB
-    total_mem = round(mem.total / (1024 ** 3), 2)
-    
-    # Get disk info
-    disk = psutil.disk_usage("/")
-    used_disk = round(disk.used / (1024 ** 3), 2)  # Convert to GB
-    total_disk = round(disk.total / (1024 ** 3), 2)
-    
-    _utext = m.lang["stats_user"].format(
-        app.name,
-        len(userbot.clients),
-        config.AUTO_LEAVE,
-        len(db.blacklisted),
-        len(app.bl_users),
-        len(app.sudoers),
-        len(await db.get_chats()),
-        len(await db.get_users()),
-    )
-    
-    # Add system stats for sudo users
-    _utext += m.lang["stats_sudo"].format(
-        len(all_modules),
-        platform.system(),
-        f"{used_mem}GB | {total_mem}GB",
-        f"{cpu_percent}% ({cpu_count} cores)",
-        f"{used_disk}GB | {total_disk}GB",
-        sys.version.split()[0],
-        __version__,
-        pytgver,
-    )
-    
-    await sent.edit_caption(_utext)
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCBvcwppbXBvcnQgcGxhdGZvcm0KaW1wb3J0IHN5cwoKaW1wb3J0IHBzdXRpbApmcm9tIHB5cm9ncmFtIGltcG9ydCBfX3ZlcnNpb25fXywgZmlsdGVycywgdHlwZXMKZnJvbSBweXRnY2FsbHMgaW1wb3J0IF9fdmVyc2lvbl9fIGFzIHB5dGd2ZXIKCmZyb20gRWxldmVueXRzIGltcG9ydCBhcHAsIGNvbmZpZywgZGIsIGxhbmcsIHVzZXJib3QKZnJvbSBFbGV2ZW55dHMucGx1Z2lucyBpbXBvcnQgYWxsX21vZHVsZXMKCgpAYXBwLm9uX21lc3NhZ2UoZmlsdGVycy5jb21tYW5kKFsic3RhdHMiXSkgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCmFzeW5jIGRlZiBfc3RhdHMoXywgbTogdHlwZXMuTWVzc2FnZSk6CiAgICAjIEF1dG8tZGVsZXRlIGNvbW1hbmQgbWVzc2FnZQogICAgdHJ5OgogICAgICAgIGF3YWl0IG0uZGVsZXRlKCkKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwogICAgCiAgICAjIENoZWNrIGlmIHVzZXIgaXMgc3VkbwogICAgaWYgbS5mcm9tX3VzZXIuaWQgbm90IGluIGFwcC5zdWRvZXJzOgogICAgICAgIHJldHVybgogICAgCiAgICBzZW50ID0gYXdhaXQgbS5yZXBseV9waG90bygKICAgICAgICBwaG90bz1jb25maWcuUElOR19JTUcsCiAgICAgICAgY2FwdGlvbj1tLmxhbmdbInN0YXRzX2ZldGNoaW5nIl0sCiAgICApCgogICAgcGlkID0gb3MuZ2V0cGlkKCkKICAgIGNwdV9wZXJjZW50ID0gcHN1dGlsLmNwdV9wZXJjZW50KGludGVydmFsPTAuNSkKICAgIGNwdV9jb3VudCA9IHBzdXRpbC5jcHVfY291bnQoKQogICAgCiAgICAjIEdldCBtZW1vcnkgaW5mbwogICAgbWVtID0gcHN1dGlsLnZpcnR1YWxfbWVtb3J5KCkKICAgIHVzZWRfbWVtID0gcm91bmQobWVtLnVzZWQgLyAoMTAyNCAqKiAzKSwgMikgICMgQ29udmVydCB0byBHQgogICAgdG90YWxfbWVtID0gcm91bmQobWVtLnRvdGFsIC8gKDEwMjQgKiogMyksIDIpCiAgICAKICAgICMgR2V0IGRpc2sgaW5mbwogICAgZGlzayA9IHBzdXRpbC5kaXNrX3VzYWdlKCIvIikKICAgIHVzZWRfZGlzayA9IHJvdW5kKGRpc2sudXNlZCAvICgxMDI0ICoqIDMpLCAyKSAgIyBDb252ZXJ0IHRvIEdCCiAgICB0b3RhbF9kaXNrID0gcm91bmQoZGlzay50b3RhbCAvICgxMDI0ICoqIDMpLCAyKQogICAgCiAgICBfdXRleHQgPSBtLmxhbmdbInN0YXRzX3VzZXIiXS5mb3JtYXQoCiAgICAgICAgYXBwLm5hbWUsCiAgICAgICAgbGVuKHVzZXJib3QuY2xpZW50cyksCiAgICAgICAgY29uZmlnLkFVVE9fTEVBVkUsCiAgICAgICAgbGVuKGRiLmJsYWNrbGlzdGVkKSwKICAgICAgICBsZW4oYXBwLmJsX3VzZXJzKSwKICAgICAgICBsZW4oYXBwLnN1ZG9lcnMpLAogICAgICAgIGxlbihhd2FpdCBkYi5nZXRfY2hhdHMoKSksCiAgICAgICAgbGVuKGF3YWl0IGRiLmdldF91c2VycygpKSwKICAgICkKICAgIAogICAgIyBBZGQgc3lzdGVtIHN0YXRzIGZvciBzdWRvIHVzZXJzCiAgICBfdXRleHQgKz0gbS5sYW5nWyJzdGF0c19zdWRvIl0uZm9ybWF0KAogICAgICAgIGxlbihhbGxfbW9kdWxlcyksCiAgICAgICAgcGxhdGZvcm0uc3lzdGVtKCksCiAgICAgICAgZiJ7dXNlZF9tZW19R0IgfCB7dG90YWxfbWVtfUdCIiwKICAgICAgICBmIntjcHVfcGVyY2VudH0lICh7Y3B1X2NvdW50fSBjb3JlcykiLAogICAgICAgIGYie3VzZWRfZGlza31HQiB8IHt0b3RhbF9kaXNrfUdCIiwKICAgICAgICBzeXMudmVyc2lvbi5zcGxpdCgpWzBdLAogICAgICAgIF9fdmVyc2lvbl9fLAogICAgICAgIHB5dGd2ZXIsCiAgICApCiAgICAKICAgIGF3YWl0IHNlbnQuZWRpdF9jYXB0aW9uKF91dGV4dCkK").decode("utf-8"))

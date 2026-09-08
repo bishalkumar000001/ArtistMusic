@@ -1,57 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-from pyrogram import filters
-from pyrogram.types import Message
-from pyrogram.enums import ChatMembersFilter, ParseMode
-
-from ArtistMusic import app
-
-
-@app.on_message(filters.command("bots") & filters.group)
-async def list_bots(client, message: Message):
-    """List all bots in the current group"""
-    # Auto-delete command message
-    try:
-        await message.delete()
-    except Exception:
-        pass
-    
-    try:
-        bot_list = []
-        bot_count = 0
-        
-        # Send initial message
-        status_msg = await message.reply_text("🔍 <b>Scanning for bots...</b>", parse_mode=ParseMode.HTML)
-        
-        # Iterate through all members and filter bots
-        async for member in client.get_chat_members(message.chat.id, filter=ChatMembersFilter.BOTS):
-            bot_count += 1
-            bot_username = f"@{member.user.username}" if member.user.username else "No Username"
-            bot_list.append(f"{bot_count}. <a href='tg://user?id={member.user.id}'>{member.user.first_name}</a> - {bot_username}")
-        
-        if bot_count == 0:
-            await status_msg.edit_text("❌ <b>No bots found in this group.</b>", parse_mode=ParseMode.HTML)
-            return
-        
-        # Format the response
-        response = f"🤖 <b>Bots in {message.chat.title}</b>\n\n"
-        response += "<blockquote>" + "\n".join(bot_list) + "</blockquote>"
-        response += f"\n\n📊 <b>Total Bots:</b> {bot_count}"
-        
-        await status_msg.edit_text(response, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
-        
-    except Exception as e:
-        await message.reply_text(f"⚠️ <b>Error:</b> {str(e)}", parse_mode=ParseMode.HTML)
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmZyb20gcHlyb2dyYW0gaW1wb3J0IGZpbHRlcnMKZnJvbSBweXJvZ3JhbS50eXBlcyBpbXBvcnQgTWVzc2FnZQpmcm9tIHB5cm9ncmFtLmVudW1zIGltcG9ydCBDaGF0TWVtYmVyc0ZpbHRlciwgUGFyc2VNb2RlCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgYXBwCgoKQGFwcC5vbl9tZXNzYWdlKGZpbHRlcnMuY29tbWFuZCgiYm90cyIpICYgZmlsdGVycy5ncm91cCkKYXN5bmMgZGVmIGxpc3RfYm90cyhjbGllbnQsIG1lc3NhZ2U6IE1lc3NhZ2UpOgogICAgIiIiTGlzdCBhbGwgYm90cyBpbiB0aGUgY3VycmVudCBncm91cCIiIgogICAgIyBBdXRvLWRlbGV0ZSBjb21tYW5kIG1lc3NhZ2UKICAgIHRyeToKICAgICAgICBhd2FpdCBtZXNzYWdlLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgdHJ5OgogICAgICAgIGJvdF9saXN0ID0gW10KICAgICAgICBib3RfY291bnQgPSAwCiAgICAgICAgCiAgICAgICAgIyBTZW5kIGluaXRpYWwgbWVzc2FnZQogICAgICAgIHN0YXR1c19tc2cgPSBhd2FpdCBtZXNzYWdlLnJlcGx5X3RleHQoIvCflI0gPGI+U2Nhbm5pbmcgZm9yIGJvdHMuLi48L2I+IiwgcGFyc2VfbW9kZT1QYXJzZU1vZGUuSFRNTCkKICAgICAgICAKICAgICAgICAjIEl0ZXJhdGUgdGhyb3VnaCBhbGwgbWVtYmVycyBhbmQgZmlsdGVyIGJvdHMKICAgICAgICBhc3luYyBmb3IgbWVtYmVyIGluIGNsaWVudC5nZXRfY2hhdF9tZW1iZXJzKG1lc3NhZ2UuY2hhdC5pZCwgZmlsdGVyPUNoYXRNZW1iZXJzRmlsdGVyLkJPVFMpOgogICAgICAgICAgICBib3RfY291bnQgKz0gMQogICAgICAgICAgICBib3RfdXNlcm5hbWUgPSBmIkB7bWVtYmVyLnVzZXIudXNlcm5hbWV9IiBpZiBtZW1iZXIudXNlci51c2VybmFtZSBlbHNlICJObyBVc2VybmFtZSIKICAgICAgICAgICAgYm90X2xpc3QuYXBwZW5kKGYie2JvdF9jb3VudH0uIDxhIGhyZWY9J3RnOi8vdXNlcj9pZD17bWVtYmVyLnVzZXIuaWR9Jz57bWVtYmVyLnVzZXIuZmlyc3RfbmFtZX08L2E+IC0ge2JvdF91c2VybmFtZX0iKQogICAgICAgIAogICAgICAgIGlmIGJvdF9jb3VudCA9PSAwOgogICAgICAgICAgICBhd2FpdCBzdGF0dXNfbXNnLmVkaXRfdGV4dCgi4p2MIDxiPk5vIGJvdHMgZm91bmQgaW4gdGhpcyBncm91cC48L2I+IiwgcGFyc2VfbW9kZT1QYXJzZU1vZGUuSFRNTCkKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgCiAgICAgICAgIyBGb3JtYXQgdGhlIHJlc3BvbnNlCiAgICAgICAgcmVzcG9uc2UgPSBmIvCfpJYgPGI+Qm90cyBpbiB7bWVzc2FnZS5jaGF0LnRpdGxlfTwvYj5cblxuIgogICAgICAgIHJlc3BvbnNlICs9ICI8YmxvY2txdW90ZT4iICsgIlxuIi5qb2luKGJvdF9saXN0KSArICI8L2Jsb2NrcXVvdGU+IgogICAgICAgIHJlc3BvbnNlICs9IGYiXG5cbvCfk4ogPGI+VG90YWwgQm90czo8L2I+IHtib3RfY291bnR9IgogICAgICAgIAogICAgICAgIGF3YWl0IHN0YXR1c19tc2cuZWRpdF90ZXh0KHJlc3BvbnNlLCBkaXNhYmxlX3dlYl9wYWdlX3ByZXZpZXc9VHJ1ZSwgcGFyc2VfbW9kZT1QYXJzZU1vZGUuSFRNTCkKICAgICAgICAKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICBhd2FpdCBtZXNzYWdlLnJlcGx5X3RleHQoZiLimqDvuI8gPGI+RXJyb3I6PC9iPiB7c3RyKGUpfSIsIHBhcnNlX21vZGU9UGFyc2VNb2RlLkhUTUwpCg==").decode("utf-8"))

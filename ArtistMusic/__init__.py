@@ -1,14 +1,14 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
-# 
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+#
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
@@ -37,7 +37,7 @@ logging.getLogger("pymongo").setLevel(logging.ERROR)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("pytgcalls").setLevel(logging.ERROR)
 
-logger = logging.getLogger("ArtistMusic")
+logger = logging.getLogger("Elevenyts")
 
 # Version
 __version__ = "3.0.1"
@@ -53,45 +53,45 @@ tasks: List = []
 boot: float = time.time()
 
 # Initialize bot client
-from ArtistMusic.core.bot import Bot
+from Elevenyts.core.bot import Bot
 app = Bot()
 
 # Ensure required directories exist
-from ArtistMusic.core.dir import ensure_dirs
+from Elevenyts.core.dir import ensure_dirs
 ensure_dirs()
 
 # Initialize userbot/assistant clients
-from ArtistMusic.core.userbot import Userbot
+from Elevenyts.core.userbot import Userbot
 userbot = Userbot()
 
 # Initialize database connection
-from ArtistMusic.core.mongo import MongoDB
+from Elevenyts.core.mongo import MongoDB
 db = MongoDB()
 
 # Initialize language system
-from ArtistMusic.core.lang import Language
+from Elevenyts.core.lang import Language
 lang = Language()
 
 # Initialize Telegram and YouTube utilities
-from ArtistMusic.core.telegram import Telegram
-from ArtistMusic.core.youtube import YouTube
+from Elevenyts.core.telegram import Telegram
+from Elevenyts.core.youtube import YouTube
 tg = Telegram()
 yt = YouTube()
 
 # Initialize preload manager for background track downloading
-from ArtistMusic.core.preload import PreloadManager
+from Elevenyts.core.preload import PreloadManager
 preload = PreloadManager()
 
 # Initialize queue manager
-from ArtistMusic.helpers import Queue
+from Elevenyts.helpers import Queue
 queue = Queue()
 
 # Initialize preload manager for next-track downloading
-from ArtistMusic.helpers._preload import PreloadManager
+from Elevenyts.helpers._preload import PreloadManager
 preload = PreloadManager()
 
 # Initialize call handler
-from ArtistMusic.core.calls import TgCall
+from Elevenyts.core.calls import TgCall
 tune = TgCall()
 
 

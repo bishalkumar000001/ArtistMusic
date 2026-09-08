@@ -1,121 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import asyncio
-from pyrogram import filters, types, errors, enums
-
-from ArtistMusic import app, db, lang, logger, userbot, config
-
-
-@app.on_message(filters.command(["leave"]) & app.sudo_filter)
-@lang.language()
-async def _leave(_, m: types.Message):
-    """
-    Command handler for /leave
-    Makes both bot and assistant leave the current chat.
-    """
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    chat_id = m.chat.id
-    chat_name = m.chat.title or "this chat"
-
-    # Send confirmation message
-    sent = await m.reply_text(
-        f"<blockquote><b>👋 Leaving Chat</b></blockquote>\n\n"
-        f"<blockquote>Bot and assistant are leaving <b>{chat_name}</b>...</blockquote>"
-    )
-
-    # Try to make assistant leave if it's in the chat
-    try:
-        client = await db.get_client(chat_id)
-        try:
-            await client.leave_chat(chat_id)
-        except errors.UserNotParticipant:
-            # Assistant is not in the chat, skip
-            pass
-        except Exception as e:
-            # Log any other errors but continue with bot leaving
-            pass
-    except Exception:
-        # If getting client fails, just continue with bot leaving
-        pass
-
-    # Make bot leave the chat
-    try:
-        await app.leave_chat(chat_id)
-    except Exception as e:
-        # If bot can't leave, inform the sudo user
-        await sent.edit_text(
-            f"<blockquote><b>❌ Error</b></blockquote>\n\n"
-            f"<blockquote>Failed to leave chat: {str(e)}</blockquote>"
-        )
-
-
-@app.on_message(filters.command(["leaveall"]) & app.sudo_filter)
-@lang.language()
-async def _leaveall(_, m: types.Message):
-    """
-    Command handler for /leaveall
-    Makes all assistants leave all inactive groups (not in active calls).
-    """
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    sent = await m.reply_text(
-        f"<blockquote><b>🔄 Processing...</b></blockquote>\n\n"
-        f"<blockquote>Making assistants leave all inactive groups...</blockquote>"
-    )
-    
-    total_left = 0
-    
-    for ub in userbot.clients:
-        left = 0
-        try:
-            # Collect chat IDs first to avoid modifying the dialog list while iterating
-            to_leave = []
-            excluded = [app.logger] + config.EXCLUDED_CHATS
-            async for dialog in ub.get_dialogs():
-                chat_id = dialog.chat.id
-                if chat_id in excluded:
-                    continue
-                if dialog.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
-                    if chat_id not in db.active_calls:
-                        to_leave.append(chat_id)
-
-            for chat_id in to_leave:
-                try:
-                    await ub.leave_chat(chat_id)
-                    left += 1
-                    total_left += 1
-                    await asyncio.sleep(1)  # Rate limit
-                except Exception as e:
-                    logger.debug(f"Failed to leave {chat_id}: {e}")
-                    continue
-
-        except Exception as e:
-            logger.error(f"Error in leaveall for assistant {ub.me.username if hasattr(ub, 'me') and ub.me else 'Unknown'}: {e}")
-            continue
-    
-    await sent.edit_text(
-        f"<blockquote><b>✅ Cleanup Complete</b></blockquote>\n\n"
-        f"<blockquote>Assistants left <b>{total_left}</b> inactive groups.</blockquote>"
-    )
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCBhc3luY2lvCmZyb20gcHlyb2dyYW0gaW1wb3J0IGZpbHRlcnMsIHR5cGVzLCBlcnJvcnMsIGVudW1zCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgYXBwLCBkYiwgbGFuZywgbG9nZ2VyLCB1c2VyYm90LCBjb25maWcKCgpAYXBwLm9uX21lc3NhZ2UoZmlsdGVycy5jb21tYW5kKFsibGVhdmUiXSkgJiBhcHAuc3Vkb19maWx0ZXIpCkBsYW5nLmxhbmd1YWdlKCkKYXN5bmMgZGVmIF9sZWF2ZShfLCBtOiB0eXBlcy5NZXNzYWdlKToKICAgICIiIgogICAgQ29tbWFuZCBoYW5kbGVyIGZvciAvbGVhdmUKICAgIE1ha2VzIGJvdGggYm90IGFuZCBhc3Npc3RhbnQgbGVhdmUgdGhlIGN1cnJlbnQgY2hhdC4KICAgICIiIgogICAgIyBBdXRvLWRlbGV0ZSBjb21tYW5kIG1lc3NhZ2UKICAgIHRyeToKICAgICAgICBhd2FpdCBtLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgY2hhdF9pZCA9IG0uY2hhdC5pZAogICAgY2hhdF9uYW1lID0gbS5jaGF0LnRpdGxlIG9yICJ0aGlzIGNoYXQiCgogICAgIyBTZW5kIGNvbmZpcm1hdGlvbiBtZXNzYWdlCiAgICBzZW50ID0gYXdhaXQgbS5yZXBseV90ZXh0KAogICAgICAgIGYiPGJsb2NrcXVvdGU+PGI+8J+RiyBMZWF2aW5nIENoYXQ8L2I+PC9ibG9ja3F1b3RlPlxuXG4iCiAgICAgICAgZiI8YmxvY2txdW90ZT5Cb3QgYW5kIGFzc2lzdGFudCBhcmUgbGVhdmluZyA8Yj57Y2hhdF9uYW1lfTwvYj4uLi48L2Jsb2NrcXVvdGU+IgogICAgKQoKICAgICMgVHJ5IHRvIG1ha2UgYXNzaXN0YW50IGxlYXZlIGlmIGl0J3MgaW4gdGhlIGNoYXQKICAgIHRyeToKICAgICAgICBjbGllbnQgPSBhd2FpdCBkYi5nZXRfY2xpZW50KGNoYXRfaWQpCiAgICAgICAgdHJ5OgogICAgICAgICAgICBhd2FpdCBjbGllbnQubGVhdmVfY2hhdChjaGF0X2lkKQogICAgICAgIGV4Y2VwdCBlcnJvcnMuVXNlck5vdFBhcnRpY2lwYW50OgogICAgICAgICAgICAjIEFzc2lzdGFudCBpcyBub3QgaW4gdGhlIGNoYXQsIHNraXAKICAgICAgICAgICAgcGFzcwogICAgICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAgICAgIyBMb2cgYW55IG90aGVyIGVycm9ycyBidXQgY29udGludWUgd2l0aCBib3QgbGVhdmluZwogICAgICAgICAgICBwYXNzCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICMgSWYgZ2V0dGluZyBjbGllbnQgZmFpbHMsIGp1c3QgY29udGludWUgd2l0aCBib3QgbGVhdmluZwogICAgICAgIHBhc3MKCiAgICAjIE1ha2UgYm90IGxlYXZlIHRoZSBjaGF0CiAgICB0cnk6CiAgICAgICAgYXdhaXQgYXBwLmxlYXZlX2NoYXQoY2hhdF9pZCkKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAjIElmIGJvdCBjYW4ndCBsZWF2ZSwgaW5mb3JtIHRoZSBzdWRvIHVzZXIKICAgICAgICBhd2FpdCBzZW50LmVkaXRfdGV4dCgKICAgICAgICAgICAgZiI8YmxvY2txdW90ZT48Yj7inYwgRXJyb3I8L2I+PC9ibG9ja3F1b3RlPlxuXG4iCiAgICAgICAgICAgIGYiPGJsb2NrcXVvdGU+RmFpbGVkIHRvIGxlYXZlIGNoYXQ6IHtzdHIoZSl9PC9ibG9ja3F1b3RlPiIKICAgICAgICApCgoKQGFwcC5vbl9tZXNzYWdlKGZpbHRlcnMuY29tbWFuZChbImxlYXZlYWxsIl0pICYgYXBwLnN1ZG9fZmlsdGVyKQpAbGFuZy5sYW5ndWFnZSgpCmFzeW5jIGRlZiBfbGVhdmVhbGwoXywgbTogdHlwZXMuTWVzc2FnZSk6CiAgICAiIiIKICAgIENvbW1hbmQgaGFuZGxlciBmb3IgL2xlYXZlYWxsCiAgICBNYWtlcyBhbGwgYXNzaXN0YW50cyBsZWF2ZSBhbGwgaW5hY3RpdmUgZ3JvdXBzIChub3QgaW4gYWN0aXZlIGNhbGxzKS4KICAgICIiIgogICAgIyBBdXRvLWRlbGV0ZSBjb21tYW5kIG1lc3NhZ2UKICAgIHRyeToKICAgICAgICBhd2FpdCBtLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgc2VudCA9IGF3YWl0IG0ucmVwbHlfdGV4dCgKICAgICAgICBmIjxibG9ja3F1b3RlPjxiPvCflIQgUHJvY2Vzc2luZy4uLjwvYj48L2Jsb2NrcXVvdGU+XG5cbiIKICAgICAgICBmIjxibG9ja3F1b3RlPk1ha2luZyBhc3Npc3RhbnRzIGxlYXZlIGFsbCBpbmFjdGl2ZSBncm91cHMuLi48L2Jsb2NrcXVvdGU+IgogICAgKQogICAgCiAgICB0b3RhbF9sZWZ0ID0gMAogICAgCiAgICBmb3IgdWIgaW4gdXNlcmJvdC5jbGllbnRzOgogICAgICAgIGxlZnQgPSAwCiAgICAgICAgdHJ5OgogICAgICAgICAgICBhc3luYyBmb3IgZGlhbG9nIGluIHViLmdldF9kaWFsb2dzKCk6CiAgICAgICAgICAgICAgICBjaGF0X2lkID0gZGlhbG9nLmNoYXQuaWQKICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgIyBTa2lwIGxvZ2dlciBhbmQgZXhjbHVkZWQgY2hhdHMKICAgICAgICAgICAgICAgIGV4Y2x1ZGVkID0gW2FwcC5sb2dnZXJdICsgY29uZmlnLkVYQ0xVREVEX0NIQVRTCiAgICAgICAgICAgICAgICBpZiBjaGF0X2lkIGluIGV4Y2x1ZGVkOgogICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICMgT25seSBsZWF2ZSBncm91cHMgYW5kIHN1cGVyZ3JvdXBzCiAgICAgICAgICAgICAgICBpZiBkaWFsb2cuY2hhdC50eXBlIGluIFtlbnVtcy5DaGF0VHlwZS5HUk9VUCwgZW51bXMuQ2hhdFR5cGUuU1VQRVJHUk9VUF06CiAgICAgICAgICAgICAgICAgICAgIyBTa2lwIGlmIGN1cnJlbnRseSBpbiBhbiBhY3RpdmUgY2FsbAogICAgICAgICAgICAgICAgICAgIGlmIGNoYXRfaWQgaW4gZGIuYWN0aXZlX2NhbGxzOgogICAgICAgICAgICAgICAgICAgICAgICBjb250aW51ZQogICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgIHRyeToKICAgICAgICAgICAgICAgICAgICAgICAgYXdhaXQgdWIubGVhdmVfY2hhdChjaGF0X2lkKQogICAgICAgICAgICAgICAgICAgICAgICBsZWZ0ICs9IDEKICAgICAgICAgICAgICAgICAgICAgICAgdG90YWxfbGVmdCArPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIGF3YWl0IGFzeW5jaW8uc2xlZXAoMSkgICMgUmF0ZSBsaW1pdAogICAgICAgICAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAgICAgICAgICAgICAgICAgbG9nZ2VyLmRlYnVnKGYiRmFpbGVkIHRvIGxlYXZlIHtjaGF0X2lkfToge2V9IikKICAgICAgICAgICAgICAgICAgICAgICAgY29udGludWUKICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgICAgICAgICBsb2dnZXIuZXJyb3IoZiJFcnJvciBpbiBsZWF2ZWFsbCBmb3IgYXNzaXN0YW50IHt1Yi5tZS51c2VybmFtZSBpZiBoYXNhdHRyKHViLCAnbWUnKSBhbmQgdWIubWUgZWxzZSAnVW5rbm93bid9OiB7ZX0iKQogICAgICAgICAgICBjb250aW51ZQogICAgCiAgICBhd2FpdCBzZW50LmVkaXRfdGV4dCgKICAgICAgICBmIjxibG9ja3F1b3RlPjxiPuKchSBDbGVhbnVwIENvbXBsZXRlPC9iPjwvYmxvY2txdW90ZT5cblxuIgogICAgICAgIGYiPGJsb2NrcXVvdGU+QXNzaXN0YW50cyBsZWZ0IDxiPnt0b3RhbF9sZWZ0fTwvYj4gaW5hY3RpdmUgZ3JvdXBzLjwvYmxvY2txdW90ZT4iCiAgICApCg==").decode("utf-8"))

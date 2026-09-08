@@ -1,73 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import time
-import psutil
-
-from pyrogram import filters, types
-from ArtistMusic import app, tune, boot, config, lang
-from ArtistMusic.helpers import buttons
-
-
-@app.on_message(filters.command(["alive", "ping"]) & ~app.bl_users)
-@lang.language()
-async def _ping(_, m: types.Message):
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    start = time.time()
-    sent = await m.reply_text(m.lang["pinging"])
-
-    def get_time(s): return (lambda r: (f"{r[-1]}, " if r[-1][:-4] != "0" else "") + ":".join(reversed(r[:-1])))(
-        [f"{v}{u}" for v, u in zip([s % 60, (s//60) % 60, (s//3600) % 24, s//86400], ["s", "m", "h", "days"])])
-    uptime = get_time(int(time.time() - boot))
-    latency = round((time.time() - start) * 1000, 2)
-    
-    # Get system stats
-    mem = psutil.virtual_memory()
-    ram_usage = f"{round(mem.used / (1024 ** 3), 1)}GB / {round(mem.total / (1024 ** 3), 1)}GB"
-    cpu_percent = psutil.cpu_percent(interval=0.5)
-    
-    # Get active chats count
-    from ArtistMusic import db
-    active_chats = len(await db.get_chats())
-    
-    caption_text = m.lang["ping_pong"].format(
-        latency,
-        uptime,
-        await tune.ping(),
-        ram_usage,
-        cpu_percent,
-        active_chats,
-    )
-    
-    # Try to send with media, fallback to text if it fails
-    try:
-        await sent.edit_media(
-            media=types.InputMediaPhoto(
-                media=config.PING_IMG,
-                caption=caption_text
-            ),
-            reply_markup=buttons.ping_markup(m.lang["support"]),
-        )
-    except Exception:
-        # Fallback to text if media fails
-        await sent.edit_text(
-            text=caption_text,
-            reply_markup=buttons.ping_markup(m.lang["support"]),
-        )
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCB0aW1lCmltcG9ydCBwc3V0aWwKCmZyb20gcHlyb2dyYW0gaW1wb3J0IGZpbHRlcnMsIHR5cGVzCmZyb20gRWxldmVueXRzIGltcG9ydCBhcHAsIHR1bmUsIGJvb3QsIGNvbmZpZywgbGFuZwpmcm9tIEVsZXZlbnl0cy5oZWxwZXJzIGltcG9ydCBidXR0b25zCgoKQGFwcC5vbl9tZXNzYWdlKGZpbHRlcnMuY29tbWFuZChbImFsaXZlIiwgInBpbmciXSkgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCmFzeW5jIGRlZiBfcGluZyhfLCBtOiB0eXBlcy5NZXNzYWdlKToKICAgICMgQXV0by1kZWxldGUgY29tbWFuZCBtZXNzYWdlCiAgICB0cnk6CiAgICAgICAgYXdhaXQgbS5kZWxldGUoKQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICBwYXNzCiAgICAKICAgIHN0YXJ0ID0gdGltZS50aW1lKCkKICAgIHNlbnQgPSBhd2FpdCBtLnJlcGx5X3RleHQobS5sYW5nWyJwaW5naW5nIl0pCgogICAgZGVmIGdldF90aW1lKHMpOiByZXR1cm4gKGxhbWJkYSByOiAoZiJ7clstMV19LCAiIGlmIHJbLTFdWzotNF0gIT0gIjAiIGVsc2UgIiIpICsgIjoiLmpvaW4ocmV2ZXJzZWQocls6LTFdKSkpKAogICAgICAgIFtmInt2fXt1fSIgZm9yIHYsIHUgaW4gemlwKFtzICUgNjAsIChzLy82MCkgJSA2MCwgKHMvLzM2MDApICUgMjQsIHMvLzg2NDAwXSwgWyJzIiwgIm0iLCAiaCIsICJkYXlzIl0pXSkKICAgIHVwdGltZSA9IGdldF90aW1lKGludCh0aW1lLnRpbWUoKSAtIGJvb3QpKQogICAgbGF0ZW5jeSA9IHJvdW5kKCh0aW1lLnRpbWUoKSAtIHN0YXJ0KSAqIDEwMDAsIDIpCiAgICAKICAgICMgR2V0IHN5c3RlbSBzdGF0cwogICAgbWVtID0gcHN1dGlsLnZpcnR1YWxfbWVtb3J5KCkKICAgIHJhbV91c2FnZSA9IGYie3JvdW5kKG1lbS51c2VkIC8gKDEwMjQgKiogMyksIDEpfUdCIC8ge3JvdW5kKG1lbS50b3RhbCAvICgxMDI0ICoqIDMpLCAxKX1HQiIKICAgIGNwdV9wZXJjZW50ID0gcHN1dGlsLmNwdV9wZXJjZW50KGludGVydmFsPTAuNSkKICAgIAogICAgIyBHZXQgYWN0aXZlIGNoYXRzIGNvdW50CiAgICBmcm9tIEVsZXZlbnl0cyBpbXBvcnQgZGIKICAgIGFjdGl2ZV9jaGF0cyA9IGxlbihhd2FpdCBkYi5nZXRfY2hhdHMoKSkKICAgIAogICAgY2FwdGlvbl90ZXh0ID0gbS5sYW5nWyJwaW5nX3BvbmciXS5mb3JtYXQoCiAgICAgICAgbGF0ZW5jeSwKICAgICAgICB1cHRpbWUsCiAgICAgICAgYXdhaXQgdHVuZS5waW5nKCksCiAgICAgICAgcmFtX3VzYWdlLAogICAgICAgIGNwdV9wZXJjZW50LAogICAgICAgIGFjdGl2ZV9jaGF0cywKICAgICkKICAgIAogICAgIyBUcnkgdG8gc2VuZCB3aXRoIG1lZGlhLCBmYWxsYmFjayB0byB0ZXh0IGlmIGl0IGZhaWxzCiAgICB0cnk6CiAgICAgICAgYXdhaXQgc2VudC5lZGl0X21lZGlhKAogICAgICAgICAgICBtZWRpYT10eXBlcy5JbnB1dE1lZGlhUGhvdG8oCiAgICAgICAgICAgICAgICBtZWRpYT1jb25maWcuUElOR19JTUcsCiAgICAgICAgICAgICAgICBjYXB0aW9uPWNhcHRpb25fdGV4dAogICAgICAgICAgICApLAogICAgICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5waW5nX21hcmt1cChtLmxhbmdbInN1cHBvcnQiXSksCiAgICAgICAgKQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAjIEZhbGxiYWNrIHRvIHRleHQgaWYgbWVkaWEgZmFpbHMKICAgICAgICBhd2FpdCBzZW50LmVkaXRfdGV4dCgKICAgICAgICAgICAgdGV4dD1jYXB0aW9uX3RleHQsCiAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLnBpbmdfbWFya3VwKG0ubGFuZ1sic3VwcG9ydCJdKSwKICAgICAgICApCg==").decode("utf-8"))

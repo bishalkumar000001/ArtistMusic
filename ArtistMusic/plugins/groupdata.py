@@ -1,146 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-from pyrogram import Client, filters
-from pyrogram.enums import ChatType, ParseMode, ChatMemberStatus, ChatMembersFilter
-from pyrogram.types import Message
-
-from ArtistMusic import app
-
-
-@app.on_message(filters.command(["groupdata", "chatinfo", "groupinfo"]) & filters.group)
-async def group_data_handler(client: Client, message: Message):
-    """Display comprehensive information about the current group"""
-    # Auto-delete command message
-    try:
-        await message.delete()
-    except Exception:
-        pass
-    
-    chat = message.chat
-    chat_id = chat.id
-    
-    try:
-        # Get chat information
-        chat_info = await client.get_chat(chat_id)
-        
-        # Count members by type
-        total_members = 0
-        admin_count = 0
-        bot_count = 0
-        banned_count = 0
-        deleted_count = 0
-        premium_count = 0
-        
-        try:
-            total_members = await client.get_chat_members_count(chat_id)
-            
-            # Count admins
-            async for member in client.get_chat_members(chat_id, filter=ChatMembersFilter.ADMINISTRATORS):
-                admin_count += 1
-            
-            # Count bots
-            async for _ in client.get_chat_members(chat_id, filter=ChatMembersFilter.BOTS):
-                bot_count += 1
-                
-            # Count banned users
-            try:
-                async for _ in client.get_chat_members(chat_id, filter=ChatMembersFilter.BANNED):
-                    banned_count += 1
-            except Exception:
-                pass
-            
-            # Iterate through recent members to count deleted accounts and premium users
-            try:
-                member_sample = 0
-                async for member in client.get_chat_members(chat_id, filter=ChatMembersFilter.SEARCH, limit=200):
-                    member_sample += 1
-                    if member.user.is_deleted:
-                        deleted_count += 1
-                    if member.user.is_premium:
-                        premium_count += 1
-            except Exception:
-                pass
-                
-        except Exception:
-            pass
-        
-        # Build information text
-        info_lines = []
-        info_lines.append("<b>📊 GROUP INFORMATION</b>\n")
-        
-        # Basic info
-        info_lines.append(f"<b>📌 ɴᴀᴍᴇ:</b> {chat_info.title}")
-        info_lines.append(f"<b>🆔 ɪᴅ:</b> <code>{chat_id}</code>")
-        
-        if chat_info.username:
-            info_lines.append(f"<b>🔗 ᴜꜱᴇʀɴᴀᴍᴇ:</b> @{chat_info.username}")
-        
-        # Chat type
-        chat_type_str = "ɢʀᴏᴜᴘ" if chat.type == ChatType.GROUP else "ꜱᴜᴘᴇʀɢʀᴏᴜᴘ"
-        info_lines.append(f"<b>📂 ᴛʏᴘᴇ:</b> {chat_type_str}")
-        
-        # Member statistics
-        info_lines.append(f"\n<b>👥 ᴍᴇᴍʙᴇʀꜱ:</b> {total_members}")
-        info_lines.append(f"<b>👮 ᴀᴅᴍɪɴꜱ:</b> {admin_count}")
-        info_lines.append(f"<b>🤖 ʙᴏᴛꜱ:</b> {bot_count}")
-        
-        if banned_count > 0:
-            info_lines.append(f"<b>🚫 ʙᴀɴɴᴇᴅ:</b> {banned_count}")
-        
-        if deleted_count > 0:
-            info_lines.append(f"<b>👻 ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ:</b> {deleted_count}")
-            
-        if premium_count > 0:
-            info_lines.append(f"<b>⭐ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀꜱ:</b> {premium_count}")
-        
-        # Description if available
-        if chat_info.description:
-            desc = chat_info.description
-            if len(desc) > 100:
-                desc = desc[:100] + "..."
-            info_lines.append(f"\n<b>📝 ᴅᴇꜱᴄʀɪᴘᴛɪᴏɴ:</b>\n{desc}")
-        
-        # Linked chat if available
-        if chat_info.linked_chat:
-            info_lines.append(f"\n<b>🔗 ʟɪɴᴋᴇᴅ ᴄʜᴀɴɴᴇʟ:</b> {chat_info.linked_chat.title}")
-            info_lines.append(f"<b>🆔 ᴄʜᴀɴɴᴇʟ ɪᴅ:</b> <code>{chat_info.linked_chat.id}</code>")
-        
-        # Invite link if available
-        if hasattr(chat_info, 'invite_link') and chat_info.invite_link:
-            info_lines.append(f"\n<b>🔗 ɪɴᴠɪᴛᴇ ʟɪɴᴋ:</b> {chat_info.invite_link}")
-        
-        # Check user's admin status
-        try:
-            user_member = await client.get_chat_member(chat_id, message.from_user.id)
-            if user_member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-                info_lines.append(f"\n<b>🔐 ʏᴏᴜʀ ʀᴏʟᴇ:</b> {'ᴏᴡɴᴇʀ' if user_member.status == ChatMemberStatus.OWNER else 'ᴀᴅᴍɪɴɪꜱᴛʀᴀᴛᴏʀ'}")
-        except Exception:
-            pass
-        
-        # Combine all info
-        response = "<blockquote>" + "\n".join(info_lines) + "</blockquote>"
-        
-        await message.reply_text(
-            response,
-            parse_mode=ParseMode.HTML,
-            disable_web_page_preview=True
-        )
-        
-    except Exception as e:
-        await message.reply_text(
-            f"<blockquote>❌ <b>ᴇʀʀᴏʀ ɢᴇᴛᴛɪɴɢ ɢʀᴏᴜᴘ ᴅᴀᴛᴀ:</b>\n<code>{str(e)}</code></blockquote>",
-            parse_mode=ParseMode.HTML
-        )
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmZyb20gcHlyb2dyYW0gaW1wb3J0IENsaWVudCwgZmlsdGVycwpmcm9tIHB5cm9ncmFtLmVudW1zIGltcG9ydCBDaGF0VHlwZSwgUGFyc2VNb2RlLCBDaGF0TWVtYmVyU3RhdHVzLCBDaGF0TWVtYmVyc0ZpbHRlcgpmcm9tIHB5cm9ncmFtLnR5cGVzIGltcG9ydCBNZXNzYWdlCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgYXBwCgoKQGFwcC5vbl9tZXNzYWdlKGZpbHRlcnMuY29tbWFuZChbImdyb3VwZGF0YSIsICJjaGF0aW5mbyIsICJncm91cGluZm8iXSkgJiBmaWx0ZXJzLmdyb3VwKQphc3luYyBkZWYgZ3JvdXBfZGF0YV9oYW5kbGVyKGNsaWVudDogQ2xpZW50LCBtZXNzYWdlOiBNZXNzYWdlKToKICAgICIiIkRpc3BsYXkgY29tcHJlaGVuc2l2ZSBpbmZvcm1hdGlvbiBhYm91dCB0aGUgY3VycmVudCBncm91cCIiIgogICAgIyBBdXRvLWRlbGV0ZSBjb21tYW5kIG1lc3NhZ2UKICAgIHRyeToKICAgICAgICBhd2FpdCBtZXNzYWdlLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgY2hhdCA9IG1lc3NhZ2UuY2hhdAogICAgY2hhdF9pZCA9IGNoYXQuaWQKICAgIAogICAgdHJ5OgogICAgICAgICMgR2V0IGNoYXQgaW5mb3JtYXRpb24KICAgICAgICBjaGF0X2luZm8gPSBhd2FpdCBjbGllbnQuZ2V0X2NoYXQoY2hhdF9pZCkKICAgICAgICAKICAgICAgICAjIENvdW50IG1lbWJlcnMgYnkgdHlwZQogICAgICAgIHRvdGFsX21lbWJlcnMgPSAwCiAgICAgICAgYWRtaW5fY291bnQgPSAwCiAgICAgICAgYm90X2NvdW50ID0gMAogICAgICAgIGJhbm5lZF9jb3VudCA9IDAKICAgICAgICBkZWxldGVkX2NvdW50ID0gMAogICAgICAgIHByZW1pdW1fY291bnQgPSAwCiAgICAgICAgCiAgICAgICAgdHJ5OgogICAgICAgICAgICB0b3RhbF9tZW1iZXJzID0gYXdhaXQgY2xpZW50LmdldF9jaGF0X21lbWJlcnNfY291bnQoY2hhdF9pZCkKICAgICAgICAgICAgCiAgICAgICAgICAgICMgQ291bnQgYWRtaW5zCiAgICAgICAgICAgIGFzeW5jIGZvciBtZW1iZXIgaW4gY2xpZW50LmdldF9jaGF0X21lbWJlcnMoY2hhdF9pZCwgZmlsdGVyPUNoYXRNZW1iZXJzRmlsdGVyLkFETUlOSVNUUkFUT1JTKToKICAgICAgICAgICAgICAgIGFkbWluX2NvdW50ICs9IDEKICAgICAgICAgICAgCiAgICAgICAgICAgICMgQ291bnQgYm90cwogICAgICAgICAgICBhc3luYyBmb3IgXyBpbiBjbGllbnQuZ2V0X2NoYXRfbWVtYmVycyhjaGF0X2lkLCBmaWx0ZXI9Q2hhdE1lbWJlcnNGaWx0ZXIuQk9UUyk6CiAgICAgICAgICAgICAgICBib3RfY291bnQgKz0gMQogICAgICAgICAgICAgICAgCiAgICAgICAgICAgICMgQ291bnQgYmFubmVkIHVzZXJzCiAgICAgICAgICAgIHRyeToKICAgICAgICAgICAgICAgIGFzeW5jIGZvciBfIGluIGNsaWVudC5nZXRfY2hhdF9tZW1iZXJzKGNoYXRfaWQsIGZpbHRlcj1DaGF0TWVtYmVyc0ZpbHRlci5CQU5ORUQpOgogICAgICAgICAgICAgICAgICAgIGJhbm5lZF9jb3VudCArPSAxCiAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgICAgICBwYXNzCiAgICAgICAgICAgIAogICAgICAgICAgICAjIEl0ZXJhdGUgdGhyb3VnaCByZWNlbnQgbWVtYmVycyB0byBjb3VudCBkZWxldGVkIGFjY291bnRzIGFuZCBwcmVtaXVtIHVzZXJzCiAgICAgICAgICAgIHRyeToKICAgICAgICAgICAgICAgIG1lbWJlcl9zYW1wbGUgPSAwCiAgICAgICAgICAgICAgICBhc3luYyBmb3IgbWVtYmVyIGluIGNsaWVudC5nZXRfY2hhdF9tZW1iZXJzKGNoYXRfaWQsIGZpbHRlcj1DaGF0TWVtYmVyc0ZpbHRlci5TRUFSQ0gsIGxpbWl0PTIwMCk6CiAgICAgICAgICAgICAgICAgICAgbWVtYmVyX3NhbXBsZSArPSAxCiAgICAgICAgICAgICAgICAgICAgaWYgbWVtYmVyLnVzZXIuaXNfZGVsZXRlZDoKICAgICAgICAgICAgICAgICAgICAgICAgZGVsZXRlZF9jb3VudCArPSAxCiAgICAgICAgICAgICAgICAgICAgaWYgbWVtYmVyLnVzZXIuaXNfcHJlbWl1bToKICAgICAgICAgICAgICAgICAgICAgICAgcHJlbWl1bV9jb3VudCArPSAxCiAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgICAgICBwYXNzCiAgICAgICAgICAgICAgICAKICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICBwYXNzCiAgICAgICAgCiAgICAgICAgIyBCdWlsZCBpbmZvcm1hdGlvbiB0ZXh0CiAgICAgICAgaW5mb19saW5lcyA9IFtdCiAgICAgICAgaW5mb19saW5lcy5hcHBlbmQoIjxiPvCfk4ogR1JPVVAgSU5GT1JNQVRJT048L2I+XG4iKQogICAgICAgIAogICAgICAgICMgQmFzaWMgaW5mbwogICAgICAgIGluZm9fbGluZXMuYXBwZW5kKGYiPGI+8J+TjCDJtOG0gOG0jeG0hzo8L2I+IHtjaGF0X2luZm8udGl0bGV9IikKICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIjxiPvCfhpQgyarhtIU6PC9iPiA8Y29kZT57Y2hhdF9pZH08L2NvZGU+IikKICAgICAgICAKICAgICAgICBpZiBjaGF0X2luZm8udXNlcm5hbWU6CiAgICAgICAgICAgIGluZm9fbGluZXMuYXBwZW5kKGYiPGI+8J+UlyDhtJzqnLHhtIfKgMm04bSA4bSN4bSHOjwvYj4gQHtjaGF0X2luZm8udXNlcm5hbWV9IikKICAgICAgICAKICAgICAgICAjIENoYXQgdHlwZQogICAgICAgIGNoYXRfdHlwZV9zdHIgPSAiyaLKgOG0j+G0nOG0mCIgaWYgY2hhdC50eXBlID09IENoYXRUeXBlLkdST1VQIGVsc2UgIuqcseG0nOG0mOG0h8qAyaLKgOG0j+G0nOG0mCIKICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIjxiPvCfk4Ig4bSbyo/htJjhtIc6PC9iPiB7Y2hhdF90eXBlX3N0cn0iKQogICAgICAgIAogICAgICAgICMgTWVtYmVyIHN0YXRpc3RpY3MKICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIlxuPGI+8J+RpSDhtI3htIfhtI3KmeG0h8qA6pyxOjwvYj4ge3RvdGFsX21lbWJlcnN9IikKICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIjxiPvCfka4g4bSA4bSF4bSNyarJtOqcsTo8L2I+IHthZG1pbl9jb3VudH0iKQogICAgICAgIGluZm9fbGluZXMuYXBwZW5kKGYiPGI+8J+kliDKmeG0j+G0m+qcsTo8L2I+IHtib3RfY291bnR9IikKICAgICAgICAKICAgICAgICBpZiBiYW5uZWRfY291bnQgPiAwOgogICAgICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIjxiPvCfmqsgypnhtIDJtMm04bSH4bSFOjwvYj4ge2Jhbm5lZF9jb3VudH0iKQogICAgICAgIAogICAgICAgIGlmIGRlbGV0ZWRfY291bnQgPiAwOgogICAgICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIjxiPvCfkbsg4bSF4bSHyp/htIfhtJvhtIfhtIUg4bSA4bSE4bSE4bSP4bScybThtJvqnLE6PC9iPiB7ZGVsZXRlZF9jb3VudH0iKQogICAgICAgICAgICAKICAgICAgICBpZiBwcmVtaXVtX2NvdW50ID4gMDoKICAgICAgICAgICAgaW5mb19saW5lcy5hcHBlbmQoZiI8Yj7irZAg4bSYyoDhtIfhtI3JquG0nOG0jSDhtJzqnLHhtIfKgOqcsTo8L2I+IHtwcmVtaXVtX2NvdW50fSIpCiAgICAgICAgCiAgICAgICAgIyBEZXNjcmlwdGlvbiBpZiBhdmFpbGFibGUKICAgICAgICBpZiBjaGF0X2luZm8uZGVzY3JpcHRpb246CiAgICAgICAgICAgIGRlc2MgPSBjaGF0X2luZm8uZGVzY3JpcHRpb24KICAgICAgICAgICAgaWYgbGVuKGRlc2MpID4gMTAwOgogICAgICAgICAgICAgICAgZGVzYyA9IGRlc2NbOjEwMF0gKyAiLi4uIgogICAgICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIlxuPGI+8J+TnSDhtIXhtIfqnLHhtITKgMmq4bSY4bSbyarhtI/JtDo8L2I+XG57ZGVzY30iKQogICAgICAgIAogICAgICAgICMgTGlua2VkIGNoYXQgaWYgYXZhaWxhYmxlCiAgICAgICAgaWYgY2hhdF9pbmZvLmxpbmtlZF9jaGF0OgogICAgICAgICAgICBpbmZvX2xpbmVzLmFwcGVuZChmIlxuPGI+8J+UlyDKn8mqybThtIvhtIfhtIUg4bSEypzhtIDJtMm04bSHyp86PC9iPiB7Y2hhdF9pbmZvLmxpbmtlZF9jaGF0LnRpdGxlfSIpCiAgICAgICAgICAgIGluZm9fbGluZXMuYXBwZW5kKGYiPGI+8J+GlCDhtITKnOG0gMm0ybThtIfKnyDJquG0hTo8L2I+IDxjb2RlPntjaGF0X2luZm8ubGlua2VkX2NoYXQuaWR9PC9jb2RlPiIpCiAgICAgICAgCiAgICAgICAgIyBJbnZpdGUgbGluayBpZiBhdmFpbGFibGUKICAgICAgICBpZiBoYXNhdHRyKGNoYXRfaW5mbywgJ2ludml0ZV9saW5rJykgYW5kIGNoYXRfaW5mby5pbnZpdGVfbGluazoKICAgICAgICAgICAgaW5mb19saW5lcy5hcHBlbmQoZiJcbjxiPvCflJcgyarJtOG0oMmq4bSb4bSHIMqfyarJtOG0izo8L2I+IHtjaGF0X2luZm8uaW52aXRlX2xpbmt9IikKICAgICAgICAKICAgICAgICAjIENoZWNrIHVzZXIncyBhZG1pbiBzdGF0dXMKICAgICAgICB0cnk6CiAgICAgICAgICAgIHVzZXJfbWVtYmVyID0gYXdhaXQgY2xpZW50LmdldF9jaGF0X21lbWJlcihjaGF0X2lkLCBtZXNzYWdlLmZyb21fdXNlci5pZCkKICAgICAgICAgICAgaWYgdXNlcl9tZW1iZXIuc3RhdHVzIGluIFtDaGF0TWVtYmVyU3RhdHVzLkFETUlOSVNUUkFUT1IsIENoYXRNZW1iZXJTdGF0dXMuT1dORVJdOgogICAgICAgICAgICAgICAgaW5mb19saW5lcy5hcHBlbmQoZiJcbjxiPvCflJAgyo/htI/htJzKgCDKgOG0j8qf4bSHOjwvYj4geyfhtI/htKHJtOG0h8qAJyBpZiB1c2VyX21lbWJlci5zdGF0dXMgPT0gQ2hhdE1lbWJlclN0YXR1cy5PV05FUiBlbHNlICfhtIDhtIXhtI3Jqsm0yarqnLHhtJvKgOG0gOG0m+G0j8qAJ30iKQogICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgIHBhc3MKICAgICAgICAKICAgICAgICAjIENvbWJpbmUgYWxsIGluZm8KICAgICAgICByZXNwb25zZSA9ICI8YmxvY2txdW90ZT4iICsgIlxuIi5qb2luKGluZm9fbGluZXMpICsgIjwvYmxvY2txdW90ZT4iCiAgICAgICAgCiAgICAgICAgYXdhaXQgbWVzc2FnZS5yZXBseV90ZXh0KAogICAgICAgICAgICByZXNwb25zZSwKICAgICAgICAgICAgcGFyc2VfbW9kZT1QYXJzZU1vZGUuSFRNTCwKICAgICAgICAgICAgZGlzYWJsZV93ZWJfcGFnZV9wcmV2aWV3PVRydWUKICAgICAgICApCiAgICAgICAgCiAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgYXdhaXQgbWVzc2FnZS5yZXBseV90ZXh0KAogICAgICAgICAgICBmIjxibG9ja3F1b3RlPuKdjCA8Yj7htIfKgMqA4bSPyoAgyaLhtIfhtJvhtJvJqsm0yaIgyaLKgOG0j+G0nOG0mCDhtIXhtIDhtJvhtIA6PC9iPlxuPGNvZGU+e3N0cihlKX08L2NvZGU+PC9ibG9ja3F1b3RlPiIsCiAgICAgICAgICAgIHBhcnNlX21vZGU9UGFyc2VNb2RlLkhUTUwKICAgICAgICApCg==").decode("utf-8"))

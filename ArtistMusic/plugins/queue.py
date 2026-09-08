@@ -1,74 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-
-from pyrogram import filters, types
-
-from ArtistMusic import app, config, db, lang, queue
-from ArtistMusic.helpers import Track, buttons, thumb
-
-
-@app.on_message(filters.command(["queue", "playing", "cqueue", "cplaying"]) & filters.group & ~app.bl_users)
-@lang.language()
-async def _queue_func(_, m: types.Message):
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    # Check for channel play mode
-    is_channel = m.command[0].lower() in ["cqueue", "cplaying"]
-    chat_id = m.chat.id
-    
-    if is_channel:
-        channel_id = await db.get_cmode(m.chat.id)
-        if channel_id is None:
-            return await m.reply_text("Channel play is not enabled. Use /channelplay to enable.")
-        chat_id = channel_id
-    
-    if not await db.get_call(chat_id):
-        return await m.reply_text("Nothing is playing.")
-
-    _reply = await m.reply_text("Fetching queue...")
-    _queue = queue.get_queue(chat_id)
-    _media = _queue[0]
-    _thumb = (
-        await thumb.generate(_media)
-        if isinstance(_media, Track)
-        else config.DEFAULT_THUMB
-    )
-    _text = f"Now Playing:\n{_media.title}\nDuration: {_media.duration}\nRequested by: {_media.user}"
-    
-    _queue.pop(0)
-
-    if _queue:
-        _text += "\n\nUpcoming:"
-        for i, media in enumerate(_queue, start=1):
-            if i == 15:
-                break
-            _text += f"\n{i}. {media.title} ({media.duration})"
-
-    _playing = await db.playing(chat_id)
-    await _reply.edit_media(
-        media=types.InputMediaPhoto(
-            media=_thumb,
-            caption=_text,
-        ),
-        reply_markup=buttons.queue_markup(
-            chat_id,
-            "Playing" if _playing else "Paused",
-            _playing,
-        ),
-    )
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpmcm9tIHB5cm9ncmFtIGltcG9ydCBmaWx0ZXJzLCB0eXBlcwoKZnJvbSBFbGV2ZW55dHMgaW1wb3J0IGFwcCwgY29uZmlnLCBkYiwgbGFuZywgcXVldWUKZnJvbSBFbGV2ZW55dHMuaGVscGVycyBpbXBvcnQgVHJhY2ssIGJ1dHRvbnMsIHRodW1iCgoKQGFwcC5vbl9tZXNzYWdlKGZpbHRlcnMuY29tbWFuZChbInF1ZXVlIiwgInBsYXlpbmciLCAiY3F1ZXVlIiwgImNwbGF5aW5nIl0pICYgZmlsdGVycy5ncm91cCAmIH5hcHAuYmxfdXNlcnMpCkBsYW5nLmxhbmd1YWdlKCkKYXN5bmMgZGVmIF9xdWV1ZV9mdW5jKF8sIG06IHR5cGVzLk1lc3NhZ2UpOgogICAgdHJ5OgogICAgICAgIGF3YWl0IG0uZGVsZXRlKCkKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwogICAgCiAgICAjIENoZWNrIGZvciBjaGFubmVsIHBsYXkgbW9kZQogICAgaXNfY2hhbm5lbCA9IG0uY29tbWFuZFswXS5sb3dlcigpIGluIFsiY3F1ZXVlIiwgImNwbGF5aW5nIl0KICAgIGNoYXRfaWQgPSBtLmNoYXQuaWQKICAgIAogICAgaWYgaXNfY2hhbm5lbDoKICAgICAgICBjaGFubmVsX2lkID0gYXdhaXQgZGIuZ2V0X2Ntb2RlKG0uY2hhdC5pZCkKICAgICAgICBpZiBjaGFubmVsX2lkIGlzIE5vbmU6CiAgICAgICAgICAgIHJldHVybiBhd2FpdCBtLnJlcGx5X3RleHQoIkNoYW5uZWwgcGxheSBpcyBub3QgZW5hYmxlZC4gVXNlIC9jaGFubmVscGxheSB0byBlbmFibGUuIikKICAgICAgICBjaGF0X2lkID0gY2hhbm5lbF9pZAogICAgCiAgICBpZiBub3QgYXdhaXQgZGIuZ2V0X2NhbGwoY2hhdF9pZCk6CiAgICAgICAgcmV0dXJuIGF3YWl0IG0ucmVwbHlfdGV4dCgiTm90aGluZyBpcyBwbGF5aW5nLiIpCgogICAgX3JlcGx5ID0gYXdhaXQgbS5yZXBseV90ZXh0KCJGZXRjaGluZyBxdWV1ZS4uLiIpCiAgICBfcXVldWUgPSBxdWV1ZS5nZXRfcXVldWUoY2hhdF9pZCkKICAgIF9tZWRpYSA9IF9xdWV1ZVswXQogICAgX3RodW1iID0gKAogICAgICAgIGF3YWl0IHRodW1iLmdlbmVyYXRlKF9tZWRpYSkKICAgICAgICBpZiBpc2luc3RhbmNlKF9tZWRpYSwgVHJhY2spCiAgICAgICAgZWxzZSBjb25maWcuREVGQVVMVF9USFVNQgogICAgKQogICAgX3RleHQgPSBmIk5vdyBQbGF5aW5nOlxue19tZWRpYS50aXRsZX1cbkR1cmF0aW9uOiB7X21lZGlhLmR1cmF0aW9ufVxuUmVxdWVzdGVkIGJ5OiB7X21lZGlhLnVzZXJ9IgogICAgCiAgICBfcXVldWUucG9wKDApCgogICAgaWYgX3F1ZXVlOgogICAgICAgIF90ZXh0ICs9ICJcblxuVXBjb21pbmc6IgogICAgICAgIGZvciBpLCBtZWRpYSBpbiBlbnVtZXJhdGUoX3F1ZXVlLCBzdGFydD0xKToKICAgICAgICAgICAgaWYgaSA9PSAxNToKICAgICAgICAgICAgICAgIGJyZWFrCiAgICAgICAgICAgIF90ZXh0ICs9IGYiXG57aX0uIHttZWRpYS50aXRsZX0gKHttZWRpYS5kdXJhdGlvbn0pIgoKICAgIF9wbGF5aW5nID0gYXdhaXQgZGIucGxheWluZyhjaGF0X2lkKQogICAgYXdhaXQgX3JlcGx5LmVkaXRfbWVkaWEoCiAgICAgICAgbWVkaWE9dHlwZXMuSW5wdXRNZWRpYVBob3RvKAogICAgICAgICAgICBtZWRpYT1fdGh1bWIsCiAgICAgICAgICAgIGNhcHRpb249X3RleHQsCiAgICAgICAgKSwKICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5xdWV1ZV9tYXJrdXAoCiAgICAgICAgICAgIGNoYXRfaWQsCiAgICAgICAgICAgICJQbGF5aW5nIiBpZiBfcGxheWluZyBlbHNlICJQYXVzZWQiLAogICAgICAgICAgICBfcGxheWluZywKICAgICAgICApLAogICAgKQo=").decode("utf-8"))

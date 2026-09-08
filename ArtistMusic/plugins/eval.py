@@ -1,104 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import io
-import os
-import re
-import sys
-import traceback
-import uuid
-from html import escape
-from typing import Any, Optional, Tuple
-
-from pyrogram import filters, types
-
-from ArtistMusic import tune, app, config, db, lang, userbot
-from ArtistMusic.helpers import format_exception, meval
-
-
-@app.on_message(filters.command(["eval", "exec"]) & filters.user(app.owner))
-@app.on_edited_message(filters.command(["eval", "exec"]) & filters.user(app.owner))
-@lang.language()
-async def eval_handler(_, message: types.Message):
-    # Auto-delete command message
-    try:
-        await message.delete()
-    except Exception:
-        pass
-    
-    if len(message.command) < 2:
-        return await message.reply_text(message.lang["eval_inp"])
-
-    code = message.text.split(None, 1)[1]
-    out_buf = io.StringIO()
-
-    async def _eval_code() -> Tuple[str, Optional[str]]:
-        async def send(*args: Any, **kwargs: Any) -> types.Message:
-            return await message.reply_text(*args, **kwargs)
-
-        def _print(*args: Any, **kwargs: Any) -> None:
-            kwargs.setdefault("file", out_buf)
-            print(*args, **kwargs)
-
-        eval_vars = {
-            "m": message,
-            "r": message.reply_to_message,
-            "chat": message.chat,
-            "user": message.from_user,
-            "app": app,
-            "tune": tune,
-            "db": db,
-            "client": app,
-            "ub": userbot,
-            "ikb": types.InlineKeyboardButton,
-            "ikm": types.InlineKeyboardMarkup,
-            "send": send,
-            "config": config,
-            "print": _print,
-            "os": os,
-            "re": re,
-            "sys": sys,
-            "traceback": traceback,
-        }
-
-        try:
-            result = await meval(code, globals(), **eval_vars)
-            return "", result
-        except Exception as e:
-            tb = traceback.extract_tb(e.__traceback__)
-            snippet_tb = next(
-                (i for i, f in enumerate(tb) if f.filename == "<string>"), -1
-            )
-            formatted_tb = format_exception(
-                e, tb[snippet_tb:] if snippet_tb != -1 else tb
-            )
-            return message.lang["eval_error"], formatted_tb
-
-    prefix, result = await _eval_code()
-
-    if result is not None or not out_buf.getvalue():
-        print(result, file=out_buf)
-
-    output = out_buf.getvalue().strip()
-    response = message.lang["eval_out"].format(escape(output))
-
-    if len(response) > 4096:
-        with io.BytesIO(output.encode()) as out_file:
-            out_file.name = f"{uuid.uuid4().hex[:8].lower()}.txt"
-            return await message.reply_document(
-                document=out_file, disable_notification=True
-            )
-
-    await message.reply_text(response)
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCBpbwppbXBvcnQgb3MKaW1wb3J0IHJlCmltcG9ydCBzeXMKaW1wb3J0IHRyYWNlYmFjawppbXBvcnQgdXVpZApmcm9tIGh0bWwgaW1wb3J0IGVzY2FwZQpmcm9tIHR5cGluZyBpbXBvcnQgQW55LCBPcHRpb25hbCwgVHVwbGUKCmZyb20gcHlyb2dyYW0gaW1wb3J0IGZpbHRlcnMsIHR5cGVzCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgdHVuZSwgYXBwLCBjb25maWcsIGRiLCBsYW5nLCB1c2VyYm90CmZyb20gRWxldmVueXRzLmhlbHBlcnMgaW1wb3J0IGZvcm1hdF9leGNlcHRpb24sIG1ldmFsCgoKQGFwcC5vbl9tZXNzYWdlKGZpbHRlcnMuY29tbWFuZChbImV2YWwiLCAiZXhlYyJdKSAmIGZpbHRlcnMudXNlcihhcHAub3duZXIpKQpAYXBwLm9uX2VkaXRlZF9tZXNzYWdlKGZpbHRlcnMuY29tbWFuZChbImV2YWwiLCAiZXhlYyJdKSAmIGZpbHRlcnMudXNlcihhcHAub3duZXIpKQpAbGFuZy5sYW5ndWFnZSgpCmFzeW5jIGRlZiBldmFsX2hhbmRsZXIoXywgbWVzc2FnZTogdHlwZXMuTWVzc2FnZSk6CiAgICAjIEF1dG8tZGVsZXRlIGNvbW1hbmQgbWVzc2FnZQogICAgdHJ5OgogICAgICAgIGF3YWl0IG1lc3NhZ2UuZGVsZXRlKCkKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwogICAgCiAgICBpZiBsZW4obWVzc2FnZS5jb21tYW5kKSA8IDI6CiAgICAgICAgcmV0dXJuIGF3YWl0IG1lc3NhZ2UucmVwbHlfdGV4dChtZXNzYWdlLmxhbmdbImV2YWxfaW5wIl0pCgogICAgY29kZSA9IG1lc3NhZ2UudGV4dC5zcGxpdChOb25lLCAxKVsxXQogICAgb3V0X2J1ZiA9IGlvLlN0cmluZ0lPKCkKCiAgICBhc3luYyBkZWYgX2V2YWxfY29kZSgpIC0+IFR1cGxlW3N0ciwgT3B0aW9uYWxbc3RyXV06CiAgICAgICAgYXN5bmMgZGVmIHNlbmQoKmFyZ3M6IEFueSwgKiprd2FyZ3M6IEFueSkgLT4gdHlwZXMuTWVzc2FnZToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IG1lc3NhZ2UucmVwbHlfdGV4dCgqYXJncywgKiprd2FyZ3MpCgogICAgICAgIGRlZiBfcHJpbnQoKmFyZ3M6IEFueSwgKiprd2FyZ3M6IEFueSkgLT4gTm9uZToKICAgICAgICAgICAga3dhcmdzLnNldGRlZmF1bHQoImZpbGUiLCBvdXRfYnVmKQogICAgICAgICAgICBwcmludCgqYXJncywgKiprd2FyZ3MpCgogICAgICAgIGV2YWxfdmFycyA9IHsKICAgICAgICAgICAgIm0iOiBtZXNzYWdlLAogICAgICAgICAgICAiciI6IG1lc3NhZ2UucmVwbHlfdG9fbWVzc2FnZSwKICAgICAgICAgICAgImNoYXQiOiBtZXNzYWdlLmNoYXQsCiAgICAgICAgICAgICJ1c2VyIjogbWVzc2FnZS5mcm9tX3VzZXIsCiAgICAgICAgICAgICJhcHAiOiBhcHAsCiAgICAgICAgICAgICJ0dW5lIjogdHVuZSwKICAgICAgICAgICAgImRiIjogZGIsCiAgICAgICAgICAgICJjbGllbnQiOiBhcHAsCiAgICAgICAgICAgICJ1YiI6IHVzZXJib3QsCiAgICAgICAgICAgICJpa2IiOiB0eXBlcy5JbmxpbmVLZXlib2FyZEJ1dHRvbiwKICAgICAgICAgICAgImlrbSI6IHR5cGVzLklubGluZUtleWJvYXJkTWFya3VwLAogICAgICAgICAgICAic2VuZCI6IHNlbmQsCiAgICAgICAgICAgICJjb25maWciOiBjb25maWcsCiAgICAgICAgICAgICJwcmludCI6IF9wcmludCwKICAgICAgICAgICAgIm9zIjogb3MsCiAgICAgICAgICAgICJyZSI6IHJlLAogICAgICAgICAgICAic3lzIjogc3lzLAogICAgICAgICAgICAidHJhY2ViYWNrIjogdHJhY2ViYWNrLAogICAgICAgIH0KCiAgICAgICAgdHJ5OgogICAgICAgICAgICByZXN1bHQgPSBhd2FpdCBtZXZhbChjb2RlLCBnbG9iYWxzKCksICoqZXZhbF92YXJzKQogICAgICAgICAgICByZXR1cm4gIiIsIHJlc3VsdAogICAgICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAgICAgdGIgPSB0cmFjZWJhY2suZXh0cmFjdF90YihlLl9fdHJhY2ViYWNrX18pCiAgICAgICAgICAgIHNuaXBwZXRfdGIgPSBuZXh0KAogICAgICAgICAgICAgICAgKGkgZm9yIGksIGYgaW4gZW51bWVyYXRlKHRiKSBpZiBmLmZpbGVuYW1lID09ICI8c3RyaW5nPiIpLCAtMQogICAgICAgICAgICApCiAgICAgICAgICAgIGZvcm1hdHRlZF90YiA9IGZvcm1hdF9leGNlcHRpb24oCiAgICAgICAgICAgICAgICBlLCB0YltzbmlwcGV0X3RiOl0gaWYgc25pcHBldF90YiAhPSAtMSBlbHNlIHRiCiAgICAgICAgICAgICkKICAgICAgICAgICAgcmV0dXJuIG1lc3NhZ2UubGFuZ1siZXZhbF9lcnJvciJdLCBmb3JtYXR0ZWRfdGIKCiAgICBwcmVmaXgsIHJlc3VsdCA9IGF3YWl0IF9ldmFsX2NvZGUoKQoKICAgIGlmIHJlc3VsdCBpcyBub3QgTm9uZSBvciBub3Qgb3V0X2J1Zi5nZXR2YWx1ZSgpOgogICAgICAgIHByaW50KHJlc3VsdCwgZmlsZT1vdXRfYnVmKQoKICAgIG91dHB1dCA9IG91dF9idWYuZ2V0dmFsdWUoKS5zdHJpcCgpCiAgICByZXNwb25zZSA9IG1lc3NhZ2UubGFuZ1siZXZhbF9vdXQiXS5mb3JtYXQoZXNjYXBlKG91dHB1dCkpCgogICAgaWYgbGVuKHJlc3BvbnNlKSA+IDQwOTY6CiAgICAgICAgd2l0aCBpby5CeXRlc0lPKG91dHB1dC5lbmNvZGUoKSkgYXMgb3V0X2ZpbGU6CiAgICAgICAgICAgIG91dF9maWxlLm5hbWUgPSBmInt1dWlkLnV1aWQ0KCkuaGV4Wzo4XS5sb3dlcigpfS50eHQiCiAgICAgICAgICAgIHJldHVybiBhd2FpdCBtZXNzYWdlLnJlcGx5X2RvY3VtZW50KAogICAgICAgICAgICAgICAgZG9jdW1lbnQ9b3V0X2ZpbGUsIGRpc2FibGVfbm90aWZpY2F0aW9uPVRydWUKICAgICAgICAgICAgKQoKICAgIGF3YWl0IG1lc3NhZ2UucmVwbHlfdGV4dChyZXNwb25zZSkK").decode("utf-8"))

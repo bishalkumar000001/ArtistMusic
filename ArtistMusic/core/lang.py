@@ -1,130 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import json
-from functools import wraps
-from pathlib import Path
-
-from ArtistMusic import db, logger
-
-# Supported language codes and their display names
-lang_codes = {
-    "en": "English 🇬🇧",
-    "hi": "Hindi 🇮🇳",
-    "te": "Telugu 🇮🇳",
-    "ko": "Korean 🇰🇷",
-    "my": "Myanmar 🇲🇲",
-    "id": "Indonesian 🇮🇩",
-    "pt": "Portuguese 🇧🇷",
-    "ar": "Arabic 🇸🇦",
-    "es": "Spanish 🇪🇸",
-    "fr": "French 🇫🇷",
-    "ru": "Russian 🇷🇺",
-    "de": "German 🇩🇪",
-    "tr": "Turkish 🇹🇷",
-    "bn": "Bengali 🇧🇩",
-    "th": "Thai 🇹🇭",
-    "vi": "Vietnamese 🇻🇳",
-    "ja": "Japanese 🇯🇵",
-    "zh": "Chinese 🇨🇳",
-    "ur": "Urdu 🇵🇰",
-    "fa": "Persian 🇮🇷",
-    "bho": "Bhojpuri 🇮🇳",
-    "ne": "Nepali 🇳🇵",
-}
-
-
-class Language:
-    """
-    Language class for managing multilingual support using JSON language files.
-    """
-
-    def __init__(self):
-        """Initialize the language system and load all translation files."""
-        self.lang_codes = lang_codes
-        self.lang_dir = Path("ArtistMusic/locales")
-        self.languages = self.load_files()
-
-    def load_files(self):
-        """Load all language JSON files from the locales directory."""
-        languages = {}
-        for lang_code in self.lang_codes.keys():
-            lang_file = self.lang_dir / f"{lang_code}.json"
-            if lang_file.exists():
-                with open(lang_file, "r", encoding="utf-8") as file:
-                    languages[lang_code] = json.load(file)
-        logger.info(f"🌐 Loaded languages: {', '.join(languages.keys())}")
-        return languages
-
-    def get_merged_lang(self, lang_code: str) -> dict:
-        """Get language dict merged with English fallback for missing keys."""
-        base = self.languages.get("en", {}).copy()
-        if lang_code != "en" and lang_code in self.languages:
-            base.update(self.languages[lang_code])
-        return base
-
-    async def get_lang(self, chat_id: int) -> dict:
-        """Get the translation dictionary for a specific chat/user."""
-        lang_code = await db.get_lang(chat_id)
-        return self.get_merged_lang(lang_code)
-
-    async def get_lang_for(self, user_id: int | None, chat_id: int) -> dict:
-        """
-        Resolve the language to use: the acting user's personal preference
-        (set from DM or any group) takes priority; falls back to that
-        chat's own language if the user never picked one.
-        """
-        user_code = await db.get_user_lang(user_id) if user_id else None
-        lang_code = user_code or await db.get_lang(chat_id)
-        return self.get_merged_lang(lang_code)
-
-    def language(self):
-        def decorator(func):
-            @wraps(func)
-            async def wrapper(*args, **kwargs):
-                fallen = next(
-                    (
-                        arg
-                        for arg in args
-                        if hasattr(arg, "chat") or hasattr(arg, "message")
-                    ),
-                    None,
-                )
-
-                if hasattr(fallen, "chat"):
-                    chat = fallen.chat
-                elif hasattr(fallen, "message"):
-                    chat = fallen.message.chat
-
-                if chat.id in db.blacklisted:
-                    try:
-                        await chat.leave()
-                    except Exception:
-                        pass
-                    return
-
-                # Prefer the acting user's own language (set anywhere: DM or
-                # any group) over the chat's language, so it follows them.
-                user = getattr(fallen, "from_user", None)
-                user_id = user.id if user else None
-
-                lang_dict = await self.get_lang_for(user_id, chat.id)
-
-                setattr(fallen, "lang", lang_dict)
-                return await func(*args, **kwargs)
-
-            return wrapper
-
-        return decorator
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCBqc29uCmZyb20gZnVuY3Rvb2xzIGltcG9ydCB3cmFwcwpmcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGgKCmZyb20gRWxldmVueXRzIGltcG9ydCBkYiwgbG9nZ2VyCgojIFN1cHBvcnRlZCBsYW5ndWFnZSBjb2RlcyBhbmQgdGhlaXIgZGlzcGxheSBuYW1lcwpsYW5nX2NvZGVzID0gewogICAgImVuIjogIkVuZ2xpc2gg8J+HrPCfh6ciLAogICAgImhpIjogIkhpbmRpIPCfh67wn4ezIiwKICAgICJ0ZSI6ICJUZWx1Z3Ug8J+HrvCfh7MiLAogICAgImtvIjogIktvcmVhbiDwn4ew8J+HtyIsCiAgICAibXkiOiAiTXlhbm1hciDwn4ey8J+HsiIsCiAgICAiaWQiOiAiSW5kb25lc2lhbiDwn4eu8J+HqSIsCiAgICAicHQiOiAiUG9ydHVndWVzZSDwn4en8J+HtyIsCiAgICAiYXIiOiAiQXJhYmljIPCfh7jwn4emIiwKICAgICJlcyI6ICJTcGFuaXNoIPCfh6rwn4e4IiwKICAgICJmciI6ICJGcmVuY2gg8J+Hq/Cfh7ciLAogICAgInJ1IjogIlJ1c3NpYW4g8J+Ht/Cfh7oiLAogICAgImRlIjogIkdlcm1hbiDwn4ep8J+HqiIsCiAgICAidHIiOiAiVHVya2lzaCDwn4e58J+HtyIsCiAgICAiYm4iOiAiQmVuZ2FsaSDwn4en8J+HqSIsCiAgICAidGgiOiAiVGhhaSDwn4e58J+HrSIsCiAgICAidmkiOiAiVmlldG5hbWVzZSDwn4e78J+HsyIsCiAgICAiamEiOiAiSmFwYW5lc2Ug8J+Hr/Cfh7UiLAogICAgInpoIjogIkNoaW5lc2Ug8J+HqPCfh7MiLAogICAgInVyIjogIlVyZHUg8J+HtfCfh7AiLAogICAgImZhIjogIlBlcnNpYW4g8J+HrvCfh7ciLAp9CgoKY2xhc3MgTGFuZ3VhZ2U6CiAgICAiIiIKICAgIExhbmd1YWdlIGNsYXNzIGZvciBtYW5hZ2luZyBtdWx0aWxpbmd1YWwgc3VwcG9ydCB1c2luZyBKU09OIGxhbmd1YWdlIGZpbGVzLgogICAgIiIiCgogICAgZGVmIF9faW5pdF9fKHNlbGYpOgogICAgICAgICIiIkluaXRpYWxpemUgdGhlIGxhbmd1YWdlIHN5c3RlbSBhbmQgbG9hZCBhbGwgdHJhbnNsYXRpb24gZmlsZXMuIiIiCiAgICAgICAgc2VsZi5sYW5nX2NvZGVzID0gbGFuZ19jb2RlcwogICAgICAgIHNlbGYubGFuZ19kaXIgPSBQYXRoKCJFbGV2ZW55dHMvbG9jYWxlcyIpCiAgICAgICAgc2VsZi5sYW5ndWFnZXMgPSBzZWxmLmxvYWRfZmlsZXMoKQoKICAgIGRlZiBsb2FkX2ZpbGVzKHNlbGYpOgogICAgICAgICIiIkxvYWQgYWxsIGxhbmd1YWdlIEpTT04gZmlsZXMgZnJvbSB0aGUgbG9jYWxlcyBkaXJlY3RvcnkuIiIiCiAgICAgICAgbGFuZ3VhZ2VzID0ge30KICAgICAgICBmb3IgbGFuZ19jb2RlIGluIHNlbGYubGFuZ19jb2Rlcy5rZXlzKCk6CiAgICAgICAgICAgIGxhbmdfZmlsZSA9IHNlbGYubGFuZ19kaXIgLyBmIntsYW5nX2NvZGV9Lmpzb24iCiAgICAgICAgICAgIGlmIGxhbmdfZmlsZS5leGlzdHMoKToKICAgICAgICAgICAgICAgIHdpdGggb3BlbihsYW5nX2ZpbGUsICJyIiwgZW5jb2Rpbmc9InV0Zi04IikgYXMgZmlsZToKICAgICAgICAgICAgICAgICAgICBsYW5ndWFnZXNbbGFuZ19jb2RlXSA9IGpzb24ubG9hZChmaWxlKQogICAgICAgIGxvZ2dlci5pbmZvKGYi8J+MkCBMb2FkZWQgbGFuZ3VhZ2VzOiB7JywgJy5qb2luKGxhbmd1YWdlcy5rZXlzKCkpfSIpCiAgICAgICAgcmV0dXJuIGxhbmd1YWdlcwoKICAgIGRlZiBnZXRfbWVyZ2VkX2xhbmcoc2VsZiwgbGFuZ19jb2RlOiBzdHIpIC0+IGRpY3Q6CiAgICAgICAgIiIiR2V0IGxhbmd1YWdlIGRpY3QgbWVyZ2VkIHdpdGggRW5nbGlzaCBmYWxsYmFjayBmb3IgbWlzc2luZyBrZXlzLiIiIgogICAgICAgIGJhc2UgPSBzZWxmLmxhbmd1YWdlcy5nZXQoImVuIiwge30pLmNvcHkoKQogICAgICAgIGlmIGxhbmdfY29kZSAhPSAiZW4iIGFuZCBsYW5nX2NvZGUgaW4gc2VsZi5sYW5ndWFnZXM6CiAgICAgICAgICAgIGJhc2UudXBkYXRlKHNlbGYubGFuZ3VhZ2VzW2xhbmdfY29kZV0pCiAgICAgICAgcmV0dXJuIGJhc2UKCiAgICBhc3luYyBkZWYgZ2V0X2xhbmcoc2VsZiwgY2hhdF9pZDogaW50KSAtPiBkaWN0OgogICAgICAgICIiIkdldCB0aGUgdHJhbnNsYXRpb24gZGljdGlvbmFyeSBmb3IgYSBzcGVjaWZpYyBjaGF0L3VzZXIuIiIiCiAgICAgICAgbGFuZ19jb2RlID0gYXdhaXQgZGIuZ2V0X2xhbmcoY2hhdF9pZCkKICAgICAgICByZXR1cm4gc2VsZi5nZXRfbWVyZ2VkX2xhbmcobGFuZ19jb2RlKQoKICAgIGRlZiBsYW5ndWFnZShzZWxmKToKICAgICAgICBkZWYgZGVjb3JhdG9yKGZ1bmMpOgogICAgICAgICAgICBAd3JhcHMoZnVuYykKICAgICAgICAgICAgYXN5bmMgZGVmIHdyYXBwZXIoKmFyZ3MsICoqa3dhcmdzKToKICAgICAgICAgICAgICAgIGZhbGxlbiA9IG5leHQoCiAgICAgICAgICAgICAgICAgICAgKAogICAgICAgICAgICAgICAgICAgICAgICBhcmcKICAgICAgICAgICAgICAgICAgICAgICAgZm9yIGFyZyBpbiBhcmdzCiAgICAgICAgICAgICAgICAgICAgICAgIGlmIGhhc2F0dHIoYXJnLCAiY2hhdCIpIG9yIGhhc2F0dHIoYXJnLCAibWVzc2FnZSIpCiAgICAgICAgICAgICAgICAgICAgKSwKICAgICAgICAgICAgICAgICAgICBOb25lLAogICAgICAgICAgICAgICAgKQoKICAgICAgICAgICAgICAgIGlmIGhhc2F0dHIoZmFsbGVuLCAiY2hhdCIpOgogICAgICAgICAgICAgICAgICAgIGNoYXQgPSBmYWxsZW4uY2hhdAogICAgICAgICAgICAgICAgZWxpZiBoYXNhdHRyKGZhbGxlbiwgIm1lc3NhZ2UiKToKICAgICAgICAgICAgICAgICAgICBjaGF0ID0gZmFsbGVuLm1lc3NhZ2UuY2hhdAoKICAgICAgICAgICAgICAgIGlmIGNoYXQuaWQgaW4gZGIuYmxhY2tsaXN0ZWQ6CiAgICAgICAgICAgICAgICAgICAgdHJ5OgogICAgICAgICAgICAgICAgICAgICAgICBhd2FpdCBjaGF0LmxlYXZlKCkKICAgICAgICAgICAgICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICAgICAgICAgICAgICBwYXNzCiAgICAgICAgICAgICAgICAgICAgcmV0dXJuCgogICAgICAgICAgICAgICAgIyBHZXQgdXNlcidzIHByZWZlcnJlZCBsYW5ndWFnZSAoZmFsbHMgYmFjayB0byAiZW4iKQogICAgICAgICAgICAgICAgbGFuZ19jb2RlID0gImVuIgogICAgICAgICAgICAgICAgdXNlciA9IGdldGF0dHIoZmFsbGVuLCAiZnJvbV91c2VyIiwgTm9uZSkKICAgICAgICAgICAgICAgIGlmIHVzZXI6CiAgICAgICAgICAgICAgICAgICAgbGFuZ19jb2RlID0gYXdhaXQgZGIuZ2V0X2xhbmcodXNlci5pZCkKCiAgICAgICAgICAgICAgICBsYW5nX2RpY3QgPSBzZWxmLmdldF9tZXJnZWRfbGFuZyhsYW5nX2NvZGUpCgogICAgICAgICAgICAgICAgc2V0YXR0cihmYWxsZW4sICJsYW5nIiwgbGFuZ19kaWN0KQogICAgICAgICAgICAgICAgcmV0dXJuIGF3YWl0IGZ1bmMoKmFyZ3MsICoqa3dhcmdzKQoKICAgICAgICAgICAgcmV0dXJuIHdyYXBwZXIKCiAgICAgICAgcmV0dXJuIGRlY29yYXRvcgo=").decode("utf-8"))

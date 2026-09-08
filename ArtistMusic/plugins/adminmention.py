@@ -1,110 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import re
-from pyrogram import filters, types, enums
-
-from ArtistMusic import app, config
-
-
-# Pattern to detect admin triggers
-TRIGGER_PATTERN = re.compile(r"(?i)(\.|@|\/)admin")
-
-
-@app.on_message(filters.group & filters.regex(r"(?i)(\.|@|\/)admin"))
-async def mention_admins(_, message: types.Message):
-    """
-    Mention all group admins when someone types @admin, .admin, or /admin
-    """
-    try:
-        # Extract the message without the trigger
-        message_text = message.text or message.caption or ""
-        cleaned_text = TRIGGER_PATTERN.sub("", message_text).strip()
-
-        # Get user info (handle anonymous admins)
-        sender = message.from_user
-        if sender:
-            user_display = f"{sender.first_name}"
-            if sender.username:
-                user_display += f" (@{sender.username})"
-        else:
-            # Anonymous admin or channel
-            user_display = "ᴀɴᴏɴʏᴍᴏᴜꜱ ᴀᴅᴍɪɴ"
-
-        # Build formatted reply message
-        if cleaned_text:
-            reply_msg = (
-                f"<blockquote><b><i>\"{cleaned_text}\"</i></b>\n"
-                f"ʀᴇᴘᴏʀᴛᴇᴅ ʙʏ: {user_display} 🔔</blockquote>\n\n"
-            )
-        else:
-            reply_msg = (
-                f"<blockquote>ʀᴇᴘᴏʀᴛᴇᴅ ʙʏ: {user_display} 🔔</blockquote>\n\n"
-            )
-
-        # Get all administrators
-        mentions = []
-        try:
-            async for admin in app.get_chat_members(
-                message.chat.id,
-                filter=enums.ChatMembersFilter.ADMINISTRATORS
-            ):
-                user = admin.user
-
-                # Skip bots and deleted accounts
-                if user.is_bot or user.is_deleted:
-                    continue
-
-                # Skip admins who have "Remain Anonymous" enabled
-                # Check privileges - if is_anonymous privilege is True, skip them
-                if hasattr(admin, 'privileges') and admin.privileges:
-                    if getattr(admin.privileges, 'is_anonymous', False):
-                        continue
-
-                # Skip usernames in the excluded list
-                if user.username and user.username.lower() in [u.lower() for u in config.EXCLUDED_USERNAMES]:
-                    continue
-
-                # Add mention
-                if user.username:
-                    mentions.append(f"@{user.username}")
-                else:
-                    # Use HTML link format to mention users without username
-                    mentions.append(
-                        f"<a href='tg://user?id={user.id}'>{user.first_name}</a>")
-        except Exception as e:
-            await message.reply_text(
-                "<blockquote>❌ Failed to fetch administrators. Make sure the bot has proper permissions.</blockquote>"
-            )
-            return
-
-        if mentions:
-            reply_msg += ", ".join(mentions)
-        else:
-            reply_msg += "<i>No visible human admins found to mention.</i>"
-
-        # Send the reply
-        try:
-            await message.reply_text(reply_msg, disable_web_page_preview=True)
-        except Exception as e:
-            await message.reply_text(
-                "<blockquote>❌ Failed to send admin notification.</blockquote>"
-            )
-    except Exception as e:
-        # Catch all exceptions to prevent bot crashes
-        try:
-            await message.reply_text("<blockquote>❌ An error occurred while processing admin mention.</blockquote>")
-        except:
-            pass  # Silent failure if reply fails
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCByZQpmcm9tIHB5cm9ncmFtIGltcG9ydCBmaWx0ZXJzLCB0eXBlcywgZW51bXMKCmZyb20gRWxldmVueXRzIGltcG9ydCBhcHAsIGNvbmZpZwoKCiMgUGF0dGVybiB0byBkZXRlY3QgYWRtaW4gdHJpZ2dlcnMKVFJJR0dFUl9QQVRURVJOID0gcmUuY29tcGlsZShyIig/aSkoXC58QHxcLylhZG1pbiIpCgoKQGFwcC5vbl9tZXNzYWdlKGZpbHRlcnMuZ3JvdXAgJiBmaWx0ZXJzLnJlZ2V4KHIiKD9pKShcLnxAfFwvKWFkbWluIikpCmFzeW5jIGRlZiBtZW50aW9uX2FkbWlucyhfLCBtZXNzYWdlOiB0eXBlcy5NZXNzYWdlKToKICAgICIiIgogICAgTWVudGlvbiBhbGwgZ3JvdXAgYWRtaW5zIHdoZW4gc29tZW9uZSB0eXBlcyBAYWRtaW4sIC5hZG1pbiwgb3IgL2FkbWluCiAgICAiIiIKICAgIHRyeToKICAgICAgICAjIEV4dHJhY3QgdGhlIG1lc3NhZ2Ugd2l0aG91dCB0aGUgdHJpZ2dlcgogICAgICAgIG1lc3NhZ2VfdGV4dCA9IG1lc3NhZ2UudGV4dCBvciBtZXNzYWdlLmNhcHRpb24gb3IgIiIKICAgICAgICBjbGVhbmVkX3RleHQgPSBUUklHR0VSX1BBVFRFUk4uc3ViKCIiLCBtZXNzYWdlX3RleHQpLnN0cmlwKCkKCiAgICAgICAgIyBHZXQgdXNlciBpbmZvIChoYW5kbGUgYW5vbnltb3VzIGFkbWlucykKICAgICAgICBzZW5kZXIgPSBtZXNzYWdlLmZyb21fdXNlcgogICAgICAgIGlmIHNlbmRlcjoKICAgICAgICAgICAgdXNlcl9kaXNwbGF5ID0gZiJ7c2VuZGVyLmZpcnN0X25hbWV9IgogICAgICAgICAgICBpZiBzZW5kZXIudXNlcm5hbWU6CiAgICAgICAgICAgICAgICB1c2VyX2Rpc3BsYXkgKz0gZiIgKEB7c2VuZGVyLnVzZXJuYW1lfSkiCiAgICAgICAgZWxzZToKICAgICAgICAgICAgIyBBbm9ueW1vdXMgYWRtaW4gb3IgY2hhbm5lbAogICAgICAgICAgICB1c2VyX2Rpc3BsYXkgPSAi4bSAybThtI/JtMqP4bSN4bSP4bSc6pyxIOG0gOG0heG0jcmqybQiCgogICAgICAgICMgQnVpbGQgZm9ybWF0dGVkIHJlcGx5IG1lc3NhZ2UKICAgICAgICBpZiBjbGVhbmVkX3RleHQ6CiAgICAgICAgICAgIHJlcGx5X21zZyA9ICgKICAgICAgICAgICAgICAgIGYiPGJsb2NrcXVvdGU+PGI+PGk+XCJ7Y2xlYW5lZF90ZXh0fVwiPC9pPjwvYj5cbiIKICAgICAgICAgICAgICAgIGYiyoDhtIfhtJjhtI/KgOG0m+G0h+G0hSDKmcqPOiB7dXNlcl9kaXNwbGF5fSDwn5SUPC9ibG9ja3F1b3RlPlxuXG4iCiAgICAgICAgICAgICkKICAgICAgICBlbHNlOgogICAgICAgICAgICByZXBseV9tc2cgPSAoCiAgICAgICAgICAgICAgICBmIjxibG9ja3F1b3RlPsqA4bSH4bSY4bSPyoDhtJvhtIfhtIUgypnKjzoge3VzZXJfZGlzcGxheX0g8J+UlDwvYmxvY2txdW90ZT5cblxuIgogICAgICAgICAgICApCgogICAgICAgICMgR2V0IGFsbCBhZG1pbmlzdHJhdG9ycwogICAgICAgIG1lbnRpb25zID0gW10KICAgICAgICB0cnk6CiAgICAgICAgICAgIGFzeW5jIGZvciBhZG1pbiBpbiBhcHAuZ2V0X2NoYXRfbWVtYmVycygKICAgICAgICAgICAgICAgIG1lc3NhZ2UuY2hhdC5pZCwKICAgICAgICAgICAgICAgIGZpbHRlcj1lbnVtcy5DaGF0TWVtYmVyc0ZpbHRlci5BRE1JTklTVFJBVE9SUwogICAgICAgICAgICApOgogICAgICAgICAgICAgICAgdXNlciA9IGFkbWluLnVzZXIKCiAgICAgICAgICAgICAgICAjIFNraXAgYm90cyBhbmQgZGVsZXRlZCBhY2NvdW50cwogICAgICAgICAgICAgICAgaWYgdXNlci5pc19ib3Qgb3IgdXNlci5pc19kZWxldGVkOgogICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCgogICAgICAgICAgICAgICAgIyBTa2lwIGFkbWlucyB3aG8gaGF2ZSAiUmVtYWluIEFub255bW91cyIgZW5hYmxlZAogICAgICAgICAgICAgICAgIyBDaGVjayBwcml2aWxlZ2VzIC0gaWYgaXNfYW5vbnltb3VzIHByaXZpbGVnZSBpcyBUcnVlLCBza2lwIHRoZW0KICAgICAgICAgICAgICAgIGlmIGhhc2F0dHIoYWRtaW4sICdwcml2aWxlZ2VzJykgYW5kIGFkbWluLnByaXZpbGVnZXM6CiAgICAgICAgICAgICAgICAgICAgaWYgZ2V0YXR0cihhZG1pbi5wcml2aWxlZ2VzLCAnaXNfYW5vbnltb3VzJywgRmFsc2UpOgogICAgICAgICAgICAgICAgICAgICAgICBjb250aW51ZQoKICAgICAgICAgICAgICAgICMgU2tpcCB1c2VybmFtZXMgaW4gdGhlIGV4Y2x1ZGVkIGxpc3QKICAgICAgICAgICAgICAgIGlmIHVzZXIudXNlcm5hbWUgYW5kIHVzZXIudXNlcm5hbWUubG93ZXIoKSBpbiBbdS5sb3dlcigpIGZvciB1IGluIGNvbmZpZy5FWENMVURFRF9VU0VSTkFNRVNdOgogICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCgogICAgICAgICAgICAgICAgIyBBZGQgbWVudGlvbgogICAgICAgICAgICAgICAgaWYgdXNlci51c2VybmFtZToKICAgICAgICAgICAgICAgICAgICBtZW50aW9ucy5hcHBlbmQoZiJAe3VzZXIudXNlcm5hbWV9IikKICAgICAgICAgICAgICAgIGVsc2U6CiAgICAgICAgICAgICAgICAgICAgIyBVc2UgSFRNTCBsaW5rIGZvcm1hdCB0byBtZW50aW9uIHVzZXJzIHdpdGhvdXQgdXNlcm5hbWUKICAgICAgICAgICAgICAgICAgICBtZW50aW9ucy5hcHBlbmQoCiAgICAgICAgICAgICAgICAgICAgICAgIGYiPGEgaHJlZj0ndGc6Ly91c2VyP2lkPXt1c2VyLmlkfSc+e3VzZXIuZmlyc3RfbmFtZX08L2E+IikKICAgICAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgICAgIGF3YWl0IG1lc3NhZ2UucmVwbHlfdGV4dCgKICAgICAgICAgICAgICAgICI8YmxvY2txdW90ZT7inYwgRmFpbGVkIHRvIGZldGNoIGFkbWluaXN0cmF0b3JzLiBNYWtlIHN1cmUgdGhlIGJvdCBoYXMgcHJvcGVyIHBlcm1pc3Npb25zLjwvYmxvY2txdW90ZT4iCiAgICAgICAgICAgICkKICAgICAgICAgICAgcmV0dXJuCgogICAgICAgIGlmIG1lbnRpb25zOgogICAgICAgICAgICByZXBseV9tc2cgKz0gIiwgIi5qb2luKG1lbnRpb25zKQogICAgICAgIGVsc2U6CiAgICAgICAgICAgIHJlcGx5X21zZyArPSAiPGk+Tm8gdmlzaWJsZSBodW1hbiBhZG1pbnMgZm91bmQgdG8gbWVudGlvbi48L2k+IgoKICAgICAgICAjIFNlbmQgdGhlIHJlcGx5CiAgICAgICAgdHJ5OgogICAgICAgICAgICBhd2FpdCBtZXNzYWdlLnJlcGx5X3RleHQocmVwbHlfbXNnLCBkaXNhYmxlX3dlYl9wYWdlX3ByZXZpZXc9VHJ1ZSkKICAgICAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgICAgIGF3YWl0IG1lc3NhZ2UucmVwbHlfdGV4dCgKICAgICAgICAgICAgICAgICI8YmxvY2txdW90ZT7inYwgRmFpbGVkIHRvIHNlbmQgYWRtaW4gbm90aWZpY2F0aW9uLjwvYmxvY2txdW90ZT4iCiAgICAgICAgICAgICkKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAjIENhdGNoIGFsbCBleGNlcHRpb25zIHRvIHByZXZlbnQgYm90IGNyYXNoZXMKICAgICAgICB0cnk6CiAgICAgICAgICAgIGF3YWl0IG1lc3NhZ2UucmVwbHlfdGV4dCgiPGJsb2NrcXVvdGU+4p2MIEFuIGVycm9yIG9jY3VycmVkIHdoaWxlIHByb2Nlc3NpbmcgYWRtaW4gbWVudGlvbi48L2Jsb2NrcXVvdGU+IikKICAgICAgICBleGNlcHQ6CiAgICAgICAgICAgIHBhc3MgICMgU2lsZW50IGZhaWx1cmUgaWYgcmVwbHkgZmFpbHMK").decode("utf-8"))

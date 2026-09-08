@@ -1,178 +1,18 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
 
-import asyncio
-import logging
-from typing import Dict, Set
-
-logger = logging.getLogger("ArtistMusic")
-
-
-class PreloadManager:
-    """
-    Manages background preloading of upcoming tracks in queue.
-    
-    This ensures smooth transitions between songs by downloading
-    the next track before the current one finishes.
-    """
-
-    def __init__(self):
-        """Initialize the preload manager."""
-        # Track active preload tasks by chat and media id:
-        # {chat_id: {media_id: task}}
-        self._tasks: Dict[int, Dict[str, asyncio.Task]] = {}
-        # Track successfully preloaded media ids by chat:
-        # {chat_id: {media_id, ...}}
-        self._preloaded: Dict[int, Set[str]] = {}
-
-    async def preload_next(self, chat_id: int, media) -> None:
-        """
-        Start preloading the next track for a chat.
-        
-        Args:
-            chat_id: The chat ID to preload for
-            media: The Media/Track object to preload
-        """
-        media_id = getattr(media, "id", None)
-        if not media_id:
-            return
-
-        # Initialize per-chat stores
-        if chat_id not in self._tasks:
-            self._tasks[chat_id] = {}
-        if chat_id not in self._preloaded:
-            self._preloaded[chat_id] = set()
-
-        # Skip if already preloaded
-        if media_id in self._preloaded[chat_id]:
-            logger.debug(f"Track {media_id} already preloaded for chat {chat_id}")
-            return
-
-        # Skip if already actively preloading
-        existing = self._tasks[chat_id].get(media_id)
-        if existing and not existing.done():
-            return
-
-        # Start new preload task
-        task = asyncio.create_task(self._preload_task(chat_id, media))
-        self._tasks[chat_id][media_id] = task
-
-    async def _preload_task(self, chat_id: int, media) -> None:
-        """
-        Background task to preload a track.
-        
-        Args:
-            chat_id: The chat ID to preload for
-            media: The Media/Track object to preload
-        """
-        try:
-            # Import here to avoid circular dependency
-            from ArtistMusic import yt
-
-            logger.debug(f"Starting preload for chat {chat_id}: {media.title}")
-            
-            # Download the track
-            if not media.file_path:
-                media.file_path = await yt.download(
-                    media.id,
-                    video=getattr(media, "video", False),
-                )
-                if media.file_path:
-                    self._preloaded.setdefault(chat_id, set()).add(media.id)
-                logger.debug(f"Preload complete for chat {chat_id}: {media.title}")
-            else:
-                logger.debug(f"Track already has file_path for chat {chat_id}: {media.title}")
-                self._preloaded.setdefault(chat_id, set()).add(media.id)
-                
-        except asyncio.CancelledError:
-            logger.debug(f"Preload cancelled for chat {chat_id}")
-            raise
-        except Exception as e:
-            logger.error(f"Preload error for chat {chat_id}: {e}")
-        finally:
-            # Clean up task reference for this specific media id
-            media_tasks = self._tasks.get(chat_id)
-            if media_tasks:
-                media_tasks.pop(getattr(media, "id", None), None)
-                if not media_tasks:
-                    self._tasks.pop(chat_id, None)
-
-    async def cancel_preload(self, chat_id: int) -> None:
-        """
-        Cancel any active preload task for a chat.
-        
-        Args:
-            chat_id: The chat ID to cancel preload for
-        """
-        media_tasks = self._tasks.get(chat_id, {})
-        if media_tasks:
-            active = [task for task in media_tasks.values() if not task.done()]
-            for task in active:
-                task.cancel()
-            if active:
-                await asyncio.gather(*active, return_exceptions=True)
-            logger.debug(f"Cancelled preload for chat {chat_id}")
-        
-        # Clear preloaded cache
-        self._preloaded.pop(chat_id, None)
-        self._tasks.pop(chat_id, None)
-
-    def is_preloaded(self, chat_id: int, media_id: str) -> bool:
-        """
-        Check if a specific track is preloaded for a chat.
-        
-        Args:
-            chat_id: The chat ID to check
-            media_id: The media ID to check
-            
-        Returns:
-            bool: True if the track is preloaded
-        """
-        return media_id in self._preloaded.get(chat_id, set())
-
-    def clear(self, chat_id: int) -> None:
-        """
-        Clear preload cache for a chat (non-async version).
-        
-        Args:
-            chat_id: The chat ID to clear
-        """
-        self._preloaded.pop(chat_id, None)
-        self._tasks.pop(chat_id, None)
-
-    async def start_preload(self, chat_id: int, count: int = 2) -> None:
-        """
-        Start preloading multiple upcoming tracks from queue.
-        
-        Args:
-            chat_id: The chat ID to preload for
-            count: Number of tracks to preload (default: 2)
-        """
-        try:
-            # Import here to avoid circular dependency
-            from ArtistMusic import queue
-            
-            # Get full queue and preload upcoming tracks (skip first one - that's current)
-            all_tracks = queue.get_queue(chat_id)
-            if len(all_tracks) > 1:
-                # Preload next 'count' tracks
-                upcoming = all_tracks[1:min(1 + count, len(all_tracks))]
-                for media in upcoming:
-                    if not media.file_path:
-                        await self.preload_next(chat_id, media)
-                        
-        except Exception as e:
-            logger.debug(f"Error in start_preload for {chat_id}: {e}")
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgppbXBvcnQgYXN5bmNpbwppbXBvcnQgbG9nZ2luZwpmcm9tIHR5cGluZyBpbXBvcnQgRGljdCwgU2V0Cgpsb2dnZXIgPSBsb2dnaW5nLmdldExvZ2dlcigiRWxldmVueXRzIikKCgpjbGFzcyBQcmVsb2FkTWFuYWdlcjoKICAgICIiIgogICAgTWFuYWdlcyBiYWNrZ3JvdW5kIHByZWxvYWRpbmcgb2YgdXBjb21pbmcgdHJhY2tzIGluIHF1ZXVlLgogICAgCiAgICBUaGlzIGVuc3VyZXMgc21vb3RoIHRyYW5zaXRpb25zIGJldHdlZW4gc29uZ3MgYnkgZG93bmxvYWRpbmcKICAgIHRoZSBuZXh0IHRyYWNrIGJlZm9yZSB0aGUgY3VycmVudCBvbmUgZmluaXNoZXMuCiAgICAiIiIKCiAgICBkZWYgX19pbml0X18oc2VsZik6CiAgICAgICAgIiIiSW5pdGlhbGl6ZSB0aGUgcHJlbG9hZCBtYW5hZ2VyLiIiIgogICAgICAgICMgVHJhY2sgYWN0aXZlIHByZWxvYWQgdGFza3MgYnkgY2hhdCBhbmQgbWVkaWEgaWQ6CiAgICAgICAgIyB7Y2hhdF9pZDoge21lZGlhX2lkOiB0YXNrfX0KICAgICAgICBzZWxmLl90YXNrczogRGljdFtpbnQsIERpY3Rbc3RyLCBhc3luY2lvLlRhc2tdXSA9IHt9CiAgICAgICAgIyBUcmFjayBzdWNjZXNzZnVsbHkgcHJlbG9hZGVkIG1lZGlhIGlkcyBieSBjaGF0OgogICAgICAgICMge2NoYXRfaWQ6IHttZWRpYV9pZCwgLi4ufX0KICAgICAgICBzZWxmLl9wcmVsb2FkZWQ6IERpY3RbaW50LCBTZXRbc3RyXV0gPSB7fQoKICAgIGFzeW5jIGRlZiBwcmVsb2FkX25leHQoc2VsZiwgY2hhdF9pZDogaW50LCBtZWRpYSkgLT4gTm9uZToKICAgICAgICAiIiIKICAgICAgICBTdGFydCBwcmVsb2FkaW5nIHRoZSBuZXh0IHRyYWNrIGZvciBhIGNoYXQuCiAgICAgICAgCiAgICAgICAgQXJnczoKICAgICAgICAgICAgY2hhdF9pZDogVGhlIGNoYXQgSUQgdG8gcHJlbG9hZCBmb3IKICAgICAgICAgICAgbWVkaWE6IFRoZSBNZWRpYS9UcmFjayBvYmplY3QgdG8gcHJlbG9hZAogICAgICAgICIiIgogICAgICAgIG1lZGlhX2lkID0gZ2V0YXR0cihtZWRpYSwgImlkIiwgTm9uZSkKICAgICAgICBpZiBub3QgbWVkaWFfaWQ6CiAgICAgICAgICAgIHJldHVybgoKICAgICAgICAjIEluaXRpYWxpemUgcGVyLWNoYXQgc3RvcmVzCiAgICAgICAgaWYgY2hhdF9pZCBub3QgaW4gc2VsZi5fdGFza3M6CiAgICAgICAgICAgIHNlbGYuX3Rhc2tzW2NoYXRfaWRdID0ge30KICAgICAgICBpZiBjaGF0X2lkIG5vdCBpbiBzZWxmLl9wcmVsb2FkZWQ6CiAgICAgICAgICAgIHNlbGYuX3ByZWxvYWRlZFtjaGF0X2lkXSA9IHNldCgpCgogICAgICAgICMgU2tpcCBpZiBhbHJlYWR5IHByZWxvYWRlZAogICAgICAgIGlmIG1lZGlhX2lkIGluIHNlbGYuX3ByZWxvYWRlZFtjaGF0X2lkXToKICAgICAgICAgICAgbG9nZ2VyLmRlYnVnKGYiVHJhY2sge21lZGlhX2lkfSBhbHJlYWR5IHByZWxvYWRlZCBmb3IgY2hhdCB7Y2hhdF9pZH0iKQogICAgICAgICAgICByZXR1cm4KCiAgICAgICAgIyBTa2lwIGlmIGFscmVhZHkgYWN0aXZlbHkgcHJlbG9hZGluZwogICAgICAgIGV4aXN0aW5nID0gc2VsZi5fdGFza3NbY2hhdF9pZF0uZ2V0KG1lZGlhX2lkKQogICAgICAgIGlmIGV4aXN0aW5nIGFuZCBub3QgZXhpc3RpbmcuZG9uZSgpOgogICAgICAgICAgICByZXR1cm4KCiAgICAgICAgIyBTdGFydCBuZXcgcHJlbG9hZCB0YXNrCiAgICAgICAgdGFzayA9IGFzeW5jaW8uY3JlYXRlX3Rhc2soc2VsZi5fcHJlbG9hZF90YXNrKGNoYXRfaWQsIG1lZGlhKSkKICAgICAgICBzZWxmLl90YXNrc1tjaGF0X2lkXVttZWRpYV9pZF0gPSB0YXNrCgogICAgYXN5bmMgZGVmIF9wcmVsb2FkX3Rhc2soc2VsZiwgY2hhdF9pZDogaW50LCBtZWRpYSkgLT4gTm9uZToKICAgICAgICAiIiIKICAgICAgICBCYWNrZ3JvdW5kIHRhc2sgdG8gcHJlbG9hZCBhIHRyYWNrLgogICAgICAgIAogICAgICAgIEFyZ3M6CiAgICAgICAgICAgIGNoYXRfaWQ6IFRoZSBjaGF0IElEIHRvIHByZWxvYWQgZm9yCiAgICAgICAgICAgIG1lZGlhOiBUaGUgTWVkaWEvVHJhY2sgb2JqZWN0IHRvIHByZWxvYWQKICAgICAgICAiIiIKICAgICAgICB0cnk6CiAgICAgICAgICAgICMgSW1wb3J0IGhlcmUgdG8gYXZvaWQgY2lyY3VsYXIgZGVwZW5kZW5jeQogICAgICAgICAgICBmcm9tIEVsZXZlbnl0cyBpbXBvcnQgeXQKCiAgICAgICAgICAgIGxvZ2dlci5kZWJ1ZyhmIlN0YXJ0aW5nIHByZWxvYWQgZm9yIGNoYXQge2NoYXRfaWR9OiB7bWVkaWEudGl0bGV9IikKICAgICAgICAgICAgCiAgICAgICAgICAgICMgRG93bmxvYWQgdGhlIHRyYWNrCiAgICAgICAgICAgIGlmIG5vdCBtZWRpYS5maWxlX3BhdGg6CiAgICAgICAgICAgICAgICBtZWRpYS5maWxlX3BhdGggPSBhd2FpdCB5dC5kb3dubG9hZCgKICAgICAgICAgICAgICAgICAgICBtZWRpYS5pZCwKICAgICAgICAgICAgICAgICAgICB2aWRlbz1nZXRhdHRyKG1lZGlhLCAidmlkZW8iLCBGYWxzZSksCiAgICAgICAgICAgICAgICApCiAgICAgICAgICAgICAgICBpZiBtZWRpYS5maWxlX3BhdGg6CiAgICAgICAgICAgICAgICAgICAgc2VsZi5fcHJlbG9hZGVkLnNldGRlZmF1bHQoY2hhdF9pZCwgc2V0KCkpLmFkZChtZWRpYS5pZCkKICAgICAgICAgICAgICAgIGxvZ2dlci5kZWJ1ZyhmIlByZWxvYWQgY29tcGxldGUgZm9yIGNoYXQge2NoYXRfaWR9OiB7bWVkaWEudGl0bGV9IikKICAgICAgICAgICAgZWxzZToKICAgICAgICAgICAgICAgIGxvZ2dlci5kZWJ1ZyhmIlRyYWNrIGFscmVhZHkgaGFzIGZpbGVfcGF0aCBmb3IgY2hhdCB7Y2hhdF9pZH06IHttZWRpYS50aXRsZX0iKQogICAgICAgICAgICAgICAgc2VsZi5fcHJlbG9hZGVkLnNldGRlZmF1bHQoY2hhdF9pZCwgc2V0KCkpLmFkZChtZWRpYS5pZCkKICAgICAgICAgICAgICAgIAogICAgICAgIGV4Y2VwdCBhc3luY2lvLkNhbmNlbGxlZEVycm9yOgogICAgICAgICAgICBsb2dnZXIuZGVidWcoZiJQcmVsb2FkIGNhbmNlbGxlZCBmb3IgY2hhdCB7Y2hhdF9pZH0iKQogICAgICAgICAgICByYWlzZQogICAgICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAgICAgbG9nZ2VyLmVycm9yKGYiUHJlbG9hZCBlcnJvciBmb3IgY2hhdCB7Y2hhdF9pZH06IHtlfSIpCiAgICAgICAgZmluYWxseToKICAgICAgICAgICAgIyBDbGVhbiB1cCB0YXNrIHJlZmVyZW5jZSBmb3IgdGhpcyBzcGVjaWZpYyBtZWRpYSBpZAogICAgICAgICAgICBtZWRpYV90YXNrcyA9IHNlbGYuX3Rhc2tzLmdldChjaGF0X2lkKQogICAgICAgICAgICBpZiBtZWRpYV90YXNrczoKICAgICAgICAgICAgICAgIG1lZGlhX3Rhc2tzLnBvcChnZXRhdHRyKG1lZGlhLCAiaWQiLCBOb25lKSwgTm9uZSkKICAgICAgICAgICAgICAgIGlmIG5vdCBtZWRpYV90YXNrczoKICAgICAgICAgICAgICAgICAgICBzZWxmLl90YXNrcy5wb3AoY2hhdF9pZCwgTm9uZSkKCiAgICBhc3luYyBkZWYgY2FuY2VsX3ByZWxvYWQoc2VsZiwgY2hhdF9pZDogaW50KSAtPiBOb25lOgogICAgICAgICIiIgogICAgICAgIENhbmNlbCBhbnkgYWN0aXZlIHByZWxvYWQgdGFzayBmb3IgYSBjaGF0LgogICAgICAgIAogICAgICAgIEFyZ3M6CiAgICAgICAgICAgIGNoYXRfaWQ6IFRoZSBjaGF0IElEIHRvIGNhbmNlbCBwcmVsb2FkIGZvcgogICAgICAgICIiIgogICAgICAgIG1lZGlhX3Rhc2tzID0gc2VsZi5fdGFza3MuZ2V0KGNoYXRfaWQsIHt9KQogICAgICAgIGlmIG1lZGlhX3Rhc2tzOgogICAgICAgICAgICBhY3RpdmUgPSBbdGFzayBmb3IgdGFzayBpbiBtZWRpYV90YXNrcy52YWx1ZXMoKSBpZiBub3QgdGFzay5kb25lKCldCiAgICAgICAgICAgIGZvciB0YXNrIGluIGFjdGl2ZToKICAgICAgICAgICAgICAgIHRhc2suY2FuY2VsKCkKICAgICAgICAgICAgaWYgYWN0aXZlOgogICAgICAgICAgICAgICAgYXdhaXQgYXN5bmNpby5nYXRoZXIoKmFjdGl2ZSwgcmV0dXJuX2V4Y2VwdGlvbnM9VHJ1ZSkKICAgICAgICAgICAgbG9nZ2VyLmRlYnVnKGYiQ2FuY2VsbGVkIHByZWxvYWQgZm9yIGNoYXQge2NoYXRfaWR9IikKICAgICAgICAKICAgICAgICAjIENsZWFyIHByZWxvYWRlZCBjYWNoZQogICAgICAgIHNlbGYuX3ByZWxvYWRlZC5wb3AoY2hhdF9pZCwgTm9uZSkKICAgICAgICBzZWxmLl90YXNrcy5wb3AoY2hhdF9pZCwgTm9uZSkKCiAgICBkZWYgaXNfcHJlbG9hZGVkKHNlbGYsIGNoYXRfaWQ6IGludCwgbWVkaWFfaWQ6IHN0cikgLT4gYm9vbDoKICAgICAgICAiIiIKICAgICAgICBDaGVjayBpZiBhIHNwZWNpZmljIHRyYWNrIGlzIHByZWxvYWRlZCBmb3IgYSBjaGF0LgogICAgICAgIAogICAgICAgIEFyZ3M6CiAgICAgICAgICAgIGNoYXRfaWQ6IFRoZSBjaGF0IElEIHRvIGNoZWNrCiAgICAgICAgICAgIG1lZGlhX2lkOiBUaGUgbWVkaWEgSUQgdG8gY2hlY2sKICAgICAgICAgICAgCiAgICAgICAgUmV0dXJuczoKICAgICAgICAgICAgYm9vbDogVHJ1ZSBpZiB0aGUgdHJhY2sgaXMgcHJlbG9hZGVkCiAgICAgICAgIiIiCiAgICAgICAgcmV0dXJuIG1lZGlhX2lkIGluIHNlbGYuX3ByZWxvYWRlZC5nZXQoY2hhdF9pZCwgc2V0KCkpCgogICAgZGVmIGNsZWFyKHNlbGYsIGNoYXRfaWQ6IGludCkgLT4gTm9uZToKICAgICAgICAiIiIKICAgICAgICBDbGVhciBwcmVsb2FkIGNhY2hlIGZvciBhIGNoYXQgKG5vbi1hc3luYyB2ZXJzaW9uKS4KICAgICAgICAKICAgICAgICBBcmdzOgogICAgICAgICAgICBjaGF0X2lkOiBUaGUgY2hhdCBJRCB0byBjbGVhcgogICAgICAgICIiIgogICAgICAgIHNlbGYuX3ByZWxvYWRlZC5wb3AoY2hhdF9pZCwgTm9uZSkKICAgICAgICBzZWxmLl90YXNrcy5wb3AoY2hhdF9pZCwgTm9uZSkKCiAgICBhc3luYyBkZWYgc3RhcnRfcHJlbG9hZChzZWxmLCBjaGF0X2lkOiBpbnQsIGNvdW50OiBpbnQgPSAyKSAtPiBOb25lOgogICAgICAgICIiIgogICAgICAgIFN0YXJ0IHByZWxvYWRpbmcgbXVsdGlwbGUgdXBjb21pbmcgdHJhY2tzIGZyb20gcXVldWUuCiAgICAgICAgCiAgICAgICAgQXJnczoKICAgICAgICAgICAgY2hhdF9pZDogVGhlIGNoYXQgSUQgdG8gcHJlbG9hZCBmb3IKICAgICAgICAgICAgY291bnQ6IE51bWJlciBvZiB0cmFja3MgdG8gcHJlbG9hZCAoZGVmYXVsdDogMikKICAgICAgICAiIiIKICAgICAgICB0cnk6CiAgICAgICAgICAgICMgSW1wb3J0IGhlcmUgdG8gYXZvaWQgY2lyY3VsYXIgZGVwZW5kZW5jeQogICAgICAgICAgICBmcm9tIEVsZXZlbnl0cyBpbXBvcnQgcXVldWUKICAgICAgICAgICAgCiAgICAgICAgICAgICMgR2V0IGZ1bGwgcXVldWUgYW5kIHByZWxvYWQgdXBjb21pbmcgdHJhY2tzIChza2lwIGZpcnN0IG9uZSAtIHRoYXQncyBjdXJyZW50KQogICAgICAgICAgICBhbGxfdHJhY2tzID0gcXVldWUuZ2V0X3F1ZXVlKGNoYXRfaWQpCiAgICAgICAgICAgIGlmIGxlbihhbGxfdHJhY2tzKSA+IDE6CiAgICAgICAgICAgICAgICAjIFByZWxvYWQgbmV4dCAnY291bnQnIHRyYWNrcwogICAgICAgICAgICAgICAgdXBjb21pbmcgPSBhbGxfdHJhY2tzWzE6bWluKDEgKyBjb3VudCwgbGVuKGFsbF90cmFja3MpKV0KICAgICAgICAgICAgICAgIGZvciBtZWRpYSBpbiB1cGNvbWluZzoKICAgICAgICAgICAgICAgICAgICBpZiBub3QgbWVkaWEuZmlsZV9wYXRoOgogICAgICAgICAgICAgICAgICAgICAgICBhd2FpdCBzZWxmLnByZWxvYWRfbmV4dChjaGF0X2lkLCBtZWRpYSkKICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgICAgICAgICBsb2dnZXIuZGVidWcoZiJFcnJvciBpbiBzdGFydF9wcmVsb2FkIGZvciB7Y2hhdF9pZH06IHtlfSIpCg==").decode("utf-8"))

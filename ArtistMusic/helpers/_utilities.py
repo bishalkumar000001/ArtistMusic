@@ -1,162 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-
-import re
-from pyrogram import enums, errors, types
-from ArtistMusic import app, config
-
-
-class Utilities:
-    def __init__(self):
-        pass
-
-    def format_eta(self, seconds: int) -> str:
-        if seconds < 60:
-            return f"{seconds}s"
-        elif seconds < 3600:
-            return f"{seconds // 60}:{seconds % 60:02d} min"
-        else:
-            h = seconds // 3600
-            m = (seconds % 3600) // 60
-            s = seconds % 60
-            return f"{h}:{m:02d}:{s:02d} h"
-
-    def format_size(self, bytes: int) -> str:
-        if bytes >= 1024**3:
-            return f"{bytes / 1024 ** 3:.2f} GB"
-        elif bytes >= 1024**2:
-            return f"{bytes / 1024 ** 2:.2f} MB"
-        else:
-            return f"{bytes / 1024:.2f} KB"
-
-    def format_duration(self, seconds: int) -> str:
-        """Format duration as HH:MM:SS or MM:SS depending on length."""
-        if seconds >= 3600:  # 1 hour or more
-            hours = seconds // 3600
-            minutes = (seconds % 3600) // 60
-            secs = seconds % 60
-            return f"{hours}:{minutes:02d}:{secs:02d}"
-        else:  # Less than 1 hour
-            minutes = seconds // 60
-            secs = seconds % 60
-            return f"{minutes:02d}:{secs:02d}"
-
-    def to_seconds(self, time: str) -> int:
-        parts = [int(p) for p in time.strip().split(":")]
-        return sum(value * 60**i for i, value in enumerate(reversed(parts)))
-
-    async def extract_user(self, msg: types.Message) -> types.User | None:
-        if msg.reply_to_message:
-            return msg.reply_to_message.from_user
-
-        if msg.entities:
-            for e in msg.entities:
-                if e.type == enums.MessageEntityType.TEXT_MENTION:
-                    return e.user
-
-        if msg.text:
-            try:
-                if m := re.search(r"@(\w{5,32})", msg.text):
-                    return await app.get_users(m.group(0))
-                if m := re.search(r"\b\d{6,15}\b", msg.text):
-                    return await app.get_users(int(m.group(0)))
-            except:
-                pass
-
-        return None
-
-    async def play_log(
-        self,
-        m: types.Message,
-        title: str,
-        duration: str,
-    ) -> None:
-        if m.chat.id == app.logger:
-            return
-        _text = m.lang["play_log"].format(
-            app.name,
-            m.chat.id,
-            m.chat.title,
-            m.from_user.id,
-            m.from_user.mention,
-            m.link,
-            title,
-            duration,
-        )
-        await app.send_message(chat_id=app.logger, text=_text)
-
-    async def send_log(self, m: types.Message) -> None:
-        """Log new user to logger group when they start the bot in private chat."""
-        await app.send_message(
-            chat_id=app.logger,
-            text=m.lang["log_user"].format(
-                m.from_user.id,
-                f"@{m.from_user.username}",
-                m.from_user.mention,
-            ),
-        )
-
-    async def safe_text(
-        self,
-        message: types.Message,
-        text: str,
-        *,
-        reply_markup=None,
-        quote: bool | None = True,
-    ) -> types.Message | None:
-        """Send text but gracefully fallback to media-only chats."""
-        if not message:
-            return None
-        try:
-            return await message.reply_text(
-                text=text,
-                reply_markup=reply_markup,
-                quote=quote,
-            )
-        except (errors.ChatSendPlainForbidden, errors.ChatWriteForbidden):
-            fallback_photo = getattr(config, "START_IMG", None)
-            if not fallback_photo:
-                return None
-            try:
-                return await message.reply_photo(
-                    photo=fallback_photo,
-                    caption=text,
-                    reply_markup=reply_markup,
-                    quote=quote,
-                )
-            except errors.RPCError:
-                return None
-        except errors.RPCError:
-            return None
-
-    async def safe_edit(
-        self,
-        message: types.Message | None,
-        text: str,
-        *,
-        reply_markup=None,
-    ) -> bool:
-        """Edit text or caption safely depending on message type."""
-        if not message:
-            return False
-        try:
-            if message.text is not None:
-                await message.edit_text(text=text, reply_markup=reply_markup)
-            else:
-                await message.edit_caption(caption=text, reply_markup=reply_markup)
-            return True
-        except errors.RPCError:
-            return False
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgppbXBvcnQgcmUKZnJvbSBweXJvZ3JhbSBpbXBvcnQgZW51bXMsIGVycm9ycywgdHlwZXMKZnJvbSBFbGV2ZW55dHMgaW1wb3J0IGFwcCwgY29uZmlnCgoKY2xhc3MgVXRpbGl0aWVzOgogICAgZGVmIF9faW5pdF9fKHNlbGYpOgogICAgICAgIHBhc3MKCiAgICBkZWYgZm9ybWF0X2V0YShzZWxmLCBzZWNvbmRzOiBpbnQpIC0+IHN0cjoKICAgICAgICBpZiBzZWNvbmRzIDwgNjA6CiAgICAgICAgICAgIHJldHVybiBmIntzZWNvbmRzfXMiCiAgICAgICAgZWxpZiBzZWNvbmRzIDwgMzYwMDoKICAgICAgICAgICAgcmV0dXJuIGYie3NlY29uZHMgLy8gNjB9OntzZWNvbmRzICUgNjA6MDJkfSBtaW4iCiAgICAgICAgZWxzZToKICAgICAgICAgICAgaCA9IHNlY29uZHMgLy8gMzYwMAogICAgICAgICAgICBtID0gKHNlY29uZHMgJSAzNjAwKSAvLyA2MAogICAgICAgICAgICBzID0gc2Vjb25kcyAlIDYwCiAgICAgICAgICAgIHJldHVybiBmIntofTp7bTowMmR9OntzOjAyZH0gaCIKCiAgICBkZWYgZm9ybWF0X3NpemUoc2VsZiwgYnl0ZXM6IGludCkgLT4gc3RyOgogICAgICAgIGlmIGJ5dGVzID49IDEwMjQqKjM6CiAgICAgICAgICAgIHJldHVybiBmIntieXRlcyAvIDEwMjQgKiogMzouMmZ9IEdCIgogICAgICAgIGVsaWYgYnl0ZXMgPj0gMTAyNCoqMjoKICAgICAgICAgICAgcmV0dXJuIGYie2J5dGVzIC8gMTAyNCAqKiAyOi4yZn0gTUIiCiAgICAgICAgZWxzZToKICAgICAgICAgICAgcmV0dXJuIGYie2J5dGVzIC8gMTAyNDouMmZ9IEtCIgoKICAgIGRlZiBmb3JtYXRfZHVyYXRpb24oc2VsZiwgc2Vjb25kczogaW50KSAtPiBzdHI6CiAgICAgICAgIiIiRm9ybWF0IGR1cmF0aW9uIGFzIEhIOk1NOlNTIG9yIE1NOlNTIGRlcGVuZGluZyBvbiBsZW5ndGguIiIiCiAgICAgICAgaWYgc2Vjb25kcyA+PSAzNjAwOiAgIyAxIGhvdXIgb3IgbW9yZQogICAgICAgICAgICBob3VycyA9IHNlY29uZHMgLy8gMzYwMAogICAgICAgICAgICBtaW51dGVzID0gKHNlY29uZHMgJSAzNjAwKSAvLyA2MAogICAgICAgICAgICBzZWNzID0gc2Vjb25kcyAlIDYwCiAgICAgICAgICAgIHJldHVybiBmIntob3Vyc306e21pbnV0ZXM6MDJkfTp7c2VjczowMmR9IgogICAgICAgIGVsc2U6ICAjIExlc3MgdGhhbiAxIGhvdXIKICAgICAgICAgICAgbWludXRlcyA9IHNlY29uZHMgLy8gNjAKICAgICAgICAgICAgc2VjcyA9IHNlY29uZHMgJSA2MAogICAgICAgICAgICByZXR1cm4gZiJ7bWludXRlczowMmR9OntzZWNzOjAyZH0iCgogICAgZGVmIHRvX3NlY29uZHMoc2VsZiwgdGltZTogc3RyKSAtPiBpbnQ6CiAgICAgICAgcGFydHMgPSBbaW50KHApIGZvciBwIGluIHRpbWUuc3RyaXAoKS5zcGxpdCgiOiIpXQogICAgICAgIHJldHVybiBzdW0odmFsdWUgKiA2MCoqaSBmb3IgaSwgdmFsdWUgaW4gZW51bWVyYXRlKHJldmVyc2VkKHBhcnRzKSkpCgogICAgYXN5bmMgZGVmIGV4dHJhY3RfdXNlcihzZWxmLCBtc2c6IHR5cGVzLk1lc3NhZ2UpIC0+IHR5cGVzLlVzZXIgfCBOb25lOgogICAgICAgIGlmIG1zZy5yZXBseV90b19tZXNzYWdlOgogICAgICAgICAgICByZXR1cm4gbXNnLnJlcGx5X3RvX21lc3NhZ2UuZnJvbV91c2VyCgogICAgICAgIGlmIG1zZy5lbnRpdGllczoKICAgICAgICAgICAgZm9yIGUgaW4gbXNnLmVudGl0aWVzOgogICAgICAgICAgICAgICAgaWYgZS50eXBlID09IGVudW1zLk1lc3NhZ2VFbnRpdHlUeXBlLlRFWFRfTUVOVElPTjoKICAgICAgICAgICAgICAgICAgICByZXR1cm4gZS51c2VyCgogICAgICAgIGlmIG1zZy50ZXh0OgogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICBpZiBtIDo9IHJlLnNlYXJjaChyIkAoXHd7NSwzMn0pIiwgbXNnLnRleHQpOgogICAgICAgICAgICAgICAgICAgIHJldHVybiBhd2FpdCBhcHAuZ2V0X3VzZXJzKG0uZ3JvdXAoMCkpCiAgICAgICAgICAgICAgICBpZiBtIDo9IHJlLnNlYXJjaChyIlxiXGR7NiwxNX1cYiIsIG1zZy50ZXh0KToKICAgICAgICAgICAgICAgICAgICByZXR1cm4gYXdhaXQgYXBwLmdldF91c2VycyhpbnQobS5ncm91cCgwKSkpCiAgICAgICAgICAgIGV4Y2VwdDoKICAgICAgICAgICAgICAgIHBhc3MKCiAgICAgICAgcmV0dXJuIE5vbmUKCiAgICBhc3luYyBkZWYgcGxheV9sb2coCiAgICAgICAgc2VsZiwKICAgICAgICBtOiB0eXBlcy5NZXNzYWdlLAogICAgICAgIHRpdGxlOiBzdHIsCiAgICAgICAgZHVyYXRpb246IHN0ciwKICAgICkgLT4gTm9uZToKICAgICAgICBpZiBtLmNoYXQuaWQgPT0gYXBwLmxvZ2dlcjoKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgX3RleHQgPSBtLmxhbmdbInBsYXlfbG9nIl0uZm9ybWF0KAogICAgICAgICAgICBhcHAubmFtZSwKICAgICAgICAgICAgbS5jaGF0LmlkLAogICAgICAgICAgICBtLmNoYXQudGl0bGUsCiAgICAgICAgICAgIG0uZnJvbV91c2VyLmlkLAogICAgICAgICAgICBtLmZyb21fdXNlci5tZW50aW9uLAogICAgICAgICAgICBtLmxpbmssCiAgICAgICAgICAgIHRpdGxlLAogICAgICAgICAgICBkdXJhdGlvbiwKICAgICAgICApCiAgICAgICAgYXdhaXQgYXBwLnNlbmRfbWVzc2FnZShjaGF0X2lkPWFwcC5sb2dnZXIsIHRleHQ9X3RleHQpCgogICAgYXN5bmMgZGVmIHNlbmRfbG9nKHNlbGYsIG06IHR5cGVzLk1lc3NhZ2UpIC0+IE5vbmU6CiAgICAgICAgIiIiTG9nIG5ldyB1c2VyIHRvIGxvZ2dlciBncm91cCB3aGVuIHRoZXkgc3RhcnQgdGhlIGJvdCBpbiBwcml2YXRlIGNoYXQuIiIiCiAgICAgICAgYXdhaXQgYXBwLnNlbmRfbWVzc2FnZSgKICAgICAgICAgICAgY2hhdF9pZD1hcHAubG9nZ2VyLAogICAgICAgICAgICB0ZXh0PW0ubGFuZ1sibG9nX3VzZXIiXS5mb3JtYXQoCiAgICAgICAgICAgICAgICBtLmZyb21fdXNlci5pZCwKICAgICAgICAgICAgICAgIGYiQHttLmZyb21fdXNlci51c2VybmFtZX0iLAogICAgICAgICAgICAgICAgbS5mcm9tX3VzZXIubWVudGlvbiwKICAgICAgICAgICAgKSwKICAgICAgICApCgogICAgYXN5bmMgZGVmIHNhZmVfdGV4dCgKICAgICAgICBzZWxmLAogICAgICAgIG1lc3NhZ2U6IHR5cGVzLk1lc3NhZ2UsCiAgICAgICAgdGV4dDogc3RyLAogICAgICAgICosCiAgICAgICAgcmVwbHlfbWFya3VwPU5vbmUsCiAgICAgICAgcXVvdGU6IGJvb2wgfCBOb25lID0gVHJ1ZSwKICAgICkgLT4gdHlwZXMuTWVzc2FnZSB8IE5vbmU6CiAgICAgICAgIiIiU2VuZCB0ZXh0IGJ1dCBncmFjZWZ1bGx5IGZhbGxiYWNrIHRvIG1lZGlhLW9ubHkgY2hhdHMuIiIiCiAgICAgICAgaWYgbm90IG1lc3NhZ2U6CiAgICAgICAgICAgIHJldHVybiBOb25lCiAgICAgICAgdHJ5OgogICAgICAgICAgICByZXR1cm4gYXdhaXQgbWVzc2FnZS5yZXBseV90ZXh0KAogICAgICAgICAgICAgICAgdGV4dD10ZXh0LAogICAgICAgICAgICAgICAgcmVwbHlfbWFya3VwPXJlcGx5X21hcmt1cCwKICAgICAgICAgICAgICAgIHF1b3RlPXF1b3RlLAogICAgICAgICAgICApCiAgICAgICAgZXhjZXB0IChlcnJvcnMuQ2hhdFNlbmRQbGFpbkZvcmJpZGRlbiwgZXJyb3JzLkNoYXRXcml0ZUZvcmJpZGRlbik6CiAgICAgICAgICAgIGZhbGxiYWNrX3Bob3RvID0gZ2V0YXR0cihjb25maWcsICJTVEFSVF9JTUciLCBOb25lKQogICAgICAgICAgICBpZiBub3QgZmFsbGJhY2tfcGhvdG86CiAgICAgICAgICAgICAgICByZXR1cm4gTm9uZQogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICByZXR1cm4gYXdhaXQgbWVzc2FnZS5yZXBseV9waG90bygKICAgICAgICAgICAgICAgICAgICBwaG90bz1mYWxsYmFja19waG90bywKICAgICAgICAgICAgICAgICAgICBjYXB0aW9uPXRleHQsCiAgICAgICAgICAgICAgICAgICAgcmVwbHlfbWFya3VwPXJlcGx5X21hcmt1cCwKICAgICAgICAgICAgICAgICAgICBxdW90ZT1xdW90ZSwKICAgICAgICAgICAgICAgICkKICAgICAgICAgICAgZXhjZXB0IGVycm9ycy5SUENFcnJvcjoKICAgICAgICAgICAgICAgIHJldHVybiBOb25lCiAgICAgICAgZXhjZXB0IGVycm9ycy5SUENFcnJvcjoKICAgICAgICAgICAgcmV0dXJuIE5vbmUKCiAgICBhc3luYyBkZWYgc2FmZV9lZGl0KAogICAgICAgIHNlbGYsCiAgICAgICAgbWVzc2FnZTogdHlwZXMuTWVzc2FnZSB8IE5vbmUsCiAgICAgICAgdGV4dDogc3RyLAogICAgICAgICosCiAgICAgICAgcmVwbHlfbWFya3VwPU5vbmUsCiAgICApIC0+IGJvb2w6CiAgICAgICAgIiIiRWRpdCB0ZXh0IG9yIGNhcHRpb24gc2FmZWx5IGRlcGVuZGluZyBvbiBtZXNzYWdlIHR5cGUuIiIiCiAgICAgICAgaWYgbm90IG1lc3NhZ2U6CiAgICAgICAgICAgIHJldHVybiBGYWxzZQogICAgICAgIHRyeToKICAgICAgICAgICAgaWYgbWVzc2FnZS50ZXh0IGlzIG5vdCBOb25lOgogICAgICAgICAgICAgICAgYXdhaXQgbWVzc2FnZS5lZGl0X3RleHQodGV4dD10ZXh0LCByZXBseV9tYXJrdXA9cmVwbHlfbWFya3VwKQogICAgICAgICAgICBlbHNlOgogICAgICAgICAgICAgICAgYXdhaXQgbWVzc2FnZS5lZGl0X2NhcHRpb24oY2FwdGlvbj10ZXh0LCByZXBseV9tYXJrdXA9cmVwbHlfbWFya3VwKQogICAgICAgICAgICByZXR1cm4gVHJ1ZQogICAgICAgIGV4Y2VwdCBlcnJvcnMuUlBDRXJyb3I6CiAgICAgICAgICAgIHJldHVybiBGYWxzZQo=").decode("utf-8"))

@@ -1,75 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import logging
-
-from py_yt import VideosSearch
-from pyrogram import errors, types
-
-from ArtistMusic import app
-from ArtistMusic.helpers import buttons
-
-_logger = logging.getLogger(__name__)
-
-
-@app.on_inline_query(~app.bl_users)
-async def inline_query_handler(_, query: types.InlineQuery):
-    text = query.query.strip().lower()
-    if not text:
-        return
-
-    try:
-        search = VideosSearch(text, limit=15)
-        results = (await search.next()).get("result", [])
-
-        answers = []
-        for video in results:
-            title = video.get("title", "Unknown Title").title()
-            duration = video.get("duration", "N/A")
-            views = video.get("viewCount", {}).get("short", "N/A")
-            thumbnail = video.get("thumbnails", [{}])[
-                0].get("url", "").split("?")[0]
-            channel = video.get("channel", {}).get("name", "Unknown Channel")
-            channellink = video.get("channel", {}).get(
-                "link", "https://youtube.com")
-            link = video.get("link", "https://youtube.com")
-            published = video.get("publishedTime", "N/A")
-
-            description = f"{views} | {duration} | {channel} | {published}"
-            caption = (
-                f"<b>Title:</b> <a href='{link}'>{title[:250]}</a>\n\n"
-                f"<b>Duration:</b> {duration}\n"
-                f"<b>Views:</b> <code>{views}</code>\n"
-                f"<b>Channel:</b> <a href='{channellink}'>{channel}</a>\n"
-                f"<b>Published:</b> {published}\n\n"
-                f"<u><i>Fetched by {app.name}</i></u>"
-            )
-
-            answers.append(
-                types.InlineQueryResultPhoto(
-                    photo_url=thumbnail,
-                    title=title,
-                    description=description,
-                    caption=caption,
-                    reply_markup=buttons.yt_key(link),
-                )
-            )
-
-        if answers:
-            await app.answer_inline_query(query.id, results=answers, cache_time=5)
-    except errors.QueryIdInvalid:
-        pass  # Query expired — normal, no action needed
-    except Exception as e:
-        _logger.error(f"Inline query error for '{text}': {e}")
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmZyb20gcHlfeXQgaW1wb3J0IFZpZGVvc1NlYXJjaApmcm9tIHB5cm9ncmFtIGltcG9ydCB0eXBlcwoKZnJvbSBFbGV2ZW55dHMgaW1wb3J0IGFwcApmcm9tIEVsZXZlbnl0cy5oZWxwZXJzIGltcG9ydCBidXR0b25zCgoKQGFwcC5vbl9pbmxpbmVfcXVlcnkofmFwcC5ibF91c2VycykKYXN5bmMgZGVmIGlubGluZV9xdWVyeV9oYW5kbGVyKF8sIHF1ZXJ5OiB0eXBlcy5JbmxpbmVRdWVyeSk6CiAgICB0ZXh0ID0gcXVlcnkucXVlcnkuc3RyaXAoKS5sb3dlcigpCiAgICBpZiBub3QgdGV4dDoKICAgICAgICByZXR1cm4KCiAgICB0cnk6CiAgICAgICAgc2VhcmNoID0gVmlkZW9zU2VhcmNoKHRleHQsIGxpbWl0PTE1KQogICAgICAgIHJlc3VsdHMgPSAoYXdhaXQgc2VhcmNoLm5leHQoKSkuZ2V0KCJyZXN1bHQiLCBbXSkKCiAgICAgICAgYW5zd2VycyA9IFtdCiAgICAgICAgZm9yIHZpZGVvIGluIHJlc3VsdHM6CiAgICAgICAgICAgIHRpdGxlID0gdmlkZW8uZ2V0KCJ0aXRsZSIsICJVbmtub3duIFRpdGxlIikudGl0bGUoKQogICAgICAgICAgICBkdXJhdGlvbiA9IHZpZGVvLmdldCgiZHVyYXRpb24iLCAiTi9BIikKICAgICAgICAgICAgdmlld3MgPSB2aWRlby5nZXQoInZpZXdDb3VudCIsIHt9KS5nZXQoInNob3J0IiwgIk4vQSIpCiAgICAgICAgICAgIHRodW1ibmFpbCA9IHZpZGVvLmdldCgidGh1bWJuYWlscyIsIFt7fV0pWwogICAgICAgICAgICAgICAgMF0uZ2V0KCJ1cmwiLCAiIikuc3BsaXQoIj8iKVswXQogICAgICAgICAgICBjaGFubmVsID0gdmlkZW8uZ2V0KCJjaGFubmVsIiwge30pLmdldCgibmFtZSIsICJVbmtub3duIENoYW5uZWwiKQogICAgICAgICAgICBjaGFubmVsbGluayA9IHZpZGVvLmdldCgiY2hhbm5lbCIsIHt9KS5nZXQoCiAgICAgICAgICAgICAgICAibGluayIsICJodHRwczovL3lvdXR1YmUuY29tIikKICAgICAgICAgICAgbGluayA9IHZpZGVvLmdldCgibGluayIsICJodHRwczovL3lvdXR1YmUuY29tIikKICAgICAgICAgICAgcHVibGlzaGVkID0gdmlkZW8uZ2V0KCJwdWJsaXNoZWRUaW1lIiwgIk4vQSIpCgogICAgICAgICAgICBkZXNjcmlwdGlvbiA9IGYie3ZpZXdzfSB8IHtkdXJhdGlvbn0gfCB7Y2hhbm5lbH0gfCB7cHVibGlzaGVkfSIKICAgICAgICAgICAgY2FwdGlvbiA9ICgKICAgICAgICAgICAgICAgIGYiPGI+VGl0bGU6PC9iPiA8YSBocmVmPSd7bGlua30nPnt0aXRsZVs6MjUwXX08L2E+XG5cbiIKICAgICAgICAgICAgICAgIGYiPGI+RHVyYXRpb246PC9iPiB7ZHVyYXRpb259XG4iCiAgICAgICAgICAgICAgICBmIjxiPlZpZXdzOjwvYj4gPGNvZGU+e3ZpZXdzfTwvY29kZT5cbiIKICAgICAgICAgICAgICAgIGYiPGI+Q2hhbm5lbDo8L2I+IDxhIGhyZWY9J3tjaGFubmVsbGlua30nPntjaGFubmVsfTwvYT5cbiIKICAgICAgICAgICAgICAgIGYiPGI+UHVibGlzaGVkOjwvYj4ge3B1Ymxpc2hlZH1cblxuIgogICAgICAgICAgICAgICAgZiI8dT48aT5GZXRjaGVkIGJ5IHthcHAubmFtZX08L2k+PC91PiIKICAgICAgICAgICAgKQoKICAgICAgICAgICAgYW5zd2Vycy5hcHBlbmQoCiAgICAgICAgICAgICAgICB0eXBlcy5JbmxpbmVRdWVyeVJlc3VsdFBob3RvKAogICAgICAgICAgICAgICAgICAgIHBob3RvX3VybD10aHVtYm5haWwsCiAgICAgICAgICAgICAgICAgICAgdGl0bGU9dGl0bGUsCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb249ZGVzY3JpcHRpb24sCiAgICAgICAgICAgICAgICAgICAgY2FwdGlvbj1jYXB0aW9uLAogICAgICAgICAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLnl0X2tleShsaW5rKSwKICAgICAgICAgICAgICAgICkKICAgICAgICAgICAgKQoKICAgICAgICBpZiBhbnN3ZXJzOgogICAgICAgICAgICBhd2FpdCBhcHAuYW5zd2VyX2lubGluZV9xdWVyeShxdWVyeS5pZCwgcmVzdWx0cz1hbnN3ZXJzLCBjYWNoZV90aW1lPTUpCiAgICBleGNlcHQ6CiAgICAgICAgcGFzcwo=").decode("utf-8"))

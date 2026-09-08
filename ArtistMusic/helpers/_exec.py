@@ -1,116 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import os
-import ast
-import traceback
-from typing import Optional
-
-
-async def meval(code: str, globs: dict, **kwargs):
-    """
-    Asynchronously evaluate a code string in a controlled environment.
-    """
-
-    # Copy globals to avoid mutation
-    globs = globs.copy()
-
-    # Special globals (for relative imports)
-    _global_arg = "_globs"
-    while _global_arg in globs:
-        _global_arg = "_" + _global_arg
-
-    kwargs[_global_arg] = {k: globs[k]
-                           for k in ("__name__", "__package__") if k in globs}
-
-    root = ast.parse(code, mode="exec")
-    if not root.body:
-        return None
-
-    ret_name = "_ret"
-    while any(isinstance(n, ast.Name) and n.id == ret_name for n in ast.walk(root)) or ret_name in globs:
-        ret_name = "_" + ret_name
-
-    body = []
-    body.append(ast.Expr(ast.Call(
-        func=ast.Attribute(
-            value=ast.Call(func=ast.Name(
-                id="globals", ctx=ast.Load()), args=[], keywords=[]),
-            attr="update", ctx=ast.Load()
-        ),
-        args=[], keywords=[ast.keyword(
-            arg=None, value=ast.Name(id=_global_arg, ctx=ast.Load()))]
-    )))
-    body.append(ast.Assign(
-        targets=[ast.Name(id=ret_name, ctx=ast.Store())],
-        value=ast.List(elts=[], ctx=ast.Load())
-    ))
-
-    for node in root.body:
-        if isinstance(node, ast.Expr):
-            new_node = ast.Expr(
-                value=ast.Call(
-                    func=ast.Attribute(value=ast.Name(
-                        id=ret_name, ctx=ast.Load()), attr="append", ctx=ast.Load()),
-                    args=[node.value], keywords=[]
-                )
-            )
-            ast.copy_location(new_node, node)
-            body.append(new_node)
-        else:
-            body.append(node)
-    body.append(ast.Return(value=ast.Name(id=ret_name, ctx=ast.Load())))
-
-    func_def = ast.AsyncFunctionDef(
-        name="tmp",
-        args=ast.arguments(
-            posonlyargs=[], args=[], vararg=None,
-            kwonlyargs=[ast.arg(arg=k) for k in kwargs.keys()],
-            kw_defaults=[None] * len(kwargs),
-            kwarg=None, defaults=[]
-        ),
-        body=body, decorator_list=[]
-    )
-    ast.fix_missing_locations(func_def)
-
-    # Compile & execute
-    locs = {}
-    exec(compile(ast.Module([func_def], type_ignores=[]),
-         "<meval>", "exec"), {}, locs)
-
-    result = await locs["tmp"](**kwargs)
-    if not result:
-        return None
-    result = [await r if hasattr(r, "__await__") else r for r in result]
-    result = [r for r in result if r is not None]
-
-    return result[0] if len(result) == 1 else (result or None)
-
-
-def format_exception(exc: BaseException, tb: Optional[list[traceback.FrameSummary]] = None) -> str:
-    """Format exception traceback into a readable string."""
-    if tb is None:
-        tb = traceback.extract_tb(exc.__traceback__)
-
-    cwd = os.getcwd()
-    for frame in tb:
-        if cwd in frame.filename:
-            frame.filename = os.path.relpath(frame.filename)
-
-    return (
-        "Traceback (most recent call last):\n"
-        f"{''.join(traceback.format_list(tb))}"
-        f"{type(exc).__name__}{': ' + str(exc) if str(exc) else ''}"
-    )
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCBvcwppbXBvcnQgYXN0CmltcG9ydCB0cmFjZWJhY2sKZnJvbSB0eXBpbmcgaW1wb3J0IE9wdGlvbmFsCgoKYXN5bmMgZGVmIG1ldmFsKGNvZGU6IHN0ciwgZ2xvYnM6IGRpY3QsICoqa3dhcmdzKToKICAgICIiIgogICAgQXN5bmNocm9ub3VzbHkgZXZhbHVhdGUgYSBjb2RlIHN0cmluZyBpbiBhIGNvbnRyb2xsZWQgZW52aXJvbm1lbnQuCiAgICAiIiIKCiAgICAjIENvcHkgZ2xvYmFscyB0byBhdm9pZCBtdXRhdGlvbgogICAgZ2xvYnMgPSBnbG9icy5jb3B5KCkKCiAgICAjIFNwZWNpYWwgZ2xvYmFscyAoZm9yIHJlbGF0aXZlIGltcG9ydHMpCiAgICBfZ2xvYmFsX2FyZyA9ICJfZ2xvYnMiCiAgICB3aGlsZSBfZ2xvYmFsX2FyZyBpbiBnbG9iczoKICAgICAgICBfZ2xvYmFsX2FyZyA9ICJfIiArIF9nbG9iYWxfYXJnCgogICAga3dhcmdzW19nbG9iYWxfYXJnXSA9IHtrOiBnbG9ic1trXQogICAgICAgICAgICAgICAgICAgICAgICAgICBmb3IgayBpbiAoIl9fbmFtZV9fIiwgIl9fcGFja2FnZV9fIikgaWYgayBpbiBnbG9ic30KCiAgICByb290ID0gYXN0LnBhcnNlKGNvZGUsIG1vZGU9ImV4ZWMiKQogICAgaWYgbm90IHJvb3QuYm9keToKICAgICAgICByZXR1cm4gTm9uZQoKICAgIHJldF9uYW1lID0gIl9yZXQiCiAgICB3aGlsZSBhbnkoaXNpbnN0YW5jZShuLCBhc3QuTmFtZSkgYW5kIG4uaWQgPT0gcmV0X25hbWUgZm9yIG4gaW4gYXN0LndhbGsocm9vdCkpIG9yIHJldF9uYW1lIGluIGdsb2JzOgogICAgICAgIHJldF9uYW1lID0gIl8iICsgcmV0X25hbWUKCiAgICBib2R5ID0gW10KICAgIGJvZHkuYXBwZW5kKGFzdC5FeHByKGFzdC5DYWxsKAogICAgICAgIGZ1bmM9YXN0LkF0dHJpYnV0ZSgKICAgICAgICAgICAgdmFsdWU9YXN0LkNhbGwoZnVuYz1hc3QuTmFtZSgKICAgICAgICAgICAgICAgIGlkPSJnbG9iYWxzIiwgY3R4PWFzdC5Mb2FkKCkpLCBhcmdzPVtdLCBrZXl3b3Jkcz1bXSksCiAgICAgICAgICAgIGF0dHI9InVwZGF0ZSIsIGN0eD1hc3QuTG9hZCgpCiAgICAgICAgKSwKICAgICAgICBhcmdzPVtdLCBrZXl3b3Jkcz1bYXN0LmtleXdvcmQoCiAgICAgICAgICAgIGFyZz1Ob25lLCB2YWx1ZT1hc3QuTmFtZShpZD1fZ2xvYmFsX2FyZywgY3R4PWFzdC5Mb2FkKCkpKV0KICAgICkpKQogICAgYm9keS5hcHBlbmQoYXN0LkFzc2lnbigKICAgICAgICB0YXJnZXRzPVthc3QuTmFtZShpZD1yZXRfbmFtZSwgY3R4PWFzdC5TdG9yZSgpKV0sCiAgICAgICAgdmFsdWU9YXN0Lkxpc3QoZWx0cz1bXSwgY3R4PWFzdC5Mb2FkKCkpCiAgICApKQoKICAgIGZvciBub2RlIGluIHJvb3QuYm9keToKICAgICAgICBpZiBpc2luc3RhbmNlKG5vZGUsIGFzdC5FeHByKToKICAgICAgICAgICAgbmV3X25vZGUgPSBhc3QuRXhwcigKICAgICAgICAgICAgICAgIHZhbHVlPWFzdC5DYWxsKAogICAgICAgICAgICAgICAgICAgIGZ1bmM9YXN0LkF0dHJpYnV0ZSh2YWx1ZT1hc3QuTmFtZSgKICAgICAgICAgICAgICAgICAgICAgICAgaWQ9cmV0X25hbWUsIGN0eD1hc3QuTG9hZCgpKSwgYXR0cj0iYXBwZW5kIiwgY3R4PWFzdC5Mb2FkKCkpLAogICAgICAgICAgICAgICAgICAgIGFyZ3M9W25vZGUudmFsdWVdLCBrZXl3b3Jkcz1bXQogICAgICAgICAgICAgICAgKQogICAgICAgICAgICApCiAgICAgICAgICAgIGFzdC5jb3B5X2xvY2F0aW9uKG5ld19ub2RlLCBub2RlKQogICAgICAgICAgICBib2R5LmFwcGVuZChuZXdfbm9kZSkKICAgICAgICBlbHNlOgogICAgICAgICAgICBib2R5LmFwcGVuZChub2RlKQogICAgYm9keS5hcHBlbmQoYXN0LlJldHVybih2YWx1ZT1hc3QuTmFtZShpZD1yZXRfbmFtZSwgY3R4PWFzdC5Mb2FkKCkpKSkKCiAgICBmdW5jX2RlZiA9IGFzdC5Bc3luY0Z1bmN0aW9uRGVmKAogICAgICAgIG5hbWU9InRtcCIsCiAgICAgICAgYXJncz1hc3QuYXJndW1lbnRzKAogICAgICAgICAgICBwb3Nvbmx5YXJncz1bXSwgYXJncz1bXSwgdmFyYXJnPU5vbmUsCiAgICAgICAgICAgIGt3b25seWFyZ3M9W2FzdC5hcmcoYXJnPWspIGZvciBrIGluIGt3YXJncy5rZXlzKCldLAogICAgICAgICAgICBrd19kZWZhdWx0cz1bTm9uZV0gKiBsZW4oa3dhcmdzKSwKICAgICAgICAgICAga3dhcmc9Tm9uZSwgZGVmYXVsdHM9W10KICAgICAgICApLAogICAgICAgIGJvZHk9Ym9keSwgZGVjb3JhdG9yX2xpc3Q9W10KICAgICkKICAgIGFzdC5maXhfbWlzc2luZ19sb2NhdGlvbnMoZnVuY19kZWYpCgogICAgIyBDb21waWxlICYgZXhlY3V0ZQogICAgbG9jcyA9IHt9CiAgICBleGVjKGNvbXBpbGUoYXN0Lk1vZHVsZShbZnVuY19kZWZdLCB0eXBlX2lnbm9yZXM9W10pLAogICAgICAgICAiPG1ldmFsPiIsICJleGVjIiksIHt9LCBsb2NzKQoKICAgIHJlc3VsdCA9IGF3YWl0IGxvY3NbInRtcCJdKCoqa3dhcmdzKQogICAgaWYgbm90IHJlc3VsdDoKICAgICAgICByZXR1cm4gTm9uZQogICAgcmVzdWx0ID0gW2F3YWl0IHIgaWYgaGFzYXR0cihyLCAiX19hd2FpdF9fIikgZWxzZSByIGZvciByIGluIHJlc3VsdF0KICAgIHJlc3VsdCA9IFtyIGZvciByIGluIHJlc3VsdCBpZiByIGlzIG5vdCBOb25lXQoKICAgIHJldHVybiByZXN1bHRbMF0gaWYgbGVuKHJlc3VsdCkgPT0gMSBlbHNlIChyZXN1bHQgb3IgTm9uZSkKCgpkZWYgZm9ybWF0X2V4Y2VwdGlvbihleGM6IEJhc2VFeGNlcHRpb24sIHRiOiBPcHRpb25hbFtsaXN0W3RyYWNlYmFjay5GcmFtZVN1bW1hcnldXSA9IE5vbmUpIC0+IHN0cjoKICAgICIiIkZvcm1hdCBleGNlcHRpb24gdHJhY2ViYWNrIGludG8gYSByZWFkYWJsZSBzdHJpbmcuIiIiCiAgICBpZiB0YiBpcyBOb25lOgogICAgICAgIHRiID0gdHJhY2ViYWNrLmV4dHJhY3RfdGIoZXhjLl9fdHJhY2ViYWNrX18pCgogICAgY3dkID0gb3MuZ2V0Y3dkKCkKICAgIGZvciBmcmFtZSBpbiB0YjoKICAgICAgICBpZiBjd2QgaW4gZnJhbWUuZmlsZW5hbWU6CiAgICAgICAgICAgIGZyYW1lLmZpbGVuYW1lID0gb3MucGF0aC5yZWxwYXRoKGZyYW1lLmZpbGVuYW1lKQoKICAgIHJldHVybiAoCiAgICAgICAgIlRyYWNlYmFjayAobW9zdCByZWNlbnQgY2FsbCBsYXN0KTpcbiIKICAgICAgICBmInsnJy5qb2luKHRyYWNlYmFjay5mb3JtYXRfbGlzdCh0YikpfSIKICAgICAgICBmInt0eXBlKGV4YykuX19uYW1lX199eyc6ICcgKyBzdHIoZXhjKSBpZiBzdHIoZXhjKSBlbHNlICcnfSIKICAgICkK").decode("utf-8"))

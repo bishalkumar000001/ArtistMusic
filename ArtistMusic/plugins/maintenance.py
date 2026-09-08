@@ -1,68 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-from pyrogram import filters, types
-
-from ArtistMusic import app, db, lang
-
-
-@app.on_message(filters.command(["maintenance"]) & app.sudo_filter)
-@lang.language()
-async def _maintenance(_, m: types.Message):
-    """Toggle or check maintenance mode status."""
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    # If no argument, show current status
-    if len(m.command) < 2:
-        status = await db.get_maintenance()
-        status_text = "🔴 ᴇɴᴀʙʟᴇᴅ" if status else "🟢 ᴅɪꜱᴀʙʟᴇᴅ"
-        
-        await m.reply_text(
-            f"<blockquote><u><b>🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ꜱᴛᴀᴛᴜꜱ</b></u>\n\n"
-            f"<b>ᴄᴜʀʀᴇɴᴛ ꜱᴛᴀᴛᴜꜱ:</b> {status_text}\n\n"
-            f"<b>ᴜꜱᴀɢᴇ:</b>\n"
-            f"<code>/maintenance enable</code> - Enable mode\n"
-            f"<code>/maintenance disable</code> - Disable mode</blockquote>"
-        )
-        return
-    
-    mode = m.command[1].lower()
-    
-    if mode in ["enable", "on", "1", "true"]:
-        await db.set_maintenance(True)
-        await m.reply_text(
-            "<blockquote><u><b>🔴 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴇɴᴀʙʟᴇᴅ</b></u>\n\n"
-            "ᴏɴʟʏ ꜱᴜᴅᴏ ᴜꜱᴇʀꜱ ᴄᴀɴ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ ɴᴏᴡ.\n"
-            "ʀᴇɢᴜʟᴀʀ ᴜꜱᴇʀꜱ ᴡɪʟʟ ꜱᴇᴇ ᴀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴇꜱꜱᴀɢᴇ.</blockquote>"
-        )
-        
-    elif mode in ["disable", "off", "0", "false"]:
-        await db.set_maintenance(False)
-        await m.reply_text(
-            "<blockquote><u><b>🟢 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴅɪꜱᴀʙʟᴇᴅ</b></u>\n\n"
-            "ᴛʜᴇ ʙᴏᴛ ɪꜱ ɴᴏᴡ ᴀᴠᴀɪʟᴀʙʟᴇ ꜰᴏʀ ᴀʟʟ ᴜꜱᴇʀꜱ.</blockquote>"
-        )
-        
-    else:
-        await m.reply_text(
-            "<blockquote>❌ <b>ɪɴᴠᴀʟɪᴅ ᴏᴘᴛɪᴏɴ</b>\n\n"
-            "<b>ᴜꜱᴀɢᴇ:</b>\n"
-            "<code>/maintenance enable</code>\n"
-            "<code>/maintenance disable</code></blockquote>"
-        )
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmZyb20gcHlyb2dyYW0gaW1wb3J0IGZpbHRlcnMsIHR5cGVzCgpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgYXBwLCBkYiwgbGFuZwoKCkBhcHAub25fbWVzc2FnZShmaWx0ZXJzLmNvbW1hbmQoWyJtYWludGVuYW5jZSJdKSAmIGFwcC5zdWRvX2ZpbHRlcikKQGxhbmcubGFuZ3VhZ2UoKQphc3luYyBkZWYgX21haW50ZW5hbmNlKF8sIG06IHR5cGVzLk1lc3NhZ2UpOgogICAgIiIiVG9nZ2xlIG9yIGNoZWNrIG1haW50ZW5hbmNlIG1vZGUgc3RhdHVzLiIiIgogICAgIyBBdXRvLWRlbGV0ZSBjb21tYW5kIG1lc3NhZ2UKICAgIHRyeToKICAgICAgICBhd2FpdCBtLmRlbGV0ZSgpCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHBhc3MKICAgIAogICAgIyBJZiBubyBhcmd1bWVudCwgc2hvdyBjdXJyZW50IHN0YXR1cwogICAgaWYgbGVuKG0uY29tbWFuZCkgPCAyOgogICAgICAgIHN0YXR1cyA9IGF3YWl0IGRiLmdldF9tYWludGVuYW5jZSgpCiAgICAgICAgc3RhdHVzX3RleHQgPSAi8J+UtCDhtIfJtOG0gMqZyp/htIfhtIUiIGlmIHN0YXR1cyBlbHNlICLwn5+iIOG0hcmq6pyx4bSAypnKn+G0h+G0hSIKICAgICAgICAKICAgICAgICBhd2FpdCBtLnJlcGx5X3RleHQoCiAgICAgICAgICAgIGYiPGJsb2NrcXVvdGU+PHU+PGI+8J+UpyDhtI3htIDJqsm04bSb4bSHybThtIDJtOG0hOG0hyDhtI3htI/htIXhtIcg6pyx4bSb4bSA4bSb4bSc6pyxPC9iPjwvdT5cblxuIgogICAgICAgICAgICBmIjxiPuG0hOG0nMqAyoDhtIfJtOG0myDqnLHhtJvhtIDhtJvhtJzqnLE6PC9iPiB7c3RhdHVzX3RleHR9XG5cbiIKICAgICAgICAgICAgZiI8Yj7htJzqnLHhtIDJouG0hzo8L2I+XG4iCiAgICAgICAgICAgIGYiPGNvZGU+L21haW50ZW5hbmNlIGVuYWJsZTwvY29kZT4gLSBFbmFibGUgbW9kZVxuIgogICAgICAgICAgICBmIjxjb2RlPi9tYWludGVuYW5jZSBkaXNhYmxlPC9jb2RlPiAtIERpc2FibGUgbW9kZTwvYmxvY2txdW90ZT4iCiAgICAgICAgKQogICAgICAgIHJldHVybgogICAgCiAgICBtb2RlID0gbS5jb21tYW5kWzFdLmxvd2VyKCkKICAgIAogICAgaWYgbW9kZSBpbiBbImVuYWJsZSIsICJvbiIsICIxIiwgInRydWUiXToKICAgICAgICBhd2FpdCBkYi5zZXRfbWFpbnRlbmFuY2UoVHJ1ZSkKICAgICAgICBhd2FpdCBtLnJlcGx5X3RleHQoCiAgICAgICAgICAgICI8YmxvY2txdW90ZT48dT48Yj7wn5S0IOG0jeG0gMmqybThtJvhtIfJtOG0gMm04bSE4bSHIOG0jeG0j+G0heG0hyDhtIfJtOG0gMqZyp/htIfhtIU8L2I+PC91PlxuXG4iCiAgICAgICAgICAgICLhtI/JtMqfyo8g6pyx4bSc4bSF4bSPIOG0nOqcseG0h8qA6pyxIOG0hOG0gMm0IOG0nOqcseG0hyDhtJvKnOG0hyDKmeG0j+G0myDJtOG0j+G0oS5cbiIKICAgICAgICAgICAgIsqA4bSHyaLhtJzKn+G0gMqAIOG0nOqcseG0h8qA6pyxIOG0ocmqyp/KnyDqnLHhtIfhtIcg4bSAIOG0jeG0gMmqybThtJvhtIfJtOG0gMm04bSE4bSHIOG0jeG0h+qcseqcseG0gMmi4bSHLjwvYmxvY2txdW90ZT4iCiAgICAgICAgKQogICAgICAgIAogICAgZWxpZiBtb2RlIGluIFsiZGlzYWJsZSIsICJvZmYiLCAiMCIsICJmYWxzZSJdOgogICAgICAgIGF3YWl0IGRiLnNldF9tYWludGVuYW5jZShGYWxzZSkKICAgICAgICBhd2FpdCBtLnJlcGx5X3RleHQoCiAgICAgICAgICAgICI8YmxvY2txdW90ZT48dT48Yj7wn5+iIOG0jeG0gMmqybThtJvhtIfJtOG0gMm04bSE4bSHIOG0jeG0j+G0heG0hyDhtIXJquqcseG0gMqZyp/htIfhtIU8L2I+PC91PlxuXG4iCiAgICAgICAgICAgICLhtJvKnOG0hyDKmeG0j+G0myDJquqcsSDJtOG0j+G0oSDhtIDhtKDhtIDJqsqf4bSAypnKn+G0hyDqnLDhtI/KgCDhtIDKn8qfIOG0nOqcseG0h8qA6pyxLjwvYmxvY2txdW90ZT4iCiAgICAgICAgKQogICAgICAgIAogICAgZWxzZToKICAgICAgICBhd2FpdCBtLnJlcGx5X3RleHQoCiAgICAgICAgICAgICI8YmxvY2txdW90ZT7inYwgPGI+yarJtOG0oOG0gMqfyarhtIUg4bSP4bSY4bSbyarhtI/JtDwvYj5cblxuIgogICAgICAgICAgICAiPGI+4bSc6pyx4bSAyaLhtIc6PC9iPlxuIgogICAgICAgICAgICAiPGNvZGU+L21haW50ZW5hbmNlIGVuYWJsZTwvY29kZT5cbiIKICAgICAgICAgICAgIjxjb2RlPi9tYWludGVuYW5jZSBkaXNhYmxlPC9jb2RlPjwvYmxvY2txdW90ZT4iCiAgICAgICAgKQo=").decode("utf-8"))

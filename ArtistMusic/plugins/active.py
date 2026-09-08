@@ -1,58 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import os
-from pyrogram import filters, types
-from ArtistMusic import app, db, lang, queue
-
-
-@app.on_message(filters.command(["ac", "activevc"]) & app.sudo_filter)
-@lang.language()
-async def _activevc(_, m: types.Message):
-    # Auto-delete command message
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    if not db.active_calls:
-        return await m.reply_text(m.lang["vc_empty"])
-
-    if m.command[0] == "ac":
-        return await m.reply_text(m.lang["vc_count"].format(len(db.active_calls)))
-
-    sent = await m.reply_text(m.lang["vc_fetching"])
-    text = ""
-
-    for i, chat in enumerate(db.active_calls):
-        playing = queue.get_current(chat)
-        if playing:
-            text += f"\n{i+1}. <code>{chat}</code>\n    ➜ {playing.title[:25]}"
-
-    if len(text) < 4000:
-        return await sent.edit_text(m.lang["vc_list"] + text)
-
-    with open("activevc.txt", "w") as f:
-        f.write(text)
-
-    try:
-        await sent.edit_media(
-            media=types.InputMediaDocument(
-                media="activevc.txt",
-                caption=m.lang["vc_list"],
-            )
-        )
-    finally:
-        os.remove("activevc.txt")
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmltcG9ydCBvcwpmcm9tIHB5cm9ncmFtIGltcG9ydCBmaWx0ZXJzLCB0eXBlcwpmcm9tIEVsZXZlbnl0cyBpbXBvcnQgYXBwLCBkYiwgbGFuZywgcXVldWUKCgpAYXBwLm9uX21lc3NhZ2UoZmlsdGVycy5jb21tYW5kKFsiYWMiLCAiYWN0aXZldmMiXSkgJiBhcHAuc3Vkb19maWx0ZXIpCkBsYW5nLmxhbmd1YWdlKCkKYXN5bmMgZGVmIF9hY3RpdmV2YyhfLCBtOiB0eXBlcy5NZXNzYWdlKToKICAgICMgQXV0by1kZWxldGUgY29tbWFuZCBtZXNzYWdlCiAgICB0cnk6CiAgICAgICAgYXdhaXQgbS5kZWxldGUoKQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICBwYXNzCiAgICAKICAgIGlmIG5vdCBkYi5hY3RpdmVfY2FsbHM6CiAgICAgICAgcmV0dXJuIGF3YWl0IG0ucmVwbHlfdGV4dChtLmxhbmdbInZjX2VtcHR5Il0pCgogICAgaWYgbS5jb21tYW5kWzBdID09ICJhYyI6CiAgICAgICAgcmV0dXJuIGF3YWl0IG0ucmVwbHlfdGV4dChtLmxhbmdbInZjX2NvdW50Il0uZm9ybWF0KGxlbihkYi5hY3RpdmVfY2FsbHMpKSkKCiAgICBzZW50ID0gYXdhaXQgbS5yZXBseV90ZXh0KG0ubGFuZ1sidmNfZmV0Y2hpbmciXSkKICAgIHRleHQgPSAiIgoKICAgIGZvciBpLCBjaGF0IGluIGVudW1lcmF0ZShkYi5hY3RpdmVfY2FsbHMpOgogICAgICAgIHBsYXlpbmcgPSBxdWV1ZS5nZXRfY3VycmVudChjaGF0KQogICAgICAgIGlmIHBsYXlpbmc6CiAgICAgICAgICAgIHRleHQgKz0gZiJcbntpKzF9LiA8Y29kZT57Y2hhdH08L2NvZGU+XG4gICAg4p6cIHtwbGF5aW5nLnRpdGxlWzoyNV19IgoKICAgIGlmIGxlbih0ZXh0KSA8IDQwMDA6CiAgICAgICAgcmV0dXJuIGF3YWl0IHNlbnQuZWRpdF90ZXh0KG0ubGFuZ1sidmNfbGlzdCJdICsgdGV4dCkKCiAgICB3aXRoIG9wZW4oImFjdGl2ZXZjLnR4dCIsICJ3IikgYXMgZjoKICAgICAgICBmLndyaXRlKHRleHQpCgogICAgdHJ5OgogICAgICAgIGF3YWl0IHNlbnQuZWRpdF9tZWRpYSgKICAgICAgICAgICAgbWVkaWE9dHlwZXMuSW5wdXRNZWRpYURvY3VtZW50KAogICAgICAgICAgICAgICAgbWVkaWE9ImFjdGl2ZXZjLnR4dCIsCiAgICAgICAgICAgICAgICBjYXB0aW9uPW0ubGFuZ1sidmNfbGlzdCJdLAogICAgICAgICAgICApCiAgICAgICAgKQogICAgZmluYWxseToKICAgICAgICBvcy5yZW1vdmUoImFjdGl2ZXZjLnR4dCIpCg==").decode("utf-8"))

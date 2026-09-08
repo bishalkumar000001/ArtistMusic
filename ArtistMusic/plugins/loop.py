@@ -1,77 +1,17 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-
-from pyrogram import filters, types
-
-from ArtistMusic import app, db, lang
-from ArtistMusic.helpers import can_manage_vc
-
-
-@app.on_message(filters.command(["loop", "cloop"]) & filters.group & ~app.bl_users)
-@lang.language()
-@can_manage_vc
-async def _loop(_, m: types.Message):
-    try:
-        await m.delete()
-    except Exception:
-        pass
-    
-    # Check for channel play mode
-    is_channel = m.command[0].lower() == "cloop"
-    chat_id = m.chat.id
-    
-    if is_channel:
-        channel_id = await db.get_cmode(m.chat.id)
-        if channel_id is None:
-            return await m.reply_text("Channel play is not enabled. Use /channelplay to enable.")
-        chat_id = channel_id
-    
-    current_loop = await db.get_loop(chat_id)
-    
-    if len(m.command) > 1:
-        mode_arg = m.command[1].lower()
-        if mode_arg in ["0", "disable"]:
-            new_loop = 0
-            text = "Loop mode disabled"
-        elif mode_arg in ["single", "1", "one"]:
-            new_loop = 1
-            text = "Loop mode set to Single Track"
-        elif mode_arg in ["queue", "all", "10"]:
-            new_loop = 10
-            text = "Loop mode set to Queue"
-        else:
-            return await m.reply_text(
-                "Usage:\n"
-                "/loop - Cycle through modes\n"
-                "/loop disable - Disable loop\n"
-                "/loop single - Loop current track\n"
-                "/loop queue - Loop entire queue\n\n"
-                "Channel commands:\n"
-                "/cloop - Same as /loop but for channel"
-            )
-    else:
-        if current_loop == 0:
-            new_loop = 1
-            text = "Loop mode set to Single Track"
-        elif current_loop == 1:
-            new_loop = 10
-            text = "Loop mode set to Queue"
-        else:
-            new_loop = 0
-            text = "Loop mode disabled"
-    
-    await db.set_loop(chat_id, new_loop)
-    await m.reply_text(text)
+import base64
+exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpmcm9tIHB5cm9ncmFtIGltcG9ydCBmaWx0ZXJzLCB0eXBlcwoKZnJvbSBFbGV2ZW55dHMgaW1wb3J0IGFwcCwgZGIsIGxhbmcKZnJvbSBFbGV2ZW55dHMuaGVscGVycyBpbXBvcnQgY2FuX21hbmFnZV92YwoKCkBhcHAub25fbWVzc2FnZShmaWx0ZXJzLmNvbW1hbmQoWyJsb29wIiwgImNsb29wIl0pICYgZmlsdGVycy5ncm91cCAmIH5hcHAuYmxfdXNlcnMpCkBsYW5nLmxhbmd1YWdlKCkKQGNhbl9tYW5hZ2VfdmMKYXN5bmMgZGVmIF9sb29wKF8sIG06IHR5cGVzLk1lc3NhZ2UpOgogICAgdHJ5OgogICAgICAgIGF3YWl0IG0uZGVsZXRlKCkKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwogICAgCiAgICAjIENoZWNrIGZvciBjaGFubmVsIHBsYXkgbW9kZQogICAgaXNfY2hhbm5lbCA9IG0uY29tbWFuZFswXS5sb3dlcigpID09ICJjbG9vcCIKICAgIGNoYXRfaWQgPSBtLmNoYXQuaWQKICAgIAogICAgaWYgaXNfY2hhbm5lbDoKICAgICAgICBjaGFubmVsX2lkID0gYXdhaXQgZGIuZ2V0X2Ntb2RlKG0uY2hhdC5pZCkKICAgICAgICBpZiBjaGFubmVsX2lkIGlzIE5vbmU6CiAgICAgICAgICAgIHJldHVybiBhd2FpdCBtLnJlcGx5X3RleHQoIkNoYW5uZWwgcGxheSBpcyBub3QgZW5hYmxlZC4gVXNlIC9jaGFubmVscGxheSB0byBlbmFibGUuIikKICAgICAgICBjaGF0X2lkID0gY2hhbm5lbF9pZAogICAgCiAgICBjdXJyZW50X2xvb3AgPSBhd2FpdCBkYi5nZXRfbG9vcChjaGF0X2lkKQogICAgCiAgICBpZiBsZW4obS5jb21tYW5kKSA+IDE6CiAgICAgICAgbW9kZV9hcmcgPSBtLmNvbW1hbmRbMV0ubG93ZXIoKQogICAgICAgIGlmIG1vZGVfYXJnIGluIFsiMCIsICJkaXNhYmxlIl06CiAgICAgICAgICAgIG5ld19sb29wID0gMAogICAgICAgICAgICB0ZXh0ID0gIkxvb3AgbW9kZSBkaXNhYmxlZCIKICAgICAgICBlbGlmIG1vZGVfYXJnIGluIFsic2luZ2xlIiwgIjEiLCAib25lIl06CiAgICAgICAgICAgIG5ld19sb29wID0gMQogICAgICAgICAgICB0ZXh0ID0gIkxvb3AgbW9kZSBzZXQgdG8gU2luZ2xlIFRyYWNrIgogICAgICAgIGVsaWYgbW9kZV9hcmcgaW4gWyJxdWV1ZSIsICJhbGwiLCAiMTAiXToKICAgICAgICAgICAgbmV3X2xvb3AgPSAxMAogICAgICAgICAgICB0ZXh0ID0gIkxvb3AgbW9kZSBzZXQgdG8gUXVldWUiCiAgICAgICAgZWxzZToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IG0ucmVwbHlfdGV4dCgKICAgICAgICAgICAgICAgICJVc2FnZTpcbiIKICAgICAgICAgICAgICAgICIvbG9vcCAtIEN5Y2xlIHRocm91Z2ggbW9kZXNcbiIKICAgICAgICAgICAgICAgICIvbG9vcCBkaXNhYmxlIC0gRGlzYWJsZSBsb29wXG4iCiAgICAgICAgICAgICAgICAiL2xvb3Agc2luZ2xlIC0gTG9vcCBjdXJyZW50IHRyYWNrXG4iCiAgICAgICAgICAgICAgICAiL2xvb3AgcXVldWUgLSBMb29wIGVudGlyZSBxdWV1ZVxuXG4iCiAgICAgICAgICAgICAgICAiQ2hhbm5lbCBjb21tYW5kczpcbiIKICAgICAgICAgICAgICAgICIvY2xvb3AgLSBTYW1lIGFzIC9sb29wIGJ1dCBmb3IgY2hhbm5lbCIKICAgICAgICAgICAgKQogICAgZWxzZToKICAgICAgICBpZiBjdXJyZW50X2xvb3AgPT0gMDoKICAgICAgICAgICAgbmV3X2xvb3AgPSAxCiAgICAgICAgICAgIHRleHQgPSAiTG9vcCBtb2RlIHNldCB0byBTaW5nbGUgVHJhY2siCiAgICAgICAgZWxpZiBjdXJyZW50X2xvb3AgPT0gMToKICAgICAgICAgICAgbmV3X2xvb3AgPSAxMAogICAgICAgICAgICB0ZXh0ID0gIkxvb3AgbW9kZSBzZXQgdG8gUXVldWUiCiAgICAgICAgZWxzZToKICAgICAgICAgICAgbmV3X2xvb3AgPSAwCiAgICAgICAgICAgIHRleHQgPSAiTG9vcCBtb2RlIGRpc2FibGVkIgogICAgCiAgICBhd2FpdCBkYi5zZXRfbG9vcChjaGF0X2lkLCBuZXdfbG9vcCkKICAgIGF3YWl0IG0ucmVwbHlfdGV4dCh0ZXh0KQo=").decode("utf-8"))
