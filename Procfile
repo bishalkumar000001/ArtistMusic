@@ -1,1 +1,1 @@
-worker: python -m ArtistMusic
+worker: python -m Elevenyts

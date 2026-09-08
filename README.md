@@ -1,395 +1,385 @@
-<div align="center">
+<div align="center"> 
 
-<img src="https://files.catbox.moe/f4nnyn.svg" width="100%" height="500">
+<img src="https://files.catbox.moe/zlmv6v.png" width="400">
 
-<br>
-<br><br>
+# 🎵 Juno X Music
 
-[![Stars](https://img.shields.io/github/stars/elevenyts/ArtistMusic?style=for-the-badge&logo=starship&logoColor=white&color=A960FF&labelColor=0D1117)](https://github.com/bishalkumar000001/ArtistMusic)
-[![Forks](https://img.shields.io/github/forks/elevenyts/ArtistMusic?style=for-the-badge&logo=git&logoColor=white&color=7C3AED&labelColor=0D1117)](https://github.com/bishalkumar000001/ArtistMusic)
-[![Issues](https://img.shields.io/github/issues/elevenyts/ArtistMusic?style=for-the-badge&logo=github&logoColor=white&color=FF6B6B&labelColor=0D1117)](https://github.com/bishalkumar000001/ArtistMusic/issues)
-[![License](https://img.shields.io/badge/License-MIT-A960FF?style=for-the-badge&logo=opensourceinitiative&logoColor=white&labelColor=0D1117)](LICENSE)
+### Advanced Telegram Voice Chat Music Bot
+
+[![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=WELCOME+TO+JUNO+X+MUSIC;ADVANCED+TELEGRAM+MUSIC+BOT;HIGH+QUALITY+VOICE+CHAT+STREAMING;MULTI+LANGUAGE+SUPPORT;POWERED+BY+JUNO+X+MUSIC)](https://github.com)
 
 <br>
 
-[![Telegram Channel](https://img.shields.io/badge/📢_Channel-Artistbots-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white&labelColor=0D1117)](https://t.me/Artistbots)
-[![Support Group](https://img.shields.io/badge/💬_Support-ArtistMusic-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white&labelColor=0D1117)](https://t.me/Elevenytschats)
+[![Telegram Channel](https://img.shields.io/badge/Telegram-Channel-blue?style=for-the-badge&logo=telegram)](https://t.me/Artistbots)
+[![Support Group](https://img.shields.io/badge/Telegram-Support-blue?style=for-the-badge&logo=telegram)](https://t.me/junoxmusic)
+
+<br>
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![Pyrogram](https://img.shields.io/badge/Pyrogram-Latest-green)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-success)
+![License](https://img.shields.io/badge/License-MIT-orange)
+
+### 🎧 A Powerful Telegram Music Streaming Bot
 
 </div>
 
-<br>
+---
 
 <div align="center">
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                   ✦  VELOCITYBOTS MUSIC BOT  ✦
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+# 🚀 𝗗𝗘𝗣𝗟𝗢𝗬 𝗙𝗥𝗘𝗘 𝗢𝗡 𝗥𝗘𝗡𝗗𝗘𝗥 🚀
+
+### ⚠️ Fork Repository Before Deployment
 
 </div>
 
-## 📖 Table of Contents
+---
 
-- [Overview](#-overview)
-- [Feature Showcase](#-feature-showcase)
-- [Requirements](#-requirements)
-- [Environment Variables](#-environment-variables)
-- [Deploy](#-deploy)
-- [Commands](#-commands)
-- [Security](#-security)
-- [Support](#-support)
-- [Credits](#-credits)
+# 🌟 About Juno X Music
 
-<br>
+Juno X Music is an advanced Telegram Voice Chat Music Bot built with **Pyrogram**, **PyTgCalls**, and **MongoDB**.
 
-## 〔 ✦ 〕 Overview
+It allows users to stream high-quality music directly inside Telegram Voice Chats with premium playback performance, playlist management, queue system, admin controls, broadcasting features, statistics tracking, and multi-language support.
 
-> **VelocityBots Music** is a next-generation Telegram Voice Chat Music Bot engineered for performance, stability, and scale.
-> Built on **Pyrogram** · **PyTgCalls** · **MongoDB** — delivering crystal-clear audio with powerful admin tooling and multi-language support across global communities.
+Designed for speed, stability, scalability and modern Telegram communities.
 
-<br>
+---
 
-## 〔 ✦ 〕 Feature Showcase
+# ✨ Main Features
 
-<table>
-<tr>
-<td width="50%">
+## 🎵 Music Streaming
 
-### 🎵 Music Streaming
+✔ High Quality Audio Streaming
+
+✔ YouTube Search & Play
+
+✔ Direct URL Playback
+
+✔ Voice Chat Streaming
+
+✔ Playlist Support
+
+✔ Auto Queue Management
+
+✔ Continuous Playback
+
+✔ Fast Audio Processing
+
+✔ Crystal Clear Sound Quality
+
+---
+
+## 🎛 Admin Controls
+
+✔ Pause Music
+
+✔ Resume Music
+
+✔ Skip Song
+
+✔ Stop Playback
+
+✔ Force Play
+
+✔ Mute Assistant
+
+✔ Unmute Assistant
+
+✔ Volume Control
+
+✔ Queue Cleanup
+
+---
+
+## 👥 User Management
+
+✔ Authorized Users
+
+✔ Sudo Users
+
+✔ Global Ban System
+
+✔ User Statistics
+
+✔ Premium Features Ready
+
+✔ Owner Controls
+
+---
+
+## 🤖 Bot Management
+
+✔ Restart Command
+
+✔ Broadcast System
+
+✔ Maintenance Mode
+
+✔ Logs Monitoring
+
+✔ Error Reporting
+
+✔ Auto Restart Support
+
+✔ Database Integration
+
+---
+
+# 📊 Performance
+
+- Optimized Streaming Engine
+- Fast Queue Processing
+- Low Memory Usage
+- Stable Voice Chat Playback
+- High Uptime Support
+- Efficient Database Queries
+
+---
+
+# 🔑 Required Environment Variables
+
+Create `.env` file and fill all values:
+
+```env
+API_ID=
+API_HASH=
+BOT_TOKEN=
+STRING_SESSION=
+MONGO_DB_URI=
+LOGGER_ID=
+OWNER_ID=
+ARTISTBOTS_API_URL= 
+ARTISTBOTS_KEY=
+SUPPORT_CHAT= (Optional)
+SUPPORT_CHANNEL= (Optional)
+DEFAULT_THUMB= (Optional)
+PING_IMG= (Optional)
+START_IMG= (Optional)
 ```
-✦ High Quality Audio Streaming
-✦ YouTube Search & Play
-✦ Direct URL Playback
-✦ Voice Chat Streaming
-✦ Live Stream Support
-✦ Playlist Management
-✦ Auto Queue System
-✦ Continuous Playback
-✦ Fast Audio Processing
-```
 
-</td>
-<td width="50%">
+---
 
-### 🎛 Admin Controls
-```
-✦ Pause / Resume Stream
-✦ Skip Current Track
-✦ Force Play (Skip Queue)
-✦ Stop Playback
-✦ Mute / Unmute Assistant
-✦ Volume Control
-✦ Queue Cleanup
-✦ Seek Forward / Backward
-✦ Loop Modes
-```
+# 📝 Variables Explanation
 
-</td>
-</tr>
-<tr>
-<td width="50%">
+| Variable | Description |
+|-----------|-------------|
+| API_ID | Telegram API ID |
+| API_HASH | Telegram API Hash |
+| BOT_TOKEN | BotFather Token |
+| STRING_SESSION | Assistant Session |
+| MONGO_DB_URI | MongoDB Database URL |
+| LOGGER_ID | Logs Group ID |
+| OWNER_ID | Owner Telegram ID |
+| SUPPORT_CHAT | Support Group Username |
+| SUPPORT_CHANNEL | Updates Channel Username |
+| ARTISTBOTS_API_URL |  VelocityBots ꭙ Music on Telegram |
+| ARTISTBOTS_KEY | t.me/artistapibot |
 
-### 👥 User Management
-```
-✦ Authorized Users System
-✦ Sudo Users Panel
-✦ Global Ban System
-✦ User Statistics
-✦ Blacklist Chat / User
-✦ Owner Controls
-✦ Admin-Only Play Mode
-✦ Force Admin Mode
-```
+---
 
-</td>
-<td width="50%">
+# 🚀 Deploy on Render
 
-### 🤖 Bot Management
-```
-✦ Restart Command
-✦ Broadcast System
-✦ Maintenance Mode
-✦ Live Logs Monitor
-✦ Error Reporting
-✦ Auto Restart Support
-✦ MongoDB Integration
-✦ Multi-Language Support
-```
+## Step 1
 
-</td>
-</tr>
-</table>
+Fork this Repository
 
-<br>
+## Step 2
 
-## 〔 ✦ 〕 Requirements
+Create Render Account
 
-| Component | Minimum Version / Note |
-|:---|:---|
-| Python | 3.10 or higher |
-| FFmpeg | Latest stable release |
-| MongoDB | Local instance or Atlas cluster |
-| RAM | 512 MB minimum (1 GB+ recommended) |
-| Telegram Account | For the assistant (string session) |
+## Step 3
 
-<br>
+Connect GitHub
 
-## 〔 ✦ 〕 Environment Variables
+## Step 4
 
-<div align="center">
+Create New Web Service
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-         Create a  .env  file with these values
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+## Step 5
 
-</div>
+Select Repository
 
-| Variable | Required | Description |
-|:---|:---:|:---|
-| `API_ID` | ✅ | Telegram API ID — [my.telegram.org](https://my.telegram.org) |
-| `API_HASH` | ✅ | Telegram API Hash — [my.telegram.org](https://my.telegram.org) |
-| `BOT_TOKEN` | ✅ | Bot Token — [@BotFather](https://t.me/BotFather) |
-| `STRING_SESSION` | ✅ | Pyrogram String Session for assistant |
-| `MONGO_DB_URI` | ✅ | MongoDB connection string |
-| `LOGGER_ID` | ✅ | Telegram group ID for logs |
-| `OWNER_ID` | ✅ | Your Telegram user ID |
-| `ARTISTBOTS_API_URL` | ⚙️ | VelocityBots API endpoint |
-| `ARTISTBOTS_KEY` | ⚙️ | API key — [@JanhvixmusicRobot](https://t.me/ArtistApibot) |
-| `SUPPORT_CHAT` | 🔵 | Support group link (optional) |
-| `SUPPORT_CHANNEL` | 🔵 | Updates channel link (optional) |
-| `START_IMG` | 🔵 | Start message image URL (optional) |
-| `PING_IMG` | 🔵 | Ping message image URL (optional) |
-| `STRING_SESSION2` | 🔵 | Second assistant session (optional) |
-| `STRING_SESSION3` | 🔵 | Third assistant session (optional) |
-
-> ✅ Required · ⚙️ Recommended · 🔵 Optional
-
-<br>
-
-## 〔 ✦ 〕 Deploy
-
-<div align="center">
-
-### ☁️ One-Click Deploy
-
-[![Deploy on Render](https://img.shields.io/badge/Deploy_on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white&labelColor=0D1117)](https://render.com)
-[![Deploy on Railway](https://img.shields.io/badge/Deploy_on-Railway-7C3AED?style=for-the-badge&logo=railway&logoColor=white&labelColor=0D1117)](https://railway.app)
-
-</div>
-
-<br>
-
-<details>
-<summary><b>🖥 Render — Step by Step</b></summary>
-
-<br>
-
-**1.** Fork this repository
-
-**2.** Go to [render.com](https://render.com) → **New Web Service**
-
-**3.** Connect your GitHub and select this repo
-
-**4.** Set build & start commands:
+### Build Command
 
 ```bash
-# Build Command
 pip install -U -r requirements.txt
+```
 
-# Start Command
+### Start Command
+
+```bash
 bash start
 ```
 
-**5.** Add all environment variables from the table above
+## Step 6
 
-**6.** Hit **Deploy** 🚀
+Add Environment Variables
 
-</details>
+## Step 7
 
-<details>
-<summary><b>🚂 Railway — Step by Step</b></summary>
+Deploy Service
 
-<br>
+---
 
-**1.** Fork this repository
+# 🚀 Deploy on Railway
 
-**2.** Create a new project at [railway.app](https://railway.app)
+1. Fork Repository
+2. Create Railway Project
+3. Connect GitHub Repository
+4. Add Environment Variables
+5. Deploy Project
 
-**3.** Connect your GitHub repo
+---
 
-**4.** Add environment variables
+# 🖥 Deploy on VPS
 
-**5.** Deploy 🚀
-
-</details>
-
-<details>
-<summary><b>🖥 VPS / Self-Host</b></summary>
-
-<br>
+## Update System
 
 ```bash
-# Update system
 apt update && apt upgrade -y
-
-# Install dependencies
-apt install python3 python3-pip ffmpeg git -y
-
-# Clone repo
-git clone https://github.com/bishalkumar000001/ArtistMusic
-cd ArtistMusic
-
-# Install requirements
-pip3 install -U -r requirements.txt
-
-# Configure variables
-cp .env.example .env
-nano .env
-
-# Run the bot
-bash start
-# or
-python -m ArtistMusic
 ```
 
-</details>
-
-<details>
-<summary><b>🐳 Docker</b></summary>
-
-<br>
+## Install Dependencies
 
 ```bash
-# Build the image
-docker build -t artistmusic .
-
-# Run the container (pass your .env file)
-docker run -d --env-file .env --name artistmusic artistmusic
+apt install python3 python3-pip ffmpeg git -y
 ```
 
-</details>
+## Clone Repository
 
-<br>
-
-## 〔 ✦ 〕 Commands
-
-<table>
-<tr>
-<td width="33%">
-
-**🎵 Music**
-```
-/play    — Play audio
-/vplay   — Play video
-/cplay   — Channel play
-/pause   — Pause stream
-/resume  — Resume stream
-/skip    — Skip track
-/end     — End stream
-/queue   — View queue
-/loop    — Loop mode
-/shuffle — Shuffle queue
+```bash
+git clone https://github.com/elevenyts/Elevenyts
 ```
 
-</td>
-<td width="33%">
+## Open Project
 
-**🛡 Admin**
-```
-/reload   — Refresh admins
-/auth     — Authorize user
-/unauth   — Remove auth
-/authlist — View auth list
-/seek     — Seek stream
-/seekback — Seek backward
-/mute     — Mute assistant
-/unmute   — Unmute assistant
-/volume   — Set volume
-/stop     — Stop playback
+```bash
+cd Elevenyts
 ```
 
-</td>
-<td width="33%">
+## Install Requirements
 
-**👑 Sudo / Owner**
-```
-/addsudo     — Add sudo user
-/delsudo     — Remove sudo
-/sudolist    — List sudos
-/broadcast   — Send broadcast
-/gban        — Global ban
-/ungban      — Global unban
-/maintenance — Toggle mode
-/stats       — Bot statistics
-/restart     — Restart bot
-/logs        — View logs
+```bash
+pip3 install -U -r requirements.txt
 ```
 
-</td>
-</tr>
-</table>
+## Configure Variables
 
-<br>
+```bash
+nano .env
+```
 
-## 〔 ✦ 〕 Security
+## Run Bot
+
+```bash
+bash start
+```
+
+or
+
+```bash
+python -m Elevenyts
+```
+
+---
+
+# 🎵 Commands
+
+## Music Commands
+
+```text
+/play
+/vplay
+/cplay
+/pause
+/resume
+/skip
+/end
+/queue
+/song
+/lyrics
+```
+
+## Admin Commands
+
+```text
+/restart
+/broadcast
+/gban
+/ungban
+/maintenance
+/stats
+```
+
+## Sudo Commands
+
+```text
+/addsudo
+/delsudo
+/sudolist
+/logs
+```
+
+---
+
+# 📞 Support & Contact
 
 <div align="center">
 
-```
-╔══════════════════════════════════════════════════════╗
-║  ✦  KEEP THESE PRIVATE — NEVER SHARE PUBLICLY  ✦    ║
-╠══════════════════════════════════════════════════════╣
-║  ✗  BOT_TOKEN          ✗  STRING_SESSION             ║
-║  ✗  MONGO_DB_URI       ✗  API_HASH                   ║
-║  ✓  Use a separate Telegram account for assistant    ║
-║  ✓  Keep the logger group private                    ║
-║  ✓  Bot must be admin in group & logger group        ║
-╚══════════════════════════════════════════════════════╝
-```
+## IF YOU FACE ANY ERROR
 
-</div>
-
-<br>
-
-## 〔 ✦ 〕 Support
-
-<div align="center">
-
-**Facing an issue? Send a screenshot to our support group.**
-
-<br>
+### SEND SCREENSHOT TO SUPPORT
 
 [![ARTIST](https://files.catbox.moe/kcnahh.png)](https://t.me/Artistbots)
+</p>
 
-<br>
+---
 
-| Platform | Link |
-|:---:|:---:|
-| 📢 Updates Channel | [t.me/Artistbots](https://t.me/Artistbots) |
-| 💬 Support Group | [t.me/artistmusicmusic](https://t.me/elevenytschats) |
+### 📢 Telegram Channel 💬 Support Group
 
-</div>
+- **Telegram Channel**: [VelocityBots ꭙ Music](https://t.me/Artistbots)
+- **Support Group**: [Junox Music](https://t.me/junoxmusic)
+---
 
-<br>
+# 🔒 Security Notes
 
-## 〔 ✦ 〕 Credits
+❌ Never Share BOT_TOKEN
 
-<div align="center">
+❌ Never Share STRING_SESSION
 
-Built on the shoulders of giants:
+❌ Never Share MongoDB URI
 
-`Pyrogram` · `PyTgCalls` · `MongoDB` · `Telegram Bot API` · `VelocityBots`
+✔ Keep Credentials Secure
 
-<br>
+✔ Use Separate Assistant Account
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-         Made with ❤️  by  ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢  ·  Powered by VelocityBots
-                   © 2026 VelocityBots Music · MIT License
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+✔ Keep Logger Group Private
+
+---
+
+# ❤️ Credits
+
+- Pyrogram
+- PyTgCalls
+- MongoDB
+- Telegram API
+- VelocityBots ꭙ Music
+
+---
+
+# 📝 Notes
+
+- Make sure your bot is admin in both the group and logger group
+- The assistant account will auto-join groups when needed for playback
+- Keep your `.env` file secure and never share it publicly
+- Use a second ID for the assistant ID 
+---
+
+### Made with ❤️ by Artist
+
+### Powered by VelocityBots ꭙ Music
+
+### © 2026 VelocityBots ꭙ Music. All Rights Reserved.
 
 </div>

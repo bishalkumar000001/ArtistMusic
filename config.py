@@ -1,14 +1,14 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots
+# Copyright (c) 2026 VelocityBots 
 # All Rights Reserved.
 #
 # Project      : VelocityBots API Telegram Music Bot
-# Powered By   : ⎯꯭̽𓆩꯭͈〬𝐉͢αη𝐡νί ✗ Μυδί𝛓꯭ ̽🤍͢ 
+# Powered By   : VelocityBots 
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JanhvixmusicRobot
-# Channel      : https://t.me/VelocityBots
-# GitHub       : https://github.com/bishalkumar000001/ArtistMusic
+# Bot          : @JunoXmusic_Robot
+# Channel      : https://t.me/junoxmusic_updates
+# GitHub       : https://github.com/bishalkumarsahh-eng
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
@@ -23,28 +23,28 @@ load_dotenv()
 class Config:
     def __init__(self):
         # Telegram API
-        self.API_ID: int = int(getenv("API_ID", "29308061"))
-        self.API_HASH: str = getenv("API_HASH", "462de3dfc98fd938ef9c6ee31a72d099")
+        self.API_ID: int = int(getenv("API_ID", "0"))
+        self.API_HASH: str = getenv("API_HASH", "")
         self.BOT_TOKEN: str = getenv("BOT_TOKEN", "")
         self.LOGGER_ID: int = int(getenv("LOGGER_ID", "0"))
         self.OWNER_ID: int = int(getenv("OWNER_ID", "0"))
 
         # Database
-        self.MONGO_URL: str = getenv("MONGO_DB_URI", "mongodb+srv://Elevenyts:Elevenyts@cluster0.vuyc1u2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+        self.MONGO_URL: str = getenv("MONGO_DB_URI", "")
 
         # Limits
         self.DURATION_LIMIT: int = int(getenv("DURATION_LIMIT", "300")) * 60
         self.QUEUE_LIMIT: int = int(getenv("QUEUE_LIMIT", "30"))
         self.PLAYLIST_LIMIT: int = int(getenv("PLAYLIST_LIMIT", "20"))
 
-        # Assistant Sessions @stringenbot
+        # Assistant Sessions @genstringbot
         self.SESSION1: str = getenv("STRING_SESSION", "")
         self.SESSION2: str = getenv("STRING_SESSION2", "")
         self.SESSION3: str = getenv("STRING_SESSION3", "")
 
         # Support Links
         self.SUPPORT_CHANNEL: str = getenv("SUPPORT_CHANNEL", "https://t.me/junoxmusic_updates")
-        self.SUPPORT_CHAT: str = getenv("SUPPORT_CHAT", "https://t.me/+a729X6S5D5ZlYTA1")
+        self.SUPPORT_CHAT: str = getenv("SUPPORT_CHAT", "https://t.me/junoxmusic")
 
         # Excluded Chats
         self.EXCLUDED_CHATS: List[int] = self._parse_excluded_chats()
@@ -56,7 +56,7 @@ class Config:
         self.VIDEO_PLAY: bool = self._str_to_bool(getenv("VIDEO_PLAY", "True"))
         self.VIDEO_MAX_HEIGHT: int = self._parse_video_height()
 
-        # VelocityBots API @JanhvixmusicRobot
+        # ArtistBots API @ArtistApibot
         self.ARTISTBOTS_API_URL: str = getenv("ARTISTBOTS_API_URL", "https://music.artistbots.workers.dev")
         self.ARTISTBOTS_KEY: str = getenv("ARTISTBOTS_KEY", "Artistbots")
         self.ENABLE_API: bool = self._str_to_bool(getenv("ENABLE_API", "True"))
@@ -68,11 +68,14 @@ class Config:
         self.COOKIES_URL: List[str] = self._parse_cookies()
 
         # Images
-        self.DEFAULT_THUMB: str = getenv("DEFAULT_THUMB", "https://files.catbox.moe/3p0du3.jpeg")
-        self.PING_IMG: str = getenv("PING_IMG", "https://files.catbox.moe/3p0du3.jpeg")
-        self.START_IMG: str = getenv("START_IMG", "https://files.catbox.moe/3p0du3.jpeg")
-        self.RADIO_IMG: str = getenv("RADIO_IMG", "https://files.catbox.moe/3p0du3.jpeg")
+        self.DEFAULT_THUMB: str = getenv("DEFAULT_THUMB", "https://kommodo.ai/i/jzdfbObgqRRDbEYjMctV")
+        self.PING_IMG: str = getenv("PING_IMG", "https://kommodo.ai/i/sYYB017BdEvUfN04XmGg")
+        self.START_IMG: str = getenv("START_IMG", "https://kommodo.ai/i/pJuq7zvlKTnlgeAPJL4r")
+        self.RADIO_IMG: str = getenv("RADIO_IMG", "https://kommodo.ai/i/ycPGouOVgdI2BqYebYy3")
         
+        # Sticker ID for welcome message
+        self.STICKER_ID: str = getenv("STICKER_ID", "CAACAgUAAxkBAAERZd9qMHDSNUAH_8ZAnU4aT97Aw5THZwACdh8AApKxgFWOSimDJoOjCjwE")
+
         # Moderation
         self.EXCLUDED_USERNAMES: List[str] = getenv("EXCLUDED_USERNAMES", "").split()
 
