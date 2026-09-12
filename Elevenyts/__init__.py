@@ -75,8 +75,10 @@ lang = Language()
 # Initialize Telegram and YouTube utilities
 from Elevenyts.core.telegram import Telegram
 from Elevenyts.core.youtube import YouTube
+from Elevenyts.core.api_audio import install_direct_audio_download
 tg = Telegram()
 yt = YouTube()
+install_direct_audio_download(yt)
 
 # Initialize preload manager for background track downloading
 from Elevenyts.core.preload import PreloadManager
