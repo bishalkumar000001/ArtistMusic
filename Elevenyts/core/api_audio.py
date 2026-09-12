@@ -78,10 +78,10 @@ def install_direct_audio_download(youtube) -> None:
 
         # A transient YouTube/API failure should not immediately trigger the
         # slow cookie fallback.  Retry the API itself first.
-        for attempt in range(1, 3):
+        for attempt in range(1, 4):
             try:
                 _LOGGER.info(
-                    "🎯 [API AUDIO] attempt %d/2 for %s",
+                    "🎯 [API AUDIO] attempt %d/3 for %s",
                     attempt,
                     video_id,
                 )
@@ -176,7 +176,7 @@ def install_direct_audio_download(youtube) -> None:
 
             # Short backoff prevents three immediate identical requests while
             # still keeping playback fast.
-            if attempt < 2:
+            if attempt < 3:
                 await asyncio.sleep(0.75 * attempt)
 
         try:
@@ -185,7 +185,7 @@ def install_direct_audio_download(youtube) -> None:
         except OSError:
             pass
 
-        _LOGGER.error("API audio failed after 2 attempts for %s", video_id)
+        _LOGGER.error("API audio failed after 3 attempts for %s", video_id)
         return None
 
     youtube._logger = _LOGGER
