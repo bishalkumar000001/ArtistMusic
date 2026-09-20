@@ -1,7 +1,7 @@
 import html, json, os, re, time
 from typing import Optional
 import aiohttp
-from Elevenyts import config, queue
+from Elevenyts import config
 from Elevenyts.helpers._inline import RichMarkup, RichButton
 
 _PLAYER_PHOTOS = {}
@@ -50,8 +50,12 @@ def markup_html(markup):
 def controls_html(chat_id, media, *, timer=None, playing=True, remove=False):
     if remove: return ''
     state='pause' if playing else 'resume'; label='Ⅱ Pause' if playing else '▶ Resume'
-    try: upcoming=max(0,len(queue.get_queue(chat_id))-1)
-    except Exception: upcoming=0
+    try:
+        # Lazy import avoids a circular import during Elevenyts package startup.
+        from Elevenyts import queue
+        upcoming=max(0,len(queue.get_queue(chat_id))-1)
+    except Exception:
+        upcoming=0
     if playing: phase=int(time.time()//5)%3
     else: phase=0
     palettes=(('success','primary','danger','success'),('primary','danger','success','primary'),('danger','success','primary','danger'))
