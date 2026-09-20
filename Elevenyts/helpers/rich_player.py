@@ -121,23 +121,52 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
+def _normalize_photo(photo):
+    """Return (local_path, remote_ref) for a safe Telegram photo reference.
+
+    Never pass arbitrary strings (especially local paths such as /tmp/... or
+    Windows paths) to the Bot API as HTTP URLs.  Telegram rejects those with
+    errors such as ``Wrong port number specified in the URL``.
+    """
+    if not photo:
+        return None, None
+
+    # Pyrogram Photo / Message / similar objects.
+    for obj in (photo, getattr(photo, "photo", None)):
+        if obj is None:
+            continue
+        file_id = getattr(obj, "file_id", None)
+        if file_id:
+            return None, str(file_id)
+
+    value = str(photo)
+    if os.path.isfile(value):
+        return value, None
+
+    # Only genuine HTTP(S) URLs may be supplied directly to the Bot API.
+    from urllib.parse import urlparse
+    try:
+        parsed = urlparse(value)
+        if parsed.scheme in ("http", "https") and parsed.netloc:
+            return None, value
+    except Exception:
+        pass
+
+    # Anything else is not a valid remote media URL; omit it rather than
+    # making Telegram parse a local/invalid path as an HTTP URL.
+    return None, None
+
+
 async def _send_rich_payload(chat_id, rich, *, photo=None, reply_to_message_id=None):
     """Send an already-built Rich Message without adding player controls."""
-    file_path = None
-    if photo and os.path.isfile(str(photo)):
-        file_path = str(photo)
+    file_path, photo_ref = _normalize_photo(photo)
+    if file_path or photo_ref:
         rich = dict(rich)
         rich['html'] = f'<img src="tg://photo?id=rich_cover"/>\n{rich.get("html", "")}'
+        media_ref = 'attach://player_cover' if file_path else photo_ref
         rich['media'] = [{
             'id': 'rich_cover',
-            'media': {'type': 'photo', 'media': 'attach://player_cover'},
-        }]
-    elif photo:
-        rich = dict(rich)
-        rich['html'] = f'<img src="tg://photo?id=rich_cover"/>\n{rich.get("html", "")}'
-        rich['media'] = [{
-            'id': 'rich_cover',
-            'media': {'type': 'photo', 'media': str(photo)},
+            'media': {'type': 'photo', 'media': media_ref},
         }]
 
     data = {'chat_id': chat_id, 'rich_message': rich}
