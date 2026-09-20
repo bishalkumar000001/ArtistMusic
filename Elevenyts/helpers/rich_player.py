@@ -188,5 +188,17 @@ async def edit_player(chat_id,message_id,base_html,media,*,timer=None,playing=Tr
         await _request('editMessageText',{'chat_id':chat_id,'message_id':message_id,'rich_message':rich}); return True
     except Exception:return False
 
+async def send_player(chat_id, base_html, media=None, photo=None, reply_to_message_id=None, **kwargs):
+    """Compatibility helper for callers that send/update the Rich music player."""
+    if media is not None and photo is None:
+        photo = getattr(media, "thumbnail", None)
+    return await send_rich_message(
+        chat_id,
+        base_html,
+        photo=photo,
+        reply_to_message_id=reply_to_message_id,
+        quote=kwargs.get("quote", True),
+    )
+
 async def edit_player_message(chat_id,message_id,base_html,media,*args,**kwargs):
     return await edit_player(chat_id,message_id,base_html,media,timer=kwargs.get('timer'),playing=kwargs.get('playing',True),remove=kwargs.get('remove',False))
