@@ -166,25 +166,68 @@ def _normalize_photo(photo, fallback_video_id=None):
     if not re.fullmatch(r"[A-Za-z0-9_-]{6,20}", vid):
         # Recover the YouTube id from a malformed thumbnail URL when possible.
         source = str(photo or "")
-        match = re.search(r"(?:/vi/|[?&]v=|youtu\\.be/)([A-Za-z0-9_-]{6,20})", source)
+        match = re.search(r"(?:/vi/|[?&]v=|youtu\.be/)([A-Za-z0-9_-]{6,20})", source)
         vid = match.group(1) if match else ""
     # Only accept the normal YouTube video-id shape for the fallback.
     if re.fullmatch(r"[A-Za-z0-9_-]{6,20}", vid):
         return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
     return None
 
+
+async def _download_photo_to_cache(photo, video_id=None):
+    """Turn remote thumbnail URLs into a local JPEG so Telegram never receives
+    a potentially malformed HTTP media URL."""
+    if not photo:
+        return None
+    value = str(photo).strip()
+    if not value.startswith(("http://", "https://")):
+        return value if os.path.isfile(value) else None
+
+    # Stable cache name based on the URL/video id.
+    import hashlib
+    key = str(video_id or value).encode("utf-8", "ignore")
+    path = os.path.join("cache", "rich_player", hashlib.sha256(key).hexdigest()[:24] + ".jpg")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if os.path.isfile(path) and os.path.getsize(path) > 0:
+        return path
+
+    try:
+        timeout = aiohttp.ClientTimeout(total=12, connect=4, sock_read=8)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(value, allow_redirects=True) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.read()
+                if not data or len(data) > 8 * 1024 * 1024:
+                    return None
+        with open(path, "wb") as fp:
+            fp.write(data)
+        return path
+    except Exception:
+        return None
+
 async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True, video_id=None):
     body=rich_html(text,markup=markup)
     rich={'html':body}
     file_path=None
-    photo=_normalize_photo(photo, fallback_video_id=video_id)
-    if photo and os.path.isfile(str(photo)):
-        file_path=str(photo)
-        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\\n{body}'
+
+    # Never pass a remote thumbnail URL directly to Telegram. Download it first
+    # and upload it as multipart media. This avoids "Wrong port number" and
+    # similar Telegram HTTP URL parsing failures.
+    normalized=_normalize_photo(photo, fallback_video_id=video_id)
+    if normalized and str(normalized).startswith(("http://", "https://")):
+        file_path=await _download_photo_to_cache(normalized, video_id=video_id)
+        if not file_path and video_id:
+            fallback=f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
+            file_path=await _download_photo_to_cache(fallback, video_id=video_id)
+        normalized=file_path
+    elif normalized and os.path.isfile(str(normalized)):
+        file_path=str(normalized)
+
+    if file_path:
+        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'
         rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
-    elif photo:
-        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\\n{body}'
-        rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':str(photo)}}]
+
     data={'chat_id':chat_id,'rich_message':rich}
     if reply_to_message_id:
         data['reply_parameters']={'message_id':int(reply_to_message_id)}
@@ -221,7 +264,9 @@ async def edit_player(chat_id,message_id,base_html,media,*,timer=None,playing=Tr
     if remove:
         try: await _request('deleteMessage',{'chat_id':chat_id,'message_id':message_id}); _PLAYER_PHOTOS.pop((chat_id,message_id),None); _PLAYER_COVERS.pop((chat_id,message_id),None); return True
         except Exception:return False
-    photo=_normalize_photo(_PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id)))
+    photo=_PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
+    if photo and str(photo).startswith(("http://", "https://")):
+        photo=None
     rich={'html':rich_html(base_html,chat_id,media,timer=timer,playing=playing)}
     if photo:
         rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'; rich['media']=[{'id':'player_cover','media':{'type':'photo','media':photo}}]
