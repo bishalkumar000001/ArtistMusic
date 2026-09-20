@@ -132,29 +132,6 @@ async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_
     if pid: _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
     return mid
 
-async def send_player(chat_id, text, photo=None, media=None, playing=True, *, reply_to_message_id=None):
-    """Send the Rich Message music player.
-
-    Compatible with core.calls:
-        send_player(chat_id, text, thumbnail, media, playing=True)
-
-    The cover photo is remembered by message id so later player edits
-    (pause/resume/progress) can keep the thumbnail visible.
-    """
-    body = rich_html(
-        text,
-        chat_id=chat_id,
-        media=media,
-        playing=playing,
-    )
-    return await send_rich_message(
-        chat_id,
-        body,
-        photo=photo,
-        reply_to_message_id=reply_to_message_id,
-    )
-
-
 async def edit_rich_message(message_or_chat_id, text, markup=None, *, message_id=None, photo_file_id=None):
     if hasattr(message_or_chat_id,'chat'):
         msg=message_or_chat_id; chat_id=msg.chat.id; message_id=msg.id
