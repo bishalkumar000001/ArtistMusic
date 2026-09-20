@@ -6,7 +6,7 @@ import time
 from typing import Optional
 import aiohttp
 
-from Elevenyts import config, queue
+from Elevenyts import config
 
 _PLAYER_PHOTOS: dict[tuple[int, int], str] = {}
 
@@ -63,6 +63,7 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
     state = "pause" if playing else "resume"
     label = "Ⅱ Pause" if playing else "▶ Resume"
     try:
+        from Elevenyts import queue
         upcoming = max(0, len(queue.get_queue(chat_id)) - 1)
     except Exception:
         upcoming = 0
@@ -186,6 +187,32 @@ async def edit_player(chat_id: int, message_id: int, base_html: str, media, *,
         return True
     except Exception:
         return False
+
+
+async def edit_rich_message(message, text, markup=None, photo_file_id=None, *, chat_id=None, message_id=None, media=None, timer=None, playing=True, remove=False):
+    """Compatibility wrapper used by older plugins such as misc.py.
+
+    Accepts either a Pyrogram-like Message object or explicit chat/message IDs,
+    then updates the same Rich Message player while preserving the cached
+    thumbnail when possible.
+    """
+    if message is not None:
+        if chat_id is None:
+            chat_id = getattr(message, "chat", None)
+            chat_id = getattr(chat_id, "id", chat_id)
+        if message_id is None:
+            message_id = getattr(message, "id", None)
+    if chat_id is None or message_id is None:
+        raise ValueError("edit_rich_message requires chat_id and message_id")
+    return await edit_player(
+        int(chat_id),
+        int(message_id),
+        text,
+        media,
+        timer=timer,
+        playing=playing,
+        remove=remove,
+    )
 
 
 async def edit_player_message(chat_id, message_id, base_html, media, *args, **kwargs):
