@@ -1,4 +1,4 @@
-import html, json, os, re, time
+import html, json, os, re, time, tempfile, urllib.parse
 from typing import Optional
 import aiohttp
 from Elevenyts import config
@@ -117,20 +117,104 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
-async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
+
+def _valid_http_url(value):
+    if not value:
+        return False
+    try:
+        p = urllib.parse.urlsplit(str(value).strip())
+        if p.scheme not in ("http", "https") or not p.netloc:
+            return False
+        if p.port is not None and not (1 <= p.port <= 65535):
+            return False
+        return True
+    except (ValueError, TypeError):
+        return False
+
+async def _download_photo(photo, media=None):
+    """Download a remote thumbnail locally so Telegram never parses a bad HTTP URL."""
+    candidates = []
+    if photo and _valid_http_url(photo):
+        candidates.append(str(photo).strip())
+
+    # If the supplied thumbnail is malformed, use YouTube's canonical thumbnail.
+    media_id = getattr(media, "id", None) if media is not None else None
+    if media_id:
+        mid = str(media_id).strip()
+        if re.fullmatch(r"[A-Za-z0-9_-]{6,20}", mid):
+            candidates.extend([
+                f"https://i.ytimg.com/vi/{mid}/hqdefault.jpg",
+                f"https://i.ytimg.com/vi/{mid}/mqdefault.jpg",
+            ])
+
+    for url in candidates:
+        path = None
+        try:
+            timeout = aiohttp.ClientTimeout(total=12)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url, allow_redirects=True) as r:
+                    if r.status != 200:
+                        continue
+                    content_type = (r.headers.get("Content-Type") or "").lower()
+                    data = await r.read()
+                    if not data or len(data) < 256:
+                        continue
+                    if "image" not in content_type and not url.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+                        continue
+                    suffix = ".jpg"
+                    if "png" in content_type: suffix = ".png"
+                    elif "webp" in content_type: suffix = ".webp"
+                    fd, path = tempfile.mkstemp(prefix="artist_player_", suffix=suffix)
+                    os.close(fd)
+                    with open(path, "wb") as fp:
+                        fp.write(data)
+                    return path
+        except Exception:
+            if path:
+                try: os.remove(path)
+                except Exception: pass
+    return None
+
+async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True, media=None):
     body=rich_html(text,markup=markup)
     rich={'html':body}
     file_path=None
+    temporary=False
+
+    # Local file is sent as multipart. Remote thumbnails are downloaded first.
     if photo and os.path.isfile(str(photo)):
-        file_path=str(photo); rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
-    elif photo:
-        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':str(photo)}}]
+        file_path=str(photo)
+    elif photo or media is not None:
+        file_path=await _download_photo(photo, media)
+        temporary=bool(file_path)
+
+    if file_path:
+        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'
+        rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
+
     data={'chat_id':chat_id,'rich_message':rich}
-    if reply_to_message_id: data['reply_parameters']={'message_id':int(reply_to_message_id)}
-    result=await _request('sendRichMessage',data,file_path)
-    msg=result['result']; mid=int(msg['message_id']); pid=_response_photo_id(msg)
-    if pid: _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
-    return mid
+    if reply_to_message_id:
+        data['reply_parameters']={'message_id':int(reply_to_message_id)}
+
+    try:
+        result=await _request('sendRichMessage',data,file_path)
+        msg=result['result']; mid=int(msg['message_id']); pid=_response_photo_id(msg)
+        if pid: _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
+        return mid
+    finally:
+        if temporary and file_path:
+            try: os.remove(file_path)
+            except Exception: pass
+
+async def send_player(chat_id, base_html, media=None, photo=None, reply_to_message_id=None, **kwargs):
+    """Compatibility wrapper used by older plugins."""
+    if media is not None and photo is None:
+        photo = getattr(media, "thumbnail", None)
+    return await send_rich_message(
+        chat_id, base_html, photo=photo, media=media,
+        reply_to_message_id=reply_to_message_id,
+        quote=kwargs.get("quote", True),
+    )
 
 async def edit_rich_message(message_or_chat_id, text, markup=None, *, message_id=None, photo_file_id=None):
     if hasattr(message_or_chat_id,'chat'):
