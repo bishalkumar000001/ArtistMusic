@@ -4,7 +4,7 @@ import aiohttp
 from Elevenyts import config
 from Elevenyts.helpers._inline import RichMarkup, RichButton
 
-_PLAYER_PHOTOS = {}
+_PLAYER_PHOTOS = {}\n_PLAYER_COVERS = {}
 
 
 def _api(method):
@@ -13,22 +13,50 @@ def _api(method):
 def _time(sec, duration):
     sec=max(0,int(sec or 0)); return time.strftime('%H:%M:%S' if duration>=3600 else '%M:%S', time.gmtime(sec))
 
+def _duration_seconds(media):
+    """Return a real duration for normal tracks, even if duration_sec is missing."""
+    try:
+        value = int(getattr(media, "duration_sec", 0) or 0)
+        if value > 0:
+            return value
+    except Exception:
+        pass
+    raw = str(getattr(media, "duration", "") or "").strip()
+    if raw and raw.upper() != "LIVE":
+        try:
+            parts = [int(x) for x in raw.split(":")]
+            if len(parts) == 3:
+                return parts[0] * 3600 + parts[1] * 60 + parts[2]
+            if len(parts) == 2:
+                return parts[0] * 60 + parts[1]
+            if len(parts) == 1:
+                return parts[0]
+        except Exception:
+            pass
+    return 0
+
 def progress_text(media, timer=None):
-    duration=int(getattr(media,'duration_sec',0) or 0)
-    if timer: return timer
-    if not duration: return 'LIVE'
-    played=max(0,min(int(getattr(media,'time',0) or 0),duration)); n=12
-    filled=int(round(n*played/duration)); return f"{_time(played,duration)} {'━'*filled}●{'━'*(n-filled)} {_time(duration,duration)}"
+    duration = _duration_seconds(media)
+    # A caller-supplied timer is authoritative. Never replace a real timer
+    # with the word LIVE.
+    if timer:
+        return str(timer)
+    played = max(0, int(getattr(media, "time", 0) or 0))
+    if duration > 0:
+        played = min(played, duration)
+        n = 12
+        filled = int(round(n * played / duration))
+        return f"{_time(played, duration)} {'━'*filled}●{'━'*(n-filled)} {_time(duration, duration)}"
+    # Only genuine live tracks should display LIVE.
+    if bool(getattr(media, "is_live", False)):
+        return "🔴 LIVE"
+    return f"{_time(played, 0)} {'━'*12} {_time(0, 0)}"
 
 def _clean_base_html(base_html):
-    text = base_html or ''
-    # Player controls are generated centrally by rich_html(). If a caller
-    # accidentally passes a text string that already contains controls,
-    # remove those rows first so they can never be rendered twice.
-    text = re.sub(r'<tg-button-row[^>]*>.*?</tg-button-row>', '', text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r'<a\s+href=([^"\'>\s]+)>', r'<a href="\1">', text)
-    text = re.sub(r'</?blockquote(?:\s+[^>]*)?>', '', text)
-    text = re.sub(r'\n{3,}', '\n\n', text).strip()
+    text=base_html or ''
+    text=re.sub(r'<a\s+href=([^"\'>\s]+)>',r'<a href="\1">',text)
+    text=re.sub(r'</?blockquote(?:\s+[^>]*)?>','',text)
+    text=re.sub(r'\n{3,}','\n\n',text).strip()
     return text
 
 def _button_html(b):
@@ -121,150 +149,20 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
-def _normalize_photo(photo):
-    """Return (local_path, remote_ref) for a safe Telegram photo reference.
-
-    Never pass arbitrary strings (especially local paths such as /tmp/... or
-    Windows paths) to the Bot API as HTTP URLs.  Telegram rejects those with
-    errors such as ``Wrong port number specified in the URL``.
-    """
-    if not photo:
-        return None, None
-
-    # Pyrogram Photo / Message / similar objects.
-    for obj in (photo, getattr(photo, "photo", None)):
-        if obj is None:
-            continue
-        file_id = getattr(obj, "file_id", None)
-        if file_id:
-            return None, str(file_id)
-
-    value = str(photo)
-    if os.path.isfile(value):
-        return value, None
-
-    # Only genuine HTTP(S) URLs may be supplied directly to the Bot API.
-    from urllib.parse import urlparse
-    try:
-        parsed = urlparse(value)
-        if parsed.scheme in ("http", "https") and parsed.netloc:
-            return None, value
-    except Exception:
-        pass
-
-    # Anything else is not a valid remote media URL; omit it rather than
-    # making Telegram parse a local/invalid path as an HTTP URL.
-    return None, None
-
-
-async def _send_rich_payload(chat_id, rich, *, photo=None, reply_to_message_id=None):
-    """Send an already-built Rich Message without adding player controls."""
-    file_path, photo_ref = _normalize_photo(photo)
-    if file_path or photo_ref:
-        rich = dict(rich)
-        rich['html'] = f'<img src="tg://photo?id=rich_cover"/>\n{rich.get("html", "")}'
-        media_ref = 'attach://player_cover' if file_path else photo_ref
-        rich['media'] = [{
-            'id': 'rich_cover',
-            'media': {'type': 'photo', 'media': media_ref},
-        }]
-
-    data = {'chat_id': chat_id, 'rich_message': rich}
-    if reply_to_message_id:
-        data['reply_parameters'] = {'message_id': int(reply_to_message_id)}
-
-    result = await _request('sendRichMessage', data, file_path)
-    msg = result['result']
-    mid = int(msg['message_id'])
-    pid = _response_photo_id(msg)
-    if pid:
-        _PLAYER_PHOTOS[(int(chat_id), mid)] = pid
-    return mid
-
-
 async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
-    """Send a generic Rich Message.
-
-    This function deliberately does NOT add music-player controls. Player
-    controls are added only by send_player()/edit_player(). This prevents
-    duplicate controls and prevents callbacks containing chat_id=None.
-    """
-    body = rich_html(text, markup=markup) if markup is not None else _clean_base_html(text)
-    return await _send_rich_payload(
-        chat_id,
-        {'html': body},
-        photo=photo,
-        reply_to_message_id=reply_to_message_id,
-    )
-
-
-async def send_player(chat_id, *args, **kwargs):
-    """Compatibility sender for all existing player call signatures.
-
-    Accepts the historical positional forms without falling back to the
-    classic keyboard.  The player message is still rendered exactly once
-    as a Rich Message.
-    """
-    reply_to_message_id = kwargs.pop("reply_to_message_id", None)
-    text = kwargs.pop("text", None)
-    photo = kwargs.pop("photo", None)
-    media = kwargs.pop("media", None)
-    playing = kwargs.pop("playing", True)
-
-    # Accept up to four legacy positional values after chat_id.
-    vals = list(args[:4])
-    if vals and text is None:
-        text = vals.pop(0)
-    if vals:
-        # Older integrations used either (text, photo, media) or
-        # (text, media, photo). Detect media objects by their duration/title.
-        candidate = vals.pop(0)
-        if media is None and (hasattr(candidate, "duration_sec") or hasattr(candidate, "title")):
-            media = candidate
-        elif photo is None:
-            photo = candidate
-    if vals:
-        candidate = vals.pop(0)
-        if media is None and (hasattr(candidate, "duration_sec") or hasattr(candidate, "title")):
-            media = candidate
-        elif photo is None:
-            photo = candidate
-        elif reply_to_message_id is None:
-            reply_to_message_id = getattr(candidate, "id", candidate)
-    if vals:
-        candidate = vals.pop(0)
-        if isinstance(candidate, bool):
-            playing = candidate
-        elif reply_to_message_id is None:
-            reply_to_message_id = getattr(candidate, "id", candidate)
-
-    if text is None and media is not None:
-        title = getattr(media, "title", "Now Playing")
-        text = f"<b>{html.escape(str(title))}</b>"
-    if text is None:
-        text = ""
-
-    # Recover a cover from the media object when the caller omitted photo.
-    if photo is None and media is not None:
-        for attr in ("thumbnail", "thumb", "photo", "cover", "cover_path"):
-            value = getattr(media, attr, None)
-            if value:
-                photo = value
-                break
-
-    mid = await _send_rich_payload(
-        chat_id,
-        {"html": rich_html(text, chat_id=chat_id, media=media, playing=playing)},
-        photo=photo,
-        reply_to_message_id=reply_to_message_id,
-    )
-    if media is not None:
-        try:
-            media.message_id = mid
-        except Exception:
-            pass
+    body=rich_html(text,markup=markup)
+    rich={'html':body}
+    file_path=None
+    if photo and os.path.isfile(str(photo)):
+        file_path=str(photo); rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
+    elif photo:
+        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':str(photo)}}]
+    data={'chat_id':chat_id,'rich_message':rich}
+    if reply_to_message_id: data['reply_parameters']={'message_id':int(reply_to_message_id)}
+    result=await _request('sendRichMessage',data,file_path)
+    msg=result['result']; mid=int(msg['message_id']); pid=_response_photo_id(msg)
+    if pid: _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
     return mid
-
 
 async def edit_rich_message(message_or_chat_id, text, markup=None, *, message_id=None, photo_file_id=None):
     if hasattr(message_or_chat_id,'chat'):
@@ -286,12 +184,19 @@ async def edit_rich_message(message_or_chat_id, text, markup=None, *, message_id
 
 async def edit_player(chat_id,message_id,base_html,media,*,timer=None,playing=True,remove=False):
     if remove:
-        try: await _request('deleteMessage',{'chat_id':chat_id,'message_id':message_id}); _PLAYER_PHOTOS.pop((chat_id,message_id),None); return True
+        try: await _request('deleteMessage',{'chat_id':chat_id,'message_id':message_id}); _PLAYER_PHOTOS.pop((chat_id,message_id),None); _PLAYER_COVERS.pop((chat_id,message_id),None); return True
         except Exception:return False
-    photo=_PLAYER_PHOTOS.get((chat_id,message_id))
+    photo = _PLAYER_PHOTOS.get((chat_id, message_id))
+    cover = _PLAYER_COVERS.get((chat_id, message_id))
     rich={'html':rich_html(base_html,chat_id,media,timer=timer,playing=playing)}
     if photo:
-        rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'; rich['media']=[{'id':'player_cover','media':{'type':'photo','media':photo}}]
+        rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'
+        rich['media']=[{'id':'player_cover','media':{'type':'photo','media':photo}}]
+    elif cover:
+        kind, value = cover
+        rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'
+        media_ref = 'attach://player_cover' if kind == 'file' else value
+        rich['media']=[{'id':'player_cover','media':{'type':'photo','media':media_ref}}]
     try:
         await _request('editMessageText',{'chat_id':chat_id,'message_id':message_id,'rich_message':rich}); return True
     except Exception:return False
