@@ -117,6 +117,50 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
+
+async def send_player(chat_id, text=None, media=None, *, photo=None,
+                      reply_to_message_id=None, message=None,
+                      base_html=None, **kwargs):
+    """Compatibility sender for the Rich Message player.
+
+    Older player code imports ``send_player`` directly.  Keep that API
+    available while routing the actual message creation through the single
+    Rich Message implementation, so controls are not duplicated.
+    """
+    # Accept common calling styles used by older player integrations.
+    if message is not None:
+        reply_to_message_id = getattr(message, "id", reply_to_message_id)
+
+    if text is None:
+        text = base_html
+    if text is None and media is not None:
+        title = getattr(media, "title", "Now Playing")
+        text = f"<b>{html.escape(str(title))}</b>"
+    if text is None:
+        text = ""
+
+    # Try the common media cover attributes when no explicit photo was given.
+    if photo is None and media is not None:
+        for attr in ("thumbnail", "thumb", "photo", "cover", "cover_path"):
+            value = getattr(media, attr, None)
+            if value:
+                photo = value
+                break
+
+    mid = await send_rich_message(
+        chat_id,
+        text,
+        None,
+        photo=photo,
+        reply_to_message_id=reply_to_message_id,
+    )
+    if media is not None:
+        try:
+            media.message_id = mid
+        except Exception:
+            pass
+    return mid
+
 async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
     body=rich_html(text,markup=markup)
     rich={'html':body}
