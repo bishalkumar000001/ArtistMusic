@@ -21,10 +21,14 @@ def progress_text(media, timer=None):
     filled=int(round(n*played/duration)); return f"{_time(played,duration)} {'━'*filled}●{'━'*(n-filled)} {_time(duration,duration)}"
 
 def _clean_base_html(base_html):
-    text=base_html or ''
-    text=re.sub(r'<a\s+href=([^"\'>\s]+)>',r'<a href="\1">',text)
-    text=re.sub(r'</?blockquote(?:\s+[^>]*)?>','',text)
-    text=re.sub(r'\n{3,}','\n\n',text).strip()
+    text = base_html or ''
+    # Player controls are generated centrally by rich_html(). If a caller
+    # accidentally passes a text string that already contains controls,
+    # remove those rows first so they can never be rendered twice.
+    text = re.sub(r'<tg-button-row[^>]*>.*?</tg-button-row>', '', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<a\s+href=([^"\'>\s]+)>', r'<a href="\1">', text)
+    text = re.sub(r'</?blockquote(?:\s+[^>]*)?>', '', text)
+    text = re.sub(r'\n{3,}', '\n\n', text).strip()
     return text
 
 def _button_html(b):
@@ -117,29 +121,101 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
+async def _send_rich_payload(chat_id, rich, *, photo=None, reply_to_message_id=None):
+    """Send an already-built Rich Message without adding player controls."""
+    file_path = None
+    if photo and os.path.isfile(str(photo)):
+        file_path = str(photo)
+        rich = dict(rich)
+        rich['html'] = f'<img src="tg://photo?id=rich_cover"/>\n{rich.get("html", "")}'
+        rich['media'] = [{
+            'id': 'rich_cover',
+            'media': {'type': 'photo', 'media': 'attach://player_cover'},
+        }]
+    elif photo:
+        rich = dict(rich)
+        rich['html'] = f'<img src="tg://photo?id=rich_cover"/>\n{rich.get("html", "")}'
+        rich['media'] = [{
+            'id': 'rich_cover',
+            'media': {'type': 'photo', 'media': str(photo)},
+        }]
 
-async def send_player(chat_id, text=None, media=None, *, photo=None,
-                      reply_to_message_id=None, message=None,
-                      base_html=None, **kwargs):
-    """Compatibility sender for the Rich Message player.
+    data = {'chat_id': chat_id, 'rich_message': rich}
+    if reply_to_message_id:
+        data['reply_parameters'] = {'message_id': int(reply_to_message_id)}
 
-    Older player code imports ``send_player`` directly.  Keep that API
-    available while routing the actual message creation through the single
-    Rich Message implementation, so controls are not duplicated.
+    result = await _request('sendRichMessage', data, file_path)
+    msg = result['result']
+    mid = int(msg['message_id'])
+    pid = _response_photo_id(msg)
+    if pid:
+        _PLAYER_PHOTOS[(int(chat_id), mid)] = pid
+    return mid
+
+
+async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
+    """Send a generic Rich Message.
+
+    This function deliberately does NOT add music-player controls. Player
+    controls are added only by send_player()/edit_player(). This prevents
+    duplicate controls and prevents callbacks containing chat_id=None.
     """
-    # Accept common calling styles used by older player integrations.
-    if message is not None:
-        reply_to_message_id = getattr(message, "id", reply_to_message_id)
+    body = rich_html(text, markup=markup) if markup is not None else _clean_base_html(text)
+    return await _send_rich_payload(
+        chat_id,
+        {'html': body},
+        photo=photo,
+        reply_to_message_id=reply_to_message_id,
+    )
 
-    if text is None:
-        text = base_html
+
+async def send_player(chat_id, *args, **kwargs):
+    """Compatibility sender for all existing player call signatures.
+
+    Accepts the historical positional forms without falling back to the
+    classic keyboard.  The player message is still rendered exactly once
+    as a Rich Message.
+    """
+    reply_to_message_id = kwargs.pop("reply_to_message_id", None)
+    text = kwargs.pop("text", None)
+    photo = kwargs.pop("photo", None)
+    media = kwargs.pop("media", None)
+    playing = kwargs.pop("playing", True)
+
+    # Accept up to four legacy positional values after chat_id.
+    vals = list(args[:4])
+    if vals and text is None:
+        text = vals.pop(0)
+    if vals:
+        # Older integrations used either (text, photo, media) or
+        # (text, media, photo). Detect media objects by their duration/title.
+        candidate = vals.pop(0)
+        if media is None and (hasattr(candidate, "duration_sec") or hasattr(candidate, "title")):
+            media = candidate
+        elif photo is None:
+            photo = candidate
+    if vals:
+        candidate = vals.pop(0)
+        if media is None and (hasattr(candidate, "duration_sec") or hasattr(candidate, "title")):
+            media = candidate
+        elif photo is None:
+            photo = candidate
+        elif reply_to_message_id is None:
+            reply_to_message_id = getattr(candidate, "id", candidate)
+    if vals:
+        candidate = vals.pop(0)
+        if isinstance(candidate, bool):
+            playing = candidate
+        elif reply_to_message_id is None:
+            reply_to_message_id = getattr(candidate, "id", candidate)
+
     if text is None and media is not None:
         title = getattr(media, "title", "Now Playing")
         text = f"<b>{html.escape(str(title))}</b>"
     if text is None:
         text = ""
 
-    # Try the common media cover attributes when no explicit photo was given.
+    # Recover a cover from the media object when the caller omitted photo.
     if photo is None and media is not None:
         for attr in ("thumbnail", "thumb", "photo", "cover", "cover_path"):
             value = getattr(media, attr, None)
@@ -147,10 +223,9 @@ async def send_player(chat_id, text=None, media=None, *, photo=None,
                 photo = value
                 break
 
-    mid = await send_rich_message(
+    mid = await _send_rich_payload(
         chat_id,
-        text,
-        None,
+        {"html": rich_html(text, chat_id=chat_id, media=media, playing=playing)},
         photo=photo,
         reply_to_message_id=reply_to_message_id,
     )
@@ -161,20 +236,6 @@ async def send_player(chat_id, text=None, media=None, *, photo=None,
             pass
     return mid
 
-async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
-    body=rich_html(text,markup=markup)
-    rich={'html':body}
-    file_path=None
-    if photo and os.path.isfile(str(photo)):
-        file_path=str(photo); rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
-    elif photo:
-        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':str(photo)}}]
-    data={'chat_id':chat_id,'rich_message':rich}
-    if reply_to_message_id: data['reply_parameters']={'message_id':int(reply_to_message_id)}
-    result=await _request('sendRichMessage',data,file_path)
-    msg=result['result']; mid=int(msg['message_id']); pid=_response_photo_id(msg)
-    if pid: _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
-    return mid
 
 async def edit_rich_message(message_or_chat_id, text, markup=None, *, message_id=None, photo_file_id=None):
     if hasattr(message_or_chat_id,'chat'):
