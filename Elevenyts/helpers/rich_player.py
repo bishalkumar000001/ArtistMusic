@@ -1,4 +1,4 @@
-import html, json, os, re, time
+import html, json, os, re, time, urllib.parse
 from typing import Optional
 import aiohttp
 from Elevenyts import config
@@ -139,40 +139,59 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
-def _normalize_photo(photo):
-    """Return a Telegram-safe photo reference; reject malformed HTTP URLs."""
-    if not photo:
-        return None
-    value = str(photo).strip()
-    if not value:
-        return None
-    if os.path.isfile(value):
-        return value
-    # Telegram file IDs / file_unique IDs are not HTTP URLs.
-    if not value.startswith(('http://', 'https://')):
-        return value
-    try:
-        parsed = urllib.parse.urlsplit(value)
-        if parsed.scheme not in ('http', 'https') or not parsed.netloc:
-            return None
-        if parsed.port is not None and not (1 <= parsed.port <= 65535):
-            return None
-        return value
-    except (ValueError, TypeError):
-        return None
+def _normalize_photo(photo, fallback_video_id=None):
+    """Return a Telegram-safe photo reference.
 
-async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
+    Invalid thumbnail URLs are ignored. When a YouTube video id is available,
+    use a known-good YouTube thumbnail URL instead of allowing a malformed
+    thumbnail (for example one containing an invalid port) to break the player.
+    """
+    value = str(photo).strip() if photo is not None else ""
+    if value:
+        if os.path.isfile(value):
+            return value
+        if not value.startswith(("http://", "https://")):
+            # Telegram file_id / file_unique_id
+            return value
+        try:
+            parsed = urllib.parse.urlsplit(value)
+            if parsed.scheme in ("http", "https") and parsed.hostname:
+                port = parsed.port
+                if port is None or 1 <= port <= 65535:
+                    return value
+        except (ValueError, TypeError):
+            pass
+
+    vid = str(fallback_video_id or "").strip()
+    if not re.fullmatch(r"[A-Za-z0-9_-]{6,20}", vid):
+        # Recover the YouTube id from a malformed thumbnail URL when possible.
+        source = str(photo or "")
+        match = re.search(r"(?:/vi/|[?&]v=|youtu\\.be/)([A-Za-z0-9_-]{6,20})", source)
+        vid = match.group(1) if match else ""
+    # Only accept the normal YouTube video-id shape for the fallback.
+    if re.fullmatch(r"[A-Za-z0-9_-]{6,20}", vid):
+        return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
+    return None
+
+async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True, video_id=None):
     body=rich_html(text,markup=markup)
     rich={'html':body}
     file_path=None
+    photo=_normalize_photo(photo, fallback_video_id=video_id)
     if photo and os.path.isfile(str(photo)):
-        file_path=str(photo); rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
+        file_path=str(photo)
+        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\\n{body}'
+        rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
     elif photo:
-        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':str(photo)}}]
+        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\\n{body}'
+        rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':str(photo)}}]
     data={'chat_id':chat_id,'rich_message':rich}
-    if reply_to_message_id: data['reply_parameters']={'message_id':int(reply_to_message_id)}
+    if reply_to_message_id:
+        data['reply_parameters']={'message_id':int(reply_to_message_id)}
     result=await _request('sendRichMessage',data,file_path)
-    msg=result['result']; mid=int(msg['message_id']); pid=_response_photo_id(msg)
+    msg=result['result']
+    mid=int(msg['message_id'])
+    pid=_response_photo_id(msg)
     if pid:
         _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
         _PLAYER_COVERS[(int(chat_id),mid)]=pid
@@ -214,12 +233,14 @@ async def send_player(chat_id, base_html, media=None, photo=None, reply_to_messa
     """Compatibility helper for callers that send/update the Rich music player."""
     if media is not None and photo is None:
         photo = getattr(media, "thumbnail", None)
+    video_id = getattr(media, "id", None) if media is not None else None
     return await send_rich_message(
         chat_id,
         base_html,
         photo=photo,
         reply_to_message_id=reply_to_message_id,
         quote=kwargs.get("quote", True),
+        video_id=video_id,
     )
 
 async def edit_player_message(chat_id,message_id,base_html,media,*args,**kwargs):
