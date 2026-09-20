@@ -4,7 +4,8 @@ import aiohttp
 from Elevenyts import config
 from Elevenyts.helpers._inline import RichMarkup, RichButton
 
-_PLAYER_PHOTOS = {}\n_PLAYER_COVERS = {}
+_PLAYER_PHOTOS = {}
+_PLAYER_COVERS = {}
 
 
 def _api(method):
@@ -14,48 +15,37 @@ def _time(sec, duration):
     sec=max(0,int(sec or 0)); return time.strftime('%H:%M:%S' if duration>=3600 else '%M:%S', time.gmtime(sec))
 
 def _duration_seconds(media):
-    """Return a real duration for normal tracks, even if duration_sec is missing."""
-    try:
-        value = int(getattr(media, "duration_sec", 0) or 0)
-        if value > 0:
-            return value
-    except Exception:
-        pass
-    raw = str(getattr(media, "duration", "") or "").strip()
-    if raw and raw.upper() != "LIVE":
+    duration = int(getattr(media, 'duration_sec', 0) or 0)
+    if duration > 0:
+        return duration
+    raw = str(getattr(media, 'duration', '') or '').strip()
+    if raw:
         try:
-            parts = [int(x) for x in raw.split(":")]
+            parts = [int(p) for p in raw.split(':')]
             if len(parts) == 3:
                 return parts[0] * 3600 + parts[1] * 60 + parts[2]
             if len(parts) == 2:
                 return parts[0] * 60 + parts[1]
             if len(parts) == 1:
                 return parts[0]
-        except Exception:
+        except (TypeError, ValueError):
             pass
     return 0
 
 def progress_text(media, timer=None):
-    duration = _duration_seconds(media)
-    # A caller-supplied timer is authoritative. Never replace a real timer
-    # with the word LIVE.
-    if timer:
-        return str(timer)
-    played = max(0, int(getattr(media, "time", 0) or 0))
-    if duration > 0:
-        played = min(played, duration)
-        n = 12
-        filled = int(round(n * played / duration))
-        return f"{_time(played, duration)} {'━'*filled}●{'━'*(n-filled)} {_time(duration, duration)}"
-    # Only genuine live tracks should display LIVE.
-    if bool(getattr(media, "is_live", False)):
-        return "🔴 LIVE"
-    return f"{_time(played, 0)} {'━'*12} {_time(0, 0)}"
+    duration=_duration_seconds(media)
+    if timer: return timer
+    played=max(0,min(int(getattr(media,'time',0) or 0),duration)) if duration else max(0,int(getattr(media,'time',0) or 0))
+    if not duration:
+        return '🔴 LIVE' if getattr(media, 'is_live', False) else f"{_time(played, played)} {'━'*12}●"
+    n=12
+    filled=int(round(n*played/duration)); return f"{_time(played,duration)} {'━'*filled}●{'━'*(n-filled)} {_time(duration,duration)}"
 
 def _clean_base_html(base_html):
     text=base_html or ''
     text=re.sub(r'<a\s+href=([^"\'>\s]+)>',r'<a href="\1">',text)
     text=re.sub(r'</?blockquote(?:\s+[^>]*)?>','',text)
+    text=re.sub(r'<tg-button-row\b[^>]*>.*?</tg-button-row>', '', text, flags=re.S)
     text=re.sub(r'\n{3,}','\n\n',text).strip()
     return text
 
@@ -161,23 +151,27 @@ async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_
     if reply_to_message_id: data['reply_parameters']={'message_id':int(reply_to_message_id)}
     result=await _request('sendRichMessage',data,file_path)
     msg=result['result']; mid=int(msg['message_id']); pid=_response_photo_id(msg)
-    if pid: _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
+    if pid:
+        _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
+        _PLAYER_COVERS[(int(chat_id),mid)]=pid
     return mid
 
 async def edit_rich_message(message_or_chat_id, text, markup=None, *, message_id=None, photo_file_id=None):
     if hasattr(message_or_chat_id,'chat'):
         msg=message_or_chat_id; chat_id=msg.chat.id; message_id=msg.id
-        photo_file_id=photo_file_id or _photo_id_from_message(msg) or _PLAYER_PHOTOS.get((chat_id,message_id))
+        photo_file_id=photo_file_id or _photo_id_from_message(msg) or _PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
     else:
         chat_id=int(message_or_chat_id); message_id=int(message_id)
-        photo_file_id=photo_file_id or _PLAYER_PHOTOS.get((chat_id,message_id))
+        photo_file_id=photo_file_id or _PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
     body=rich_html(text,markup=markup)
     rich={'html':body}
     if photo_file_id:
         rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':photo_file_id}}]
     try:
         await _request('editMessageText',{'chat_id':chat_id,'message_id':message_id,'rich_message':rich})
-        if photo_file_id: _PLAYER_PHOTOS[(chat_id,message_id)]=photo_file_id
+        if photo_file_id:
+            _PLAYER_PHOTOS[(chat_id,message_id)]=photo_file_id
+            _PLAYER_COVERS[(chat_id,message_id)]=photo_file_id
         return True
     except Exception:
         return False
@@ -186,17 +180,10 @@ async def edit_player(chat_id,message_id,base_html,media,*,timer=None,playing=Tr
     if remove:
         try: await _request('deleteMessage',{'chat_id':chat_id,'message_id':message_id}); _PLAYER_PHOTOS.pop((chat_id,message_id),None); _PLAYER_COVERS.pop((chat_id,message_id),None); return True
         except Exception:return False
-    photo = _PLAYER_PHOTOS.get((chat_id, message_id))
-    cover = _PLAYER_COVERS.get((chat_id, message_id))
+    photo=_PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
     rich={'html':rich_html(base_html,chat_id,media,timer=timer,playing=playing)}
     if photo:
-        rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'
-        rich['media']=[{'id':'player_cover','media':{'type':'photo','media':photo}}]
-    elif cover:
-        kind, value = cover
-        rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'
-        media_ref = 'attach://player_cover' if kind == 'file' else value
-        rich['media']=[{'id':'player_cover','media':{'type':'photo','media':media_ref}}]
+        rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'; rich['media']=[{'id':'player_cover','media':{'type':'photo','media':photo}}]
     try:
         await _request('editMessageText',{'chat_id':chat_id,'message_id':message_id,'rich_message':rich}); return True
     except Exception:return False
