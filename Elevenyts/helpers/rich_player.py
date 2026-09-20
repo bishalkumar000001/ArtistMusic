@@ -139,6 +139,28 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
+def _normalize_photo(photo):
+    """Return a Telegram-safe photo reference; reject malformed HTTP URLs."""
+    if not photo:
+        return None
+    value = str(photo).strip()
+    if not value:
+        return None
+    if os.path.isfile(value):
+        return value
+    # Telegram file IDs / file_unique IDs are not HTTP URLs.
+    if not value.startswith(('http://', 'https://')):
+        return value
+    try:
+        parsed = urllib.parse.urlsplit(value)
+        if parsed.scheme not in ('http', 'https') or not parsed.netloc:
+            return None
+        if parsed.port is not None and not (1 <= parsed.port <= 65535):
+            return None
+        return value
+    except (ValueError, TypeError):
+        return None
+
 async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
     body=rich_html(text,markup=markup)
     rich={'html':body}
@@ -180,7 +202,7 @@ async def edit_player(chat_id,message_id,base_html,media,*,timer=None,playing=Tr
     if remove:
         try: await _request('deleteMessage',{'chat_id':chat_id,'message_id':message_id}); _PLAYER_PHOTOS.pop((chat_id,message_id),None); _PLAYER_COVERS.pop((chat_id,message_id),None); return True
         except Exception:return False
-    photo=_PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
+    photo=_normalize_photo(_PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id)))
     rich={'html':rich_html(base_html,chat_id,media,timer=timer,playing=playing)}
     if photo:
         rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'; rich['media']=[{'id':'player_cover','media':{'type':'photo','media':photo}}]
