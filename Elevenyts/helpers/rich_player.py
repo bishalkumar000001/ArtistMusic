@@ -138,3 +138,17 @@ async def edit_player(chat_id: int, message_id: int, base_html: str, media, *,
         return True
     except Exception:
         return False
+
+
+# Backwards-compatible name used by existing plugins.
+# Keep this wrapper so older player-update calls continue to work.
+async def edit_player_message(chat_id, message_id, base_html, media, *args, **kwargs):
+    return await edit_player(
+        chat_id,
+        message_id,
+        base_html,
+        media,
+        timer=kwargs.get("timer"),
+        playing=kwargs.get("playing", True),
+        remove=kwargs.get("remove", False),
+    )
