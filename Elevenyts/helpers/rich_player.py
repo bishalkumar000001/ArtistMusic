@@ -1,11 +1,10 @@
-import html, json, os, re, time, urllib.parse
+import html, json, os, re, time
 from typing import Optional
 import aiohttp
 from Elevenyts import config
 from Elevenyts.helpers._inline import RichMarkup, RichButton
 
 _PLAYER_PHOTOS = {}
-_PLAYER_COVERS = {}
 
 
 def _api(method):
@@ -14,38 +13,17 @@ def _api(method):
 def _time(sec, duration):
     sec=max(0,int(sec or 0)); return time.strftime('%H:%M:%S' if duration>=3600 else '%M:%S', time.gmtime(sec))
 
-def _duration_seconds(media):
-    duration = int(getattr(media, 'duration_sec', 0) or 0)
-    if duration > 0:
-        return duration
-    raw = str(getattr(media, 'duration', '') or '').strip()
-    if raw:
-        try:
-            parts = [int(p) for p in raw.split(':')]
-            if len(parts) == 3:
-                return parts[0] * 3600 + parts[1] * 60 + parts[2]
-            if len(parts) == 2:
-                return parts[0] * 60 + parts[1]
-            if len(parts) == 1:
-                return parts[0]
-        except (TypeError, ValueError):
-            pass
-    return 0
-
 def progress_text(media, timer=None):
-    duration=_duration_seconds(media)
+    duration=int(getattr(media,'duration_sec',0) or 0)
     if timer: return timer
-    played=max(0,min(int(getattr(media,'time',0) or 0),duration)) if duration else max(0,int(getattr(media,'time',0) or 0))
-    if not duration:
-        return '🔴 LIVE' if getattr(media, 'is_live', False) else f"{_time(played, played)} {'━'*12}●"
-    n=12
+    if not duration: return 'LIVE'
+    played=max(0,min(int(getattr(media,'time',0) or 0),duration)); n=12
     filled=int(round(n*played/duration)); return f"{_time(played,duration)} {'━'*filled}●{'━'*(n-filled)} {_time(duration,duration)}"
 
 def _clean_base_html(base_html):
     text=base_html or ''
     text=re.sub(r'<a\s+href=([^"\'>\s]+)>',r'<a href="\1">',text)
     text=re.sub(r'</?blockquote(?:\s+[^>]*)?>','',text)
-    text=re.sub(r'<tg-button-row\b[^>]*>.*?</tg-button-row>', '', text, flags=re.S)
     text=re.sub(r'\n{3,}','\n\n',text).strip()
     return text
 
@@ -139,154 +117,50 @@ def _response_photo_id(obj):
             if x:return x
     return None
 
-def _normalize_photo(photo, fallback_video_id=None):
-    """Return a Telegram-safe photo reference.
-
-    Invalid thumbnail URLs are ignored. When a YouTube video id is available,
-    use a known-good YouTube thumbnail URL instead of allowing a malformed
-    thumbnail (for example one containing an invalid port) to break the player.
-    """
-    value = str(photo).strip() if photo is not None else ""
-    if value:
-        if os.path.isfile(value):
-            return value
-        if not value.startswith(("http://", "https://")):
-            # Telegram file_id / file_unique_id
-            return value
-        try:
-            parsed = urllib.parse.urlsplit(value)
-            if parsed.scheme in ("http", "https") and parsed.hostname:
-                port = parsed.port
-                if port is None or 1 <= port <= 65535:
-                    return value
-        except (ValueError, TypeError):
-            pass
-
-    vid = str(fallback_video_id or "").strip()
-    if not re.fullmatch(r"[A-Za-z0-9_-]{6,20}", vid):
-        # Recover the YouTube id from a malformed thumbnail URL when possible.
-        source = str(photo or "")
-        match = re.search(r"(?:/vi/|[?&]v=|youtu\.be/)([A-Za-z0-9_-]{6,20})", source)
-        vid = match.group(1) if match else ""
-    # Only accept the normal YouTube video-id shape for the fallback.
-    if re.fullmatch(r"[A-Za-z0-9_-]{6,20}", vid):
-        return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
-    return None
-
-
-async def _download_photo_to_cache(photo, video_id=None):
-    """Turn remote thumbnail URLs into a local JPEG so Telegram never receives
-    a potentially malformed HTTP media URL."""
-    if not photo:
-        return None
-    value = str(photo).strip()
-    if not value.startswith(("http://", "https://")):
-        return value if os.path.isfile(value) else None
-
-    # Stable cache name based on the URL/video id.
-    import hashlib
-    key = str(video_id or value).encode("utf-8", "ignore")
-    path = os.path.join("cache", "rich_player", hashlib.sha256(key).hexdigest()[:24] + ".jpg")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    if os.path.isfile(path) and os.path.getsize(path) > 0:
-        return path
-
-    try:
-        timeout = aiohttp.ClientTimeout(total=12, connect=4, sock_read=8)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(value, allow_redirects=True) as resp:
-                if resp.status != 200:
-                    return None
-                data = await resp.read()
-                if not data or len(data) > 8 * 1024 * 1024:
-                    return None
-        with open(path, "wb") as fp:
-            fp.write(data)
-        return path
-    except Exception:
-        return None
-
-async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True, video_id=None):
+async def send_rich_message(chat_id, text, markup=None, *, photo=None, reply_to_message_id=None, quote=True):
     body=rich_html(text,markup=markup)
     rich={'html':body}
     file_path=None
-
-    # Never pass a remote thumbnail URL directly to Telegram. Download it first
-    # and upload it as multipart media. This avoids "Wrong port number" and
-    # similar Telegram HTTP URL parsing failures.
-    normalized=_normalize_photo(photo, fallback_video_id=video_id)
-    if normalized and str(normalized).startswith(("http://", "https://")):
-        file_path=await _download_photo_to_cache(normalized, video_id=video_id)
-        if not file_path and video_id:
-            fallback=f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
-            file_path=await _download_photo_to_cache(fallback, video_id=video_id)
-        normalized=file_path
-    elif normalized and os.path.isfile(str(normalized)):
-        file_path=str(normalized)
-
-    if file_path:
-        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'
-        rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
-
+    if photo and os.path.isfile(str(photo)):
+        file_path=str(photo); rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':'attach://player_cover'}}]
+    elif photo:
+        rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':str(photo)}}]
     data={'chat_id':chat_id,'rich_message':rich}
-    if reply_to_message_id:
-        data['reply_parameters']={'message_id':int(reply_to_message_id)}
+    if reply_to_message_id: data['reply_parameters']={'message_id':int(reply_to_message_id)}
     result=await _request('sendRichMessage',data,file_path)
-    msg=result['result']
-    mid=int(msg['message_id'])
-    pid=_response_photo_id(msg)
-    if pid:
-        _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
-        _PLAYER_COVERS[(int(chat_id),mid)]=pid
+    msg=result['result']; mid=int(msg['message_id']); pid=_response_photo_id(msg)
+    if pid: _PLAYER_PHOTOS[(int(chat_id),mid)]=pid
     return mid
 
 async def edit_rich_message(message_or_chat_id, text, markup=None, *, message_id=None, photo_file_id=None):
     if hasattr(message_or_chat_id,'chat'):
         msg=message_or_chat_id; chat_id=msg.chat.id; message_id=msg.id
-        photo_file_id=photo_file_id or _photo_id_from_message(msg) or _PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
+        photo_file_id=photo_file_id or _photo_id_from_message(msg) or _PLAYER_PHOTOS.get((chat_id,message_id))
     else:
         chat_id=int(message_or_chat_id); message_id=int(message_id)
-        photo_file_id=photo_file_id or _PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
+        photo_file_id=photo_file_id or _PLAYER_PHOTOS.get((chat_id,message_id))
     body=rich_html(text,markup=markup)
     rich={'html':body}
     if photo_file_id:
         rich['html']=f'<img src="tg://photo?id=rich_cover"/>\n{body}'; rich['media']=[{'id':'rich_cover','media':{'type':'photo','media':photo_file_id}}]
     try:
         await _request('editMessageText',{'chat_id':chat_id,'message_id':message_id,'rich_message':rich})
-        if photo_file_id:
-            _PLAYER_PHOTOS[(chat_id,message_id)]=photo_file_id
-            _PLAYER_COVERS[(chat_id,message_id)]=photo_file_id
+        if photo_file_id: _PLAYER_PHOTOS[(chat_id,message_id)]=photo_file_id
         return True
     except Exception:
         return False
 
 async def edit_player(chat_id,message_id,base_html,media,*,timer=None,playing=True,remove=False):
     if remove:
-        try: await _request('deleteMessage',{'chat_id':chat_id,'message_id':message_id}); _PLAYER_PHOTOS.pop((chat_id,message_id),None); _PLAYER_COVERS.pop((chat_id,message_id),None); return True
+        try: await _request('deleteMessage',{'chat_id':chat_id,'message_id':message_id}); _PLAYER_PHOTOS.pop((chat_id,message_id),None); return True
         except Exception:return False
-    photo=_PLAYER_PHOTOS.get((chat_id,message_id)) or _PLAYER_COVERS.get((chat_id,message_id))
-    if photo and str(photo).startswith(("http://", "https://")):
-        photo=None
+    photo=_PLAYER_PHOTOS.get((chat_id,message_id))
     rich={'html':rich_html(base_html,chat_id,media,timer=timer,playing=playing)}
     if photo:
         rich['html']=f'<img src="tg://photo?id=player_cover"/>\n{rich["html"]}'; rich['media']=[{'id':'player_cover','media':{'type':'photo','media':photo}}]
     try:
         await _request('editMessageText',{'chat_id':chat_id,'message_id':message_id,'rich_message':rich}); return True
     except Exception:return False
-
-async def send_player(chat_id, base_html, media=None, photo=None, reply_to_message_id=None, **kwargs):
-    """Compatibility helper for callers that send/update the Rich music player."""
-    if media is not None and photo is None:
-        photo = getattr(media, "thumbnail", None)
-    video_id = getattr(media, "id", None) if media is not None else None
-    return await send_rich_message(
-        chat_id,
-        base_html,
-        photo=photo,
-        reply_to_message_id=reply_to_message_id,
-        quote=kwargs.get("quote", True),
-        video_id=video_id,
-    )
 
 async def edit_player_message(chat_id,message_id,base_html,media,*args,**kwargs):
     return await edit_player(chat_id,message_id,base_html,media,timer=kwargs.get('timer'),playing=kwargs.get('playing',True),remove=kwargs.get('remove',False))
