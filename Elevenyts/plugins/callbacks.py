@@ -1,17 +1,581 @@
 # ==========================================================
-# Copyright (c) 2026 VelocityBots 
+# Copyright (c) 2026 VelocityBots
 # All Rights Reserved.
 #
-# Project      : VelocityBots API Telegram Music Bot
-# Powered By   : VelocityBots 
+# Project      : VelocityBots ꭙ Music Telegram Bot
+# Powered By   : Artist
 # Type         : API Based Telegram Music Bot
 #
-# Bot          : @JunoXmusic_Robot
-# Channel      : https://t.me/junoxmusic_updates
-# GitHub       : https://github.com/bishalkumarsahh-eng
+# Bot          : @ArtistApibot
+# Channel      : https://t.me/artistbots
+# GitHub       : https://github.com/elevenyts
 #
 # Unauthorized copying, modification, or redistribution
 # of this source code without permission is prohibited.
 # ==========================================================
-import base64
-exec(base64.b64decode("IyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgQ29weXJpZ2h0IChjKSAyMDI2IFZlbG9jaXR5Qm90cwojIEFsbCBSaWdodHMgUmVzZXJ2ZWQuCiMKIyBQcm9qZWN0ICAgICAgOiBWZWxvY2l0eUJvdHMg6q2ZIE11c2ljIFRlbGVncmFtIEJvdAojIFBvd2VyZWQgQnkgICA6IEFydGlzdAojIFR5cGUgICAgICAgICA6IEFQSSBCYXNlZCBUZWxlZ3JhbSBNdXNpYyBCb3QKIwojIEJvdCAgICAgICAgICA6IEBBcnRpc3RBcGlib3QKIyBDaGFubmVsICAgICAgOiBodHRwczovL3QubWUvYXJ0aXN0Ym90cwojIEdpdEh1YiAgICAgICA6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGV2ZW55dHMKIwojIFVuYXV0aG9yaXplZCBjb3B5aW5nLCBtb2RpZmljYXRpb24sIG9yIHJlZGlzdHJpYnV0aW9uCiMgb2YgdGhpcyBzb3VyY2UgY29kZSB3aXRob3V0IHBlcm1pc3Npb24gaXMgcHJvaGliaXRlZC4KIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgppbXBvcnQgcmUKaW1wb3J0IGFzeW5jaW8KZnJvbSBmdW5jdG9vbHMgaW1wb3J0IHdyYXBzCgpmcm9tIHB5cm9ncmFtIGltcG9ydCBmaWx0ZXJzLCB0eXBlcwpmcm9tIHB5cm9ncmFtLmVycm9ycyBpbXBvcnQgRmxvb2RXYWl0LCBRdWVyeUlkSW52YWxpZAoKZnJvbSBFbGV2ZW55dHMgaW1wb3J0IHR1bmUsIGFwcCwgY29uZmlnLCBkYiwgbGFuZywgbG9nZ2VyLCBxdWV1ZSwgdGcsIHl0CmZyb20gRWxldmVueXRzLmhlbHBlcnMgaW1wb3J0IGFkbWluX2NoZWNrLCBidXR0b25zLCBjYW5fbWFuYWdlX3ZjCgoKZGVmIHNhZmVfY2FsbGJhY2soZnVuYyk6CiAgICAiIiJEZWNvcmF0b3IgdG8gaGFuZGxlIGV4Y2VwdGlvbnMgaW4gY2FsbGJhY2sgaGFuZGxlcnMuIiIiCiAgICBAd3JhcHMoZnVuYykKICAgIGFzeW5jIGRlZiB3cmFwcGVyKGNsaWVudCwgcXVlcnk6IHR5cGVzLkNhbGxiYWNrUXVlcnkpOgogICAgICAgIHRyeToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IGZ1bmMoY2xpZW50LCBxdWVyeSkKICAgICAgICBleGNlcHQgUXVlcnlJZEludmFsaWQ6CiAgICAgICAgICAgIHJldHVybgogICAgICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICAgICAgbG9nZ2VyLmVycm9yKGYiRXJyb3IgaW4gY2FsbGJhY2sge2Z1bmMuX19uYW1lX199OiB7ZX0iLCBleGNfaW5mbz1UcnVlKQogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKdjCBBbiBlcnJvciBvY2N1cnJlZC4gUGxlYXNlIHRyeSBhZ2Fpbi4iLCBzaG93X2FsZXJ0PVRydWUpCiAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgICAgICBwYXNzCiAgICByZXR1cm4gd3JhcHBlcgoKCkBhcHAub25fY2FsbGJhY2tfcXVlcnkoZmlsdGVycy5yZWdleCgiXnN0YXJ0JCIpICYgfmFwcC5ibF91c2VycykKQGxhbmcubGFuZ3VhZ2UoKQpAc2FmZV9jYWxsYmFjawphc3luYyBkZWYgX3N0YXJ0X2NhbGxiYWNrKF8sIHF1ZXJ5OiB0eXBlcy5DYWxsYmFja1F1ZXJ5KToKICAgICIiIkhhbmRsZSBzdGFydCBidXR0b24gY2FsbGJhY2sgLSByZXR1cm4gdG8gc3RhcnQgbWVzc2FnZS4iIiIKICAgIGF3YWl0IHF1ZXJ5LmFuc3dlcigpCiAgICAKICAgIF90ZXh0ID0gcXVlcnkubGFuZ1sic3RhcnRfcG0iXS5mb3JtYXQocXVlcnkuZnJvbV91c2VyLmZpcnN0X25hbWUsIGFwcC5uYW1lKQogICAga2V5ID0gYnV0dG9ucy5zdGFydF9rZXkocXVlcnkubGFuZywgVHJ1ZSkKICAgIAogICAgdHJ5OgogICAgICAgIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV9jYXB0aW9uKAogICAgICAgICAgICBjYXB0aW9uPV90ZXh0LAogICAgICAgICAgICByZXBseV9tYXJrdXA9a2V5LAogICAgICAgICkKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgdHJ5OgogICAgICAgICAgICBhd2FpdCBxdWVyeS5lZGl0X21lc3NhZ2VfdGV4dCgKICAgICAgICAgICAgICAgIHRleHQ9X3RleHQsCiAgICAgICAgICAgICAgICByZXBseV9tYXJrdXA9a2V5LAogICAgICAgICAgICApCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgcGFzcwoKCkBhcHAub25fY2FsbGJhY2tfcXVlcnkoZmlsdGVycy5yZWdleCgiY2FuY2VsX2RsIikgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCkBzYWZlX2NhbGxiYWNrCmFzeW5jIGRlZiBjYW5jZWxfZGwoXywgcXVlcnk6IHR5cGVzLkNhbGxiYWNrUXVlcnkpOgogICAgYXdhaXQgcXVlcnkuYW5zd2VyKCkKICAgIGF3YWl0IHRnLmNhbmNlbChxdWVyeSkKCgpAYXBwLm9uX2NhbGxiYWNrX3F1ZXJ5KGZpbHRlcnMucmVnZXgoImNvbnRyb2xzIikgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCkBzYWZlX2NhbGxiYWNrCmFzeW5jIGRlZiBfY29udHJvbHMoXywgcXVlcnk6IHR5cGVzLkNhbGxiYWNrUXVlcnkpOgogICAgYXJncyA9IHF1ZXJ5LmRhdGEuc3BsaXQoKQogICAgYWN0aW9uLCBjaGF0X2lkID0gYXJnc1sxXSwgaW50KGFyZ3NbMl0pCiAgICBxYWN0aW9uID0gbGVuKGFyZ3MpID09IDQKICAgIHVzZXIgPSBxdWVyeS5mcm9tX3VzZXIubWVudGlvbgoKICAgICMgSGFuZGxlIGNsb3NlIGFjdGlvbiBmaXJzdCAtIGFsbG93IGFueSB1c2VyIHRvIGRlbGV0ZSB0aGUgbWVzc2FnZSAobm8gcG9wdXAgbm90aWZpY2F0aW9uKQogICAgaWYgYWN0aW9uID09ICJjbG9zZSI6CiAgICAgICAgYXdhaXQgcXVlcnkuYW5zd2VyKCkKICAgICAgICB0cnk6CiAgICAgICAgICAgIGF3YWl0IHF1ZXJ5Lm1lc3NhZ2UuZGVsZXRlKCkKICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICBwYXNzCiAgICAgICAgcmV0dXJuCgogICAgIyBDaGVjayBhZG1pbiBwZXJtaXNzaW9ucyBmb3IgYWxsIG90aGVyIGNvbnRyb2xzCiAgICAjIElubGluZSBwZXJtaXNzaW9uIGNoZWNrOiBzdWRvIHVzZXJzLCBhdXRob3JpemVkIHVzZXJzLCBvciBncm91cCBhZG1pbnMKICAgIHVzZXJfaWQgPSBxdWVyeS5mcm9tX3VzZXIuaWQKICAgIGhhc19wZXJtaXNzaW9uID0gRmFsc2UKICAgIAogICAgaWYgdXNlcl9pZCBpbiBhcHAuc3Vkb2VyczoKICAgICAgICBoYXNfcGVybWlzc2lvbiA9IFRydWUKICAgIGVsaWYgYXdhaXQgZGIuaXNfYXV0aChjaGF0X2lkLCB1c2VyX2lkKToKICAgICAgICBoYXNfcGVybWlzc2lvbiA9IFRydWUKICAgIGVsc2U6CiAgICAgICAgYWRtaW5zID0gYXdhaXQgZGIuZ2V0X2FkbWlucyhjaGF0X2lkKQogICAgICAgIGlmIHVzZXJfaWQgaW4gYWRtaW5zOgogICAgICAgICAgICBoYXNfcGVybWlzc2lvbiA9IFRydWUKICAgIAogICAgaWYgbm90IGhhc19wZXJtaXNzaW9uOgogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKaoO+4jyBZb3UgZG9uJ3QgaGF2ZSBwZXJtaXNzaW9uIHRvIHVzZSB0aGlzLiIsIHNob3dfYWxlcnQ9VHJ1ZSkKCiAgICBpZiBub3QgYXdhaXQgZGIuZ2V0X2NhbGwoY2hhdF9pZCk6CiAgICAgICAgcmV0dXJuIGF3YWl0IHF1ZXJ5LmFuc3dlcihxdWVyeS5sYW5nWyJub3RfcGxheWluZyJdLCBzaG93X2FsZXJ0PVRydWUpCgogICAgaWYgYWN0aW9uID09ICJzdGF0dXMiOgogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoKQoKICAgIGlmIGFjdGlvbiA9PSAic3RhdHVzIjoKICAgICAgICByZXR1cm4gYXdhaXQgcXVlcnkuYW5zd2VyKCkKCiAgICBpZiBhY3Rpb24gPT0gInF1ZXVlIjoKICAgICAgICBpdGVtcyA9IHF1ZXVlLmdldF9xdWV1ZShjaGF0X2lkKQogICAgICAgIHVwY29taW5nID0gaXRlbXNbMTpdIGlmIGxlbihpdGVtcykgPiAxIGVsc2UgW10KICAgICAgICBpZiBub3QgdXBjb21pbmc6CiAgICAgICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKJoSBRdWV1ZSDCtyAwXG5ObyB1cGNvbWluZyB0cmFja3MuIiwgc2hvd19hbGVydD1UcnVlKQoKICAgICAgICBsaW5lcyA9IFtmIuKJoSBRdWV1ZSDCtyB7bGVuKHVwY29taW5nKX0iXQogICAgICAgIGZvciBpLCBpdGVtIGluIGVudW1lcmF0ZSh1cGNvbWluZ1s6OF0sIDEpOgogICAgICAgICAgICB0aXRsZSA9IGdldGF0dHIoaXRlbSwgInRpdGxlIiwgIlVua25vd24gdHJhY2siKSBvciAiVW5rbm93biB0cmFjayIKICAgICAgICAgICAgaWYgbGVuKHRpdGxlKSA+IDU1OgogICAgICAgICAgICAgICAgdGl0bGUgPSB0aXRsZVs6NTJdICsgIuKApiIKICAgICAgICAgICAgbGluZXMuYXBwZW5kKGYie2l9LiB7dGl0bGV9IikKICAgICAgICBpZiBsZW4odXBjb21pbmcpID4gODoKICAgICAgICAgICAgbGluZXMuYXBwZW5kKGYiKyB7bGVuKHVwY29taW5nKSAtIDh9IG1vcmUiKQogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIlxuIi5qb2luKGxpbmVzKSwgc2hvd19hbGVydD1UcnVlKQoKICAgIAogICAgIyBIYW5kbGUgc2VlayBhY3Rpb25zCiAgICBpZiBhY3Rpb24uc3RhcnRzd2l0aCgic2Vla18iKToKICAgICAgICByZXR1cm4gYXdhaXQgaGFuZGxlX3NlZWsocXVlcnksIGNoYXRfaWQsIGFjdGlvbiwgdXNlcikKICAgIAogICAgIyBIYW5kbGUgbG9vcCBhY3Rpb24KICAgIGlmIGFjdGlvbiA9PSAibG9vcCI6CiAgICAgICAgcmV0dXJuIGF3YWl0IGhhbmRsZV9sb29wKHF1ZXJ5LCBjaGF0X2lkLCB1c2VyKQogICAgCiAgICAjIEhhbmRsZSBzaHVmZmxlIGFjdGlvbgogICAgaWYgYWN0aW9uID09ICJzaHVmZmxlIjoKICAgICAgICByZXR1cm4gYXdhaXQgaGFuZGxlX3NodWZmbGUocXVlcnksIGNoYXRfaWQsIHVzZXIpCiAgICAKICAgIGlmIGFjdGlvbiA9PSAiYXV0b3BsYXkiOgogICAgICAgIHJldHVybiBhd2FpdCBoYW5kbGVfYXV0b3BsYXkocXVlcnksIGNoYXRfaWQsIHVzZXIpCiAgICAKICAgIGF3YWl0IHF1ZXJ5LmFuc3dlcihxdWVyeS5sYW5nWyJwcm9jZXNzaW5nIl0sIHNob3dfYWxlcnQ9VHJ1ZSkKCiAgICBpZiBhY3Rpb24gPT0gInBhdXNlIjoKICAgICAgICBpZiBub3QgYXdhaXQgZGIucGxheWluZyhjaGF0X2lkKToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHF1ZXJ5LmFuc3dlcigKICAgICAgICAgICAgICAgIHF1ZXJ5LmxhbmdbInBsYXlfYWxyZWFkeV9wYXVzZWQiXSwgc2hvd19hbGVydD1UcnVlCiAgICAgICAgICAgICkKICAgICAgICBpZiBub3QgYXdhaXQgdHVuZS5wYXVzZShjaGF0X2lkKToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHF1ZXJ5LmFuc3dlcihxdWVyeS5sYW5nWyJub3RfcGxheWluZyJdLCBzaG93X2FsZXJ0PVRydWUpCiAgICAgICAgaWYgcWFjdGlvbjoKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV9yZXBseV9tYXJrdXAoCiAgICAgICAgICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5xdWV1ZV9tYXJrdXAoCiAgICAgICAgICAgICAgICAgICAgY2hhdF9pZCwgcXVlcnkubGFuZ1sicGF1c2VkIl0sIEZhbHNlKQogICAgICAgICAgICApCiAgICAgICAgc3RhdHVzID0gcXVlcnkubGFuZ1sicGF1c2VkIl0KICAgICAgICByZXBseSA9IHF1ZXJ5LmxhbmdbInBsYXlfcGF1c2VkIl0uZm9ybWF0KHVzZXIpCgogICAgZWxpZiBhY3Rpb24gPT0gInJlc3VtZSI6CiAgICAgICAgc3RhdHVzID0gcXVlcnkubGFuZ1sicGxheWluZyJdCiAgICAgICAgaWYgYXdhaXQgZGIucGxheWluZyhjaGF0X2lkKToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHF1ZXJ5LmFuc3dlcihxdWVyeS5sYW5nWyJwbGF5X25vdF9wYXVzZWQiXSwgc2hvd19hbGVydD1UcnVlKQogICAgICAgIGlmIG5vdCBhd2FpdCB0dW5lLnJlc3VtZShjaGF0X2lkKToKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHF1ZXJ5LmFuc3dlcihxdWVyeS5sYW5nWyJub3RfcGxheWluZyJdLCBzaG93X2FsZXJ0PVRydWUpCiAgICAgICAgaWYgcWFjdGlvbjoKICAgICAgICAgICAgcmV0dXJuIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV9yZXBseV9tYXJrdXAoCiAgICAgICAgICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5xdWV1ZV9tYXJrdXAoCiAgICAgICAgICAgICAgICAgICAgY2hhdF9pZCwgcXVlcnkubGFuZ1sicGxheWluZyJdLCBUcnVlKQogICAgICAgICAgICApCiAgICAgICAgcmVwbHkgPSBxdWVyeS5sYW5nWyJwbGF5X3Jlc3VtZWQiXS5mb3JtYXQodXNlcikKCiAgICBlbGlmIGFjdGlvbiA9PSAic2tpcCI6CiAgICAgICAgYXdhaXQgdHVuZS5wbGF5X25leHQoY2hhdF9pZCkKICAgICAgICBzdGF0dXMgPSBxdWVyeS5sYW5nWyJza2lwcGVkIl0KICAgICAgICByZXBseSA9IHF1ZXJ5LmxhbmdbInBsYXlfc2tpcHBlZCJdLmZvcm1hdCh1c2VyKQoKICAgIGVsaWYgYWN0aW9uID09ICJmb3JjZSI6CiAgICAgICAgcG9zLCBtZWRpYSA9IHF1ZXVlLmNoZWNrX2l0ZW0oY2hhdF9pZCwgYXJnc1szXSkKICAgICAgICBpZiBub3QgbWVkaWEgb3IgcG9zID09IC0xOgogICAgICAgICAgICByZXR1cm4gYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX3RleHQocXVlcnkubGFuZ1sicGxheV9leHBpcmVkIl0pCgogICAgICAgIGN1cnJlbnQgPSBxdWV1ZS5nZXRfY3VycmVudChjaGF0X2lkKQogICAgICAgIG1faWQgPSBjdXJyZW50Lm1lc3NhZ2VfaWQgaWYgY3VycmVudCBlbHNlIE5vbmUKICAgICAgICBxdWV1ZS5mb3JjZV9hZGQoY2hhdF9pZCwgbWVkaWEsIHJlbW92ZT1wb3MpCiAgICAgICAgdHJ5OgogICAgICAgICAgICBhd2FpdCBhcHAuZGVsZXRlX21lc3NhZ2VzKAogICAgICAgICAgICAgICAgY2hhdF9pZD1jaGF0X2lkLCBtZXNzYWdlX2lkcz1bCiAgICAgICAgICAgICAgICAgICAgbV9pZCwgbWVkaWEubWVzc2FnZV9pZF0sIHJldm9rZT1UcnVlCiAgICAgICAgICAgICkKICAgICAgICAgICAgbWVkaWEubWVzc2FnZV9pZCA9IE5vbmUKICAgICAgICBleGNlcHQ6CiAgICAgICAgICAgIHBhc3MKCiAgICAgICAgbXNnID0gYXdhaXQgYXBwLnNlbmRfbWVzc2FnZShjaGF0X2lkPWNoYXRfaWQsIHRleHQ9cXVlcnkubGFuZ1sicGxheV9uZXh0Il0pCiAgICAgICAgaWYgbm90IG1lZGlhLmZpbGVfcGF0aDoKICAgICAgICAgICAgbWVkaWEuZmlsZV9wYXRoID0gYXdhaXQgeXQuZG93bmxvYWQoCiAgICAgICAgICAgICAgICBtZWRpYS5pZCwKICAgICAgICAgICAgICAgIHZpZGVvPWdldGF0dHIobWVkaWEsICJ2aWRlbyIsIEZhbHNlKSwKICAgICAgICAgICAgKQogICAgICAgIG1lZGlhLm1lc3NhZ2VfaWQgPSBtc2cuaWQKICAgICAgICByZXR1cm4gYXdhaXQgdHVuZS5wbGF5X21lZGlhKGNoYXRfaWQsIG1zZywgbWVkaWEpCgogICAgZWxpZiBhY3Rpb24gPT0gInJlcGxheSI6CiAgICAgICAgbWVkaWEgPSBxdWV1ZS5nZXRfY3VycmVudChjaGF0X2lkKQogICAgICAgIG1lZGlhLnVzZXIgPSB1c2VyCiAgICAgICAgYXdhaXQgdHVuZS5yZXBsYXkoY2hhdF9pZCkKICAgICAgICBzdGF0dXMgPSBxdWVyeS5sYW5nWyJyZXBsYXllZCJdCiAgICAgICAgcmVwbHkgPSBxdWVyeS5sYW5nWyJwbGF5X3JlcGxheWVkIl0uZm9ybWF0KHVzZXIpCgogICAgZWxpZiBhY3Rpb24gPT0gInN0b3AiOgogICAgICAgIGF3YWl0IHR1bmUuc3RvcChjaGF0X2lkKQogICAgICAgIHN0YXR1cyA9IHF1ZXJ5LmxhbmdbInN0b3BwZWQiXQogICAgICAgIHJlcGx5ID0gcXVlcnkubGFuZ1sicGxheV9zdG9wcGVkIl0uZm9ybWF0KHVzZXIpCgogICAgdHJ5OgogICAgICAgIGlmIGFjdGlvbiBpbiBbInNraXAiLCAicmVwbGF5IiwgInN0b3AiXToKICAgICAgICAgICAgc2VudF9tc2cgPSBOb25lCiAgICAgICAgICAgIHRyeToKICAgICAgICAgICAgICAgIHNlbnRfbXNnID0gYXdhaXQgcXVlcnkubWVzc2FnZS5yZXBseV90ZXh0KHJlcGx5LCBxdW90ZT1GYWxzZSkKICAgICAgICAgICAgZXhjZXB0IEZsb29kV2FpdCBhcyBlOgogICAgICAgICAgICAgICAgIyBJZiBGbG9vZFdhaXQgb2NjdXJzLCB3YWl0IGFuZCByZXRyeSBvbmNlCiAgICAgICAgICAgICAgICBhd2FpdCBhc3luY2lvLnNsZWVwKGUudmFsdWUpCiAgICAgICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICAgICAgc2VudF9tc2cgPSBhd2FpdCBxdWVyeS5tZXNzYWdlLnJlcGx5X3RleHQocmVwbHksIHF1b3RlPUZhbHNlKQogICAgICAgICAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgICAgICAgICBwYXNzCiAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgICAgICBwYXNzCiAgICAgICAgICAgIGF3YWl0IHF1ZXJ5Lm1lc3NhZ2UuZGVsZXRlKCkKICAgICAgICAgICAgCiAgICAgICAgICAgICMgQXV0by1kZWxldGUgdGhlIHJlcGx5IG1lc3NhZ2UgYWZ0ZXIgNSBzZWNvbmRzCiAgICAgICAgICAgIGlmIHNlbnRfbXNnOgogICAgICAgICAgICAgICAgYXdhaXQgYXN5bmNpby5zbGVlcCg1KQogICAgICAgICAgICAgICAgdHJ5OgogICAgICAgICAgICAgICAgICAgIGF3YWl0IHNlbnRfbXNnLmRlbGV0ZSgpCiAgICAgICAgICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICAgICAgICAgIHBhc3MKICAgICAgICBlbHNlOgogICAgICAgICAgICBtdGV4dCA9IHJlLnN1YigKICAgICAgICAgICAgICAgIHIiXG5cbjxibG9ja3F1b3RlPi4qPzwvYmxvY2txdW90ZT4iLAogICAgICAgICAgICAgICAgIiIsCiAgICAgICAgICAgICAgICBxdWVyeS5tZXNzYWdlLmNhcHRpb24uaHRtbCBvciBxdWVyeS5tZXNzYWdlLnRleHQuaHRtbCwKICAgICAgICAgICAgICAgIGZsYWdzPXJlLkRPVEFMTCwKICAgICAgICAgICAgKQogICAgICAgICAgICBrZXlib2FyZCA9IGJ1dHRvbnMuY29udHJvbHMoCiAgICAgICAgICAgICAgICBjaGF0X2lkLCBzdGF0dXM9c3RhdHVzIGlmIGFjdGlvbiAhPSAicmVzdW1lIiBlbHNlIE5vbmUKICAgICAgICAgICAgKQogICAgICAgIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV90ZXh0KAogICAgICAgICAgICBmInttdGV4dH1cblxuPGJsb2NrcXVvdGU+e3JlcGx5fTwvYmxvY2txdW90ZT4iLCByZXBseV9tYXJrdXA9a2V5Ym9hcmQKICAgICAgICApCiAgICBleGNlcHQgRmxvb2RXYWl0IGFzIGU6CiAgICAgICAgIyBIYW5kbGUgRmxvb2RXYWl0IG9uIGVkaXRfbWVzc2FnZV90ZXh0CiAgICAgICAgYXdhaXQgYXN5bmNpby5zbGVlcChlLnZhbHVlKQogICAgICAgIHRyeToKICAgICAgICAgICAgYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX3RleHQoCiAgICAgICAgICAgICAgICBmInttdGV4dH1cblxuPGJsb2NrcXVvdGU+e3JlcGx5fTwvYmxvY2txdW90ZT4iLCByZXBseV9tYXJrdXA9a2V5Ym9hcmQKICAgICAgICAgICAgKQogICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgIHBhc3MKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGFzcwoKCmFzeW5jIGRlZiBoYW5kbGVfc2VlayhxdWVyeTogdHlwZXMuQ2FsbGJhY2tRdWVyeSwgY2hhdF9pZDogaW50LCBhY3Rpb246IHN0ciwgdXNlcjogc3RyKToKICAgICIiIkhhbmRsZSBzZWVrIGZvcndhcmQvYmFja3dhcmQgYWN0aW9ucy4iIiIKICAgIG1lZGlhID0gcXVldWUuZ2V0X2N1cnJlbnQoY2hhdF9pZCkKICAgIGlmIG5vdCBtZWRpYSBvciBtZWRpYS5pc19saXZlOgogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKaoO+4jyBDYW5ub3Qgc2VlayBpbiBsaXZlIHN0cmVhbXMhIiwgc2hvd19hbGVydD1UcnVlKQogICAgCiAgICBpZiBub3QgbWVkaWEuZHVyYXRpb25fc2VjIG9yIG1lZGlhLmR1cmF0aW9uX3NlYyA9PSAwOgogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKaoO+4jyBDYW5ub3Qgc2VlayBpbiB0aGlzIHRyYWNrISIsIHNob3dfYWxlcnQ9VHJ1ZSkKICAgIAogICAgIyBEZXRlcm1pbmUgc2VlayBhbW91bnQgYW5kIGRpcmVjdGlvbgogICAgaWYgYWN0aW9uID09ICJzZWVrX2JhY2tfMTAiOgogICAgICAgIHNlY29uZHMgPSAtMTAKICAgICAgICBsYWJlbCA9ICLCqyAxMHMiCiAgICBlbGlmIGFjdGlvbiA9PSAic2Vla19iYWNrXzMwIjoKICAgICAgICBzZWNvbmRzID0gLTMwCiAgICAgICAgbGFiZWwgPSAiwqsgMzBzIgogICAgZWxpZiBhY3Rpb24gPT0gInNlZWtfZm9yd2FyZF8xMCI6CiAgICAgICAgc2Vjb25kcyA9IDEwCiAgICAgICAgbGFiZWwgPSAiMTBzIMK7IgogICAgZWxpZiBhY3Rpb24gPT0gInNlZWtfZm9yd2FyZF8zMCI6CiAgICAgICAgc2Vjb25kcyA9IDMwCiAgICAgICAgbGFiZWwgPSAiMzBzIMK7IgogICAgZWxzZToKICAgICAgICByZXR1cm4gYXdhaXQgcXVlcnkuYW5zd2VyKCLimqDvuI8gSW52YWxpZCBzZWVrIGFjdGlvbiEiLCBzaG93X2FsZXJ0PVRydWUpCiAgICAKICAgICMgQ2FsY3VsYXRlIG5ldyBwb3NpdGlvbgogICAgY3VycmVudF90aW1lID0gZ2V0YXR0cihtZWRpYSwgJ3RpbWUnLCAwKQogICAgbmV3X3RpbWUgPSBtYXgoMCwgbWluKGN1cnJlbnRfdGltZSArIHNlY29uZHMsIG1lZGlhLmR1cmF0aW9uX3NlYyAtIDUpKQogICAgCiAgICAjIENoZWNrIGlmIHdlJ3JlIGF0IHRoZSBib3VuZGFyaWVzCiAgICBpZiBuZXdfdGltZSA9PSAwIGFuZCBzZWNvbmRzIDwgMDoKICAgICAgICByZXR1cm4gYXdhaXQgcXVlcnkuYW5zd2VyKGYi4o+u77iPIEFscmVhZHkgYXQgdGhlIGJlZ2lubmluZyEiLCBzaG93X2FsZXJ0PVRydWUpCiAgICBpZiBuZXdfdGltZSA+PSBtZWRpYS5kdXJhdGlvbl9zZWMgLSA1IGFuZCBzZWNvbmRzID4gMDoKICAgICAgICByZXR1cm4gYXdhaXQgcXVlcnkuYW5zd2VyKGYi4o+t77iPIFRvbyBjbG9zZSB0byB0aGUgZW5kISIsIHNob3dfYWxlcnQ9VHJ1ZSkKICAgIAogICAgIyBQZXJmb3JtIHNlZWsKICAgIHN1Y2Nlc3MgPSBhd2FpdCB0dW5lLnNlZWtfc3RyZWFtKGNoYXRfaWQsIGludChuZXdfdGltZSkpCiAgICBpZiBzdWNjZXNzOgogICAgICAgICMgRm9ybWF0IHRpbWUgZGlzcGxheQogICAgICAgIGltcG9ydCB0aW1lIGFzIHRpbWVfbW9kdWxlCiAgICAgICAgaWYgbWVkaWEuZHVyYXRpb25fc2VjID49IDM2MDA6CiAgICAgICAgICAgIHRpbWVfc3RyID0gdGltZV9tb2R1bGUuc3RyZnRpbWUoJyVIOiVNOiVTJywgdGltZV9tb2R1bGUuZ210aW1lKG5ld190aW1lKSkKICAgICAgICBlbHNlOgogICAgICAgICAgICB0aW1lX3N0ciA9IHRpbWVfbW9kdWxlLnN0cmZ0aW1lKCclTTolUycsIHRpbWVfbW9kdWxlLmdtdGltZShuZXdfdGltZSkpCiAgICAgICAgCiAgICAgICAgIyBVc2UgY2FsbGJhY2sgYW5zd2VyIHRvIGF2b2lkIEZsb29kV2FpdAogICAgICAgIF9kaXIgPSAi4o+pIOqcsOG0j8qA4bSh4bSAyoDhtIXhtIfhtIUiIGlmIHNlY29uZHMgPiAwIGVsc2UgIuKPqiDKgOG0h+G0ocmqybThtIXhtIfhtIUiCiAgICAgICAgYXdhaXQgcXVlcnkuYW5zd2VyKGYiU2Vla2VkIHRvIHt0aW1lX3N0cn0iLCBzaG93X2FsZXJ0PVRydWUpCiAgICAgICAgCiAgICAgICAgIyBUcnkgdG8gc2VuZCByZXBseSBtZXNzYWdlIHdpdGggRmxvb2RXYWl0IGhhbmRsaW5nIGFuZCBhdXRvLWRlbGV0ZSBhZnRlciA1IHNlY29uZHMKICAgICAgICB0cnk6CiAgICAgICAgICAgIHNlbnRfbXNnID0gYXdhaXQgcXVlcnkubWVzc2FnZS5yZXBseV90ZXh0KAogICAgICAgICAgICAgICAgZiI8YmxvY2txdW90ZT48Yj57X2Rpcn08L2I+XG5cbuKPsSAg4bSF4bScyoDhtIDhtJvJquG0j8m0IOKVjCB7dGltZV9zdHJ9XG7wn5GkICDKmcqPIOKVjCB7dXNlcn08L2Jsb2NrcXVvdGU+IiwKICAgICAgICAgICAgICAgIHF1b3RlPUZhbHNlCiAgICAgICAgICAgICkKICAgICAgICAgICAgIyBBdXRvLWRlbGV0ZSBhZnRlciA1IHNlY29uZHMKICAgICAgICAgICAgYXdhaXQgYXN5bmNpby5zbGVlcCg1KQogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICBhd2FpdCBzZW50X21zZy5kZWxldGUoKQogICAgICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICAgICAgcGFzcwogICAgICAgIGV4Y2VwdCBGbG9vZFdhaXQgYXMgZToKICAgICAgICAgICAgIyBJZiByYXRlIGxpbWl0ZWQsIGp1c3Qgc2tpcCB0aGUgbWVzc2FnZSBzaW5jZSB1c2VyIGFscmVhZHkgZ290IGZlZWRiYWNrIHZpYSBjYWxsYmFjawogICAgICAgICAgICBwYXNzCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgcGFzcwoKCmFzeW5jIGRlZiBoYW5kbGVfbG9vcChxdWVyeTogdHlwZXMuQ2FsbGJhY2tRdWVyeSwgY2hhdF9pZDogaW50LCB1c2VyOiBzdHIpOgogICAgIiIiSGFuZGxlIGxvb3AgbW9kZSB0b2dnbGluZy4iIiIKICAgIGN1cnJlbnRfbG9vcCA9IGF3YWl0IGRiLmdldF9sb29wKGNoYXRfaWQpCiAgICAKICAgICMgQ3ljbGUgdGhyb3VnaCBsb29wIG1vZGVzOiAwIChvZmYpIC0+IDEgKHNpbmdsZSkgLT4gMTAgKHF1ZXVlKSAtPiAwCiAgICBpZiBjdXJyZW50X2xvb3AgPT0gMDoKICAgICAgICBuZXdfbG9vcCA9IDEKICAgICAgICB0ZXh0ID0gIvCflIIgTG9vcDogU2luZ2xlIFRyYWNrIgogICAgICAgIG1lc3NhZ2UgPSBmIvCflIIgTG9vcCBtb2RlIHNldCB0byA8Yj5TaW5nbGUgVHJhY2s8L2I+IgogICAgZWxpZiBjdXJyZW50X2xvb3AgPT0gMToKICAgICAgICBuZXdfbG9vcCA9IDEwCiAgICAgICAgdGV4dCA9ICLwn5SBIExvb3A6IFF1ZXVlIgogICAgICAgIG1lc3NhZ2UgPSBmIvCflIEgTG9vcCBtb2RlIHNldCB0byA8Yj5RdWV1ZTwvYj4iCiAgICBlbHNlOgogICAgICAgIG5ld19sb29wID0gMAogICAgICAgIHRleHQgPSAi4p6h77iPIExvb3A6IE9mZiIKICAgICAgICBtZXNzYWdlID0gZiLinqHvuI8gTG9vcCBtb2RlIDxiPkRpc2FibGVkPC9iPiIKICAgIAogICAgYXdhaXQgZGIuc2V0X2xvb3AoY2hhdF9pZCwgbmV3X2xvb3ApCiAgICBhd2FpdCBxdWVyeS5hbnN3ZXIodGV4dCwgc2hvd19hbGVydD1GYWxzZSkKICAgIGF3YWl0IHF1ZXJ5Lm1lc3NhZ2UucmVwbHlfdGV4dChtZXNzYWdlLCBxdW90ZT1GYWxzZSkKCgphc3luYyBkZWYgaGFuZGxlX3NodWZmbGUocXVlcnk6IHR5cGVzLkNhbGxiYWNrUXVlcnksIGNoYXRfaWQ6IGludCwgdXNlcjogc3RyKToKICAgICIiIkhhbmRsZSBxdWV1ZSBzaHVmZmxpbmcuIiIiCiAgICBpbXBvcnQgcmFuZG9tCiAgICAKICAgIGl0ZW1zID0gcXVldWUuZ2V0X3F1ZXVlKGNoYXRfaWQpCiAgICBpZiBub3QgaXRlbXMgb3IgbGVuKGl0ZW1zKSA8PSAxOgogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKaoO+4jyBRdWV1ZSBpcyBlbXB0eSBvciBoYXMgb25seSBvbmUgdHJhY2shIiwgc2hvd19hbGVydD1UcnVlKQogICAgCiAgICAjIEdldCBjdXJyZW50IHRyYWNrIGFuZCByZW1vdmUgZnJvbSBsaXN0CiAgICBjdXJyZW50ID0gaXRlbXNbMF0gaWYgaXRlbXMgZWxzZSBOb25lCiAgICByZW1haW5pbmcgPSBpdGVtc1sxOl0gaWYgbGVuKGl0ZW1zKSA+IDEgZWxzZSBbXQogICAgCiAgICBpZiBub3QgcmVtYWluaW5nOgogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKaoO+4jyBObyB0cmFja3MgdG8gc2h1ZmZsZSEiLCBzaG93X2FsZXJ0PVRydWUpCiAgICAKICAgICMgU2h1ZmZsZSByZW1haW5pbmcgdHJhY2tzCiAgICByYW5kb20uc2h1ZmZsZShyZW1haW5pbmcpCiAgICAKICAgICMgUmVidWlsZCBxdWV1ZSB3aXRoIGN1cnJlbnQgdHJhY2sgZmlyc3QKICAgIHF1ZXVlLmNsZWFyKGNoYXRfaWQpCiAgICBpZiBjdXJyZW50OgogICAgICAgIHF1ZXVlLmFkZChjaGF0X2lkLCBjdXJyZW50KQogICAgZm9yIGl0ZW0gaW4gcmVtYWluaW5nOgogICAgICAgIHF1ZXVlLmFkZChjaGF0X2lkLCBpdGVtKQogICAgCiAgICBhd2FpdCBxdWVyeS5hbnN3ZXIoIvCflIAgUXVldWUgc2h1ZmZsZWQhIiwgc2hvd19hbGVydD1GYWxzZSkKICAgIGF3YWl0IHF1ZXJ5Lm1lc3NhZ2UucmVwbHlfdGV4dCgKICAgICAgICBmIvCflIAgUXVldWUgPGI+c2h1ZmZsZWQ8L2I+ICh7bGVuKHJlbWFpbmluZyl9IHRyYWNrcykiLAogICAgICAgIHF1b3RlPUZhbHNlCiAgICApCgoKYXN5bmMgZGVmIGhhbmRsZV9hdXRvcGxheShxdWVyeSwgY2hhdF9pZDogaW50LCB1c2VyOiBzdHIpOgogICAgIiIiVG9nZ2xlIGF1dG9wbGF5IHZpYSBpbmxpbmUgYnV0dG9uLiIiIgogICAgY3VycmVudCA9IGF3YWl0IGRiLmdldF9hdXRvcGxheShjaGF0X2lkKQogICAgbmV3X3N0YXRlID0gbm90IGN1cnJlbnQKICAgIGF3YWl0IGRiLnNldF9hdXRvcGxheShjaGF0X2lkLCBuZXdfc3RhdGUpCiAgICBzdGF0dXMgPSAi4pyFIE9OIiBpZiBuZXdfc3RhdGUgZWxzZSAi4o+5IE9GRiIKICAgIGF3YWl0IHF1ZXJ5LmFuc3dlcihmIkF1dG9wbGF5IHtzdGF0dXN9Iiwgc2hvd19hbGVydD1UcnVlKQoKCkBhcHAub25fY2FsbGJhY2tfcXVlcnkoZmlsdGVycy5yZWdleChyIl5oZWxwIikgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCmFzeW5jIGRlZiBfaGVscChfLCBxdWVyeTogdHlwZXMuQ2FsbGJhY2tRdWVyeSk6CiAgICBhd2FpdCBxdWVyeS5hbnN3ZXIoKQogICAgCiAgICAjIEhhbmRsZSBwbGFpbiAiaGVscCIgY2FsbGJhY2sgLSBzaG93IG1haW4gbWVudQogICAgaWYgcXVlcnkuZGF0YSA9PSAiaGVscCI6CiAgICAgICAgdHJ5OgogICAgICAgICAgICAjIFRyeSB0byBlZGl0IGFzIHBob3RvIG1lc3NhZ2UgZmlyc3QKICAgICAgICAgICAgYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX2NhcHRpb24oCiAgICAgICAgICAgICAgICBjYXB0aW9uPXF1ZXJ5LmxhbmdbImhlbHBfbWVudSJdLCAKICAgICAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLmhlbHBfbWFya3VwKHF1ZXJ5LmxhbmcpCiAgICAgICAgICAgICkKICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICAjIEZhbGxiYWNrIHRvIHRleHQgZWRpdCBpZiBub3QgYSBwaG90byBtZXNzYWdlCiAgICAgICAgICAgIHRyeToKICAgICAgICAgICAgICAgIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV90ZXh0KAogICAgICAgICAgICAgICAgICAgIHRleHQ9cXVlcnkubGFuZ1siaGVscF9tZW51Il0sIAogICAgICAgICAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLmhlbHBfbWFya3VwKHF1ZXJ5LmxhbmcpCiAgICAgICAgICAgICAgICApCiAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgICAgICBwYXNzCiAgICAgICAgcmV0dXJuCiAgICAKICAgIGNhdGVnb3J5ID0gcXVlcnkuZGF0YS5yZXBsYWNlKCJoZWxwXyIsICIiKQogICAgCiAgICBpZiBjYXRlZ29yeSA9PSAibWFpbiI6CiAgICAgICAgIyBSZXR1cm4gdG8gbWFpbiBoZWxwIG1lbnUgZnJvbSBjYXRlZ29yeQogICAgICAgIHRyeToKICAgICAgICAgICAgYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX2NhcHRpb24oCiAgICAgICAgICAgICAgICBjYXB0aW9uPXF1ZXJ5LmxhbmdbImhlbHBfbWVudSJdLCAKICAgICAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLmhlbHBfbWFya3VwKHF1ZXJ5LmxhbmcpCiAgICAgICAgICAgICkKICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICBhd2FpdCBxdWVyeS5lZGl0X21lc3NhZ2VfdGV4dCgKICAgICAgICAgICAgICAgICAgICB0ZXh0PXF1ZXJ5LmxhbmdbImhlbHBfbWVudSJdLCAKICAgICAgICAgICAgICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5oZWxwX21hcmt1cChxdWVyeS5sYW5nKQogICAgICAgICAgICAgICAgKQogICAgICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICAgICAgcGFzcwogICAgICAgIHJldHVybgoKICAgIGlmIGNhdGVnb3J5ID09ICJsYW5ncyI6CiAgICAgICAgdHJ5OgogICAgICAgICAgICBhd2FpdCBxdWVyeS5lZGl0X21lc3NhZ2VfY2FwdGlvbigKICAgICAgICAgICAgICAgIGNhcHRpb249cXVlcnkubGFuZ1sibGFuZ19zZWxlY3QiXSwKICAgICAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLmxhbmdzX21hcmt1cCgpLAogICAgICAgICAgICApCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgdHJ5OgogICAgICAgICAgICAgICAgYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX3RleHQoCiAgICAgICAgICAgICAgICAgICAgdGV4dD1xdWVyeS5sYW5nWyJsYW5nX3NlbGVjdCJdLAogICAgICAgICAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLmxhbmdzX21hcmt1cCgpLAogICAgICAgICAgICAgICAgKQogICAgICAgICAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgICAgICAgICAgcGFzcwogICAgICAgIHJldHVybgoKICAgICMgSGFuZGxlIGFsbCBoZWxwIGNhdGVnb3JpZXMKICAgIGhlbHBfdGV4dHMgPSB7CiAgICAgICAgImFkbWlucyI6IHF1ZXJ5LmxhbmdbImhlbHBfYWRtaW5zIl0sCiAgICAgICAgImF1dGgiOiBxdWVyeS5sYW5nWyJoZWxwX2F1dGgiXSwKICAgICAgICAiYnJvYWRjYXN0IjogcXVlcnkubGFuZ1siaGVscF9zdWRvIl0sICAjIEJyb2FkY2FzdCBpcyBzdWRvIGZlYXR1cmUKICAgICAgICAiYmxjaGF0IjogcXVlcnkubGFuZ1siaGVscF9ibGNoYXQiXSwKICAgICAgICAiYmx1c2VyIjogcXVlcnkubGFuZ1siaGVscF9ibHVzZXIiXSwKICAgICAgICAiZ2JhbiI6IHF1ZXJ5LmxhbmdbImhlbHBfZ2JhbiJdLAogICAgICAgICJsb29wIjogcXVlcnkubGFuZ1siaGVscF9sb29wIl0sCiAgICAgICAgInBsYXkiOiBxdWVyeS5sYW5nWyJoZWxwX3BsYXkiXSwKICAgICAgICAicXVldWUiOiBxdWVyeS5sYW5nWyJoZWxwX3F1ZXVlIl0sCiAgICAgICAgInNlZWsiOiBxdWVyeS5sYW5nWyJoZWxwX3NlZWsiXSwKICAgICAgICAic2h1ZmZsZSI6IHF1ZXJ5LmxhbmdbImhlbHBfc2h1ZmZsZSJdLAogICAgICAgICJwaW5nIjogcXVlcnkubGFuZ1siaGVscF9waW5nIl0sCiAgICAgICAgInN0YXRzIjogcXVlcnkubGFuZ1siaGVscF9zdGF0cyJdLAogICAgICAgICJzdWRvIjogcXVlcnkubGFuZ1siaGVscF9zdWRvIl0sCiAgICAgICAgIm1haW50ZW5hbmNlIjogcXVlcnkubGFuZ1siaGVscF9tYWludGVuYW5jZSJdLAogICAgfQogICAgCiAgICBoZWxwX3RleHQgPSBoZWxwX3RleHRzLmdldChjYXRlZ29yeSwgcXVlcnkubGFuZ1siaGVscF9hZG1pbnMiXSkKICAgIAogICAgdHJ5OgogICAgICAgIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV9jYXB0aW9uKAogICAgICAgICAgICBjYXB0aW9uPWhlbHBfdGV4dCwKICAgICAgICAgICAgcmVwbHlfbWFya3VwPWJ1dHRvbnMuaGVscF9tYXJrdXAocXVlcnkubGFuZywgVHJ1ZSksCiAgICAgICAgKQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICB0cnk6CiAgICAgICAgICAgIGF3YWl0IHF1ZXJ5LmVkaXRfbWVzc2FnZV90ZXh0KAogICAgICAgICAgICAgICAgdGV4dD1oZWxwX3RleHQsCiAgICAgICAgICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5oZWxwX21hcmt1cChxdWVyeS5sYW5nLCBUcnVlKSwKICAgICAgICAgICAgKQogICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgIHBhc3MKCgpfTEFOR19OQU1FUyA9IHsKICAgICJlbiI6ICLwn4es8J+HpyBFbmdsaXNoIiwgImhpIjogIvCfh67wn4ezIEhpbmRpIiwgInRlIjogIvCfh67wn4ezIFRlbHVndSIsCiAgICAia28iOiAi8J+HsPCfh7cgS29yZWFuIiwgIm15IjogIvCfh7Lwn4eyIE15YW5tYXIiLCAiaWQiOiAi8J+HrvCfh6kgSW5kb25lc2lhbiIsCiAgICAicHQiOiAi8J+Hp/Cfh7cgUG9ydHVndWVzZSIsICJhciI6ICLwn4e48J+HpiBBcmFiaWMiLCAiZXMiOiAi8J+HqvCfh7ggU3BhbmlzaCIsCiAgICAiZnIiOiAi8J+Hq/Cfh7cgRnJlbmNoIiwgInJ1IjogIvCfh7fwn4e6IFJ1c3NpYW4iLCAiZGUiOiAi8J+HqfCfh6ogR2VybWFuIiwKICAgICJ0ciI6ICLwn4e58J+HtyBUdXJraXNoIiwgImJuIjogIvCfh6fwn4epIEJlbmdhbGkiLCAidGgiOiAi8J+HufCfh60gVGhhaSIsCiAgICAidmkiOiAi8J+Hu/Cfh7MgVmlldG5hbWVzZSIsICJqYSI6ICLwn4ev8J+HtSBKYXBhbmVzZSIsICJ6aCI6ICLwn4eo8J+HsyBDaGluZXNlIiwKICAgICJ1ciI6ICLwn4e18J+HsCBVcmR1IiwgImZhIjogIvCfh67wn4e3IFBlcnNpYW4iLAp9CgoKQGFwcC5vbl9jYWxsYmFja19xdWVyeShmaWx0ZXJzLnJlZ2V4KHIiXnNldGxhbmdfIikgJiB+YXBwLmJsX3VzZXJzKQphc3luYyBkZWYgX3NldGxhbmcoXywgcXVlcnk6IHR5cGVzLkNhbGxiYWNrUXVlcnkpOgogICAgY29kZSA9IHF1ZXJ5LmRhdGEucmVwbGFjZSgic2V0bGFuZ18iLCAiIikKICAgIGlmIGNvZGUgbm90IGluIF9MQU5HX05BTUVTOgogICAgICAgIHJldHVybiBhd2FpdCBxdWVyeS5hbnN3ZXIoIuKdjCBJbnZhbGlkIGxhbmd1YWdlLiIsIHNob3dfYWxlcnQ9VHJ1ZSkKICAgIGxhbmdfbmFtZSA9IF9MQU5HX05BTUVTW2NvZGVdCiAgICBhd2FpdCBkYi5zZXRfbGFuZyhxdWVyeS5mcm9tX3VzZXIuaWQsIGNvZGUpCiAgICBuZXdfbGFuZyA9IGxhbmcuZ2V0X21lcmdlZF9sYW5nKGNvZGUpCiAgICBjb25maXJtYXRpb24gPSBuZXdfbGFuZ1sibGFuZ19jaGFuZ2VkIl0uZm9ybWF0KGxhbmdfbmFtZSkKICAgIGF3YWl0IHF1ZXJ5LmFuc3dlcigpCiAgICB0cnk6CiAgICAgICAgYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX2NhcHRpb24oCiAgICAgICAgICAgIGNhcHRpb249Y29uZmlybWF0aW9uLAogICAgICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5sYW5nc19tYXJrdXAoKSwKICAgICAgICApCiAgICBleGNlcHQgRXhjZXB0aW9uOgogICAgICAgIHRyeToKICAgICAgICAgICAgYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX3RleHQoCiAgICAgICAgICAgICAgICB0ZXh0PWNvbmZpcm1hdGlvbiwKICAgICAgICAgICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLmxhbmdzX21hcmt1cCgpLAogICAgICAgICAgICApCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgcGFzcwoKCkBhcHAub25fY2FsbGJhY2tfcXVlcnkoZmlsdGVycy5yZWdleCgiXnBsYXltb2RlJCIpICYgfmFwcC5ibF91c2VycykKQGxhbmcubGFuZ3VhZ2UoKQpAYWRtaW5fY2hlY2sKYXN5bmMgZGVmIF9wbGF5bW9kZShfLCBxdWVyeTogdHlwZXMuQ2FsbGJhY2tRdWVyeSk6CiAgICBhd2FpdCBxdWVyeS5hbnN3ZXIocXVlcnkubGFuZ1sicHJvY2Vzc2luZyJdLCBzaG93X2FsZXJ0PVRydWUpCiAgICBjaGF0X2lkID0gcXVlcnkubWVzc2FnZS5jaGF0LmlkCiAgICBhZG1pbl9vbmx5ID0gYXdhaXQgZGIuZ2V0X3BsYXlfbW9kZShjaGF0X2lkKQogICAgZm9yY2VfYWRtaW4gPSBhd2FpdCBkYi5nZXRfZm9yY2VfbW9kZShjaGF0X2lkKQogICAgX2xhbmd1YWdlID0gImVuIgogICAgYXdhaXQgZGIuc2V0X3BsYXlfbW9kZShjaGF0X2lkLCBhZG1pbl9vbmx5KQogICAgYXdhaXQgcXVlcnkuZWRpdF9tZXNzYWdlX3JlcGx5X21hcmt1cCgKICAgICAgICByZXBseV9tYXJrdXA9YnV0dG9ucy5zZXR0aW5nc19tYXJrdXAoCiAgICAgICAgICAgIHF1ZXJ5LmxhbmcsCiAgICAgICAgICAgIG5vdCBhZG1pbl9vbmx5LAogICAgICAgICAgICBmb3JjZV9hZG1pbiwKICAgICAgICAgICAgX2xhbmd1YWdlLAogICAgICAgICAgICBjaGF0X2lkLAogICAgICAgICkKICAgICkKCgpAYXBwLm9uX2NhbGxiYWNrX3F1ZXJ5KGZpbHRlcnMucmVnZXgoIl5mb3JjZW1vZGUkIikgJiB+YXBwLmJsX3VzZXJzKQpAbGFuZy5sYW5ndWFnZSgpCkBhZG1pbl9jaGVjawphc3luYyBkZWYgX2ZvcmNlbW9kZShfLCBxdWVyeTogdHlwZXMuQ2FsbGJhY2tRdWVyeSk6CiAgICBhd2FpdCBxdWVyeS5hbnN3ZXIocXVlcnkubGFuZ1sicHJvY2Vzc2luZyJdLCBzaG93X2FsZXJ0PVRydWUpCiAgICBjaGF0X2lkID0gcXVlcnkubWVzc2FnZS5jaGF0LmlkCiAgICBhZG1pbl9vbmx5ID0gYXdhaXQgZGIuZ2V0X3BsYXlfbW9kZShjaGF0X2lkKQogICAgZm9yY2VfYWRtaW4gPSBhd2FpdCBkYi5nZXRfZm9yY2VfbW9kZShjaGF0X2lkKQogICAgX2xhbmd1YWdlID0gImVuIgogICAgYXdhaXQgZGIuc2V0X2ZvcmNlX21vZGUoY2hhdF9pZCwgZm9yY2VfYWRtaW4pCiAgICBhd2FpdCBxdWVyeS5lZGl0X21lc3NhZ2VfcmVwbHlfbWFya3VwKAogICAgICAgIHJlcGx5X21hcmt1cD1idXR0b25zLnNldHRpbmdzX21hcmt1cCgKICAgICAgICAgICAgcXVlcnkubGFuZywKICAgICAgICAgICAgYWRtaW5fb25seSwKICAgICAgICAgICAgbm90IGZvcmNlX2FkbWluLAogICAgICAgICAgICBfbGFuZ3VhZ2UsCiAgICAgICAgICAgIGNoYXRfaWQsCiAgICAgICAgKQogICAgKQo=").decode("utf-8"))
+
+import re
+import asyncio
+from functools import wraps
+
+from pyrogram import filters, types
+from pyrogram.errors import FloodWait, QueryIdInvalid
+
+from Elevenyts import tune, app, config, db, lang, logger, queue, tg, yt
+from Elevenyts.helpers import admin_check, buttons, can_manage_vc
+from Elevenyts.helpers.rich_player import edit_player_message
+
+
+def safe_callback(func):
+    """Decorator to handle exceptions in callback handlers."""
+    @wraps(func)
+    async def wrapper(client, query: types.CallbackQuery):
+        try:
+            return await func(client, query)
+        except QueryIdInvalid:
+            return
+        except Exception as e:
+            logger.error(f"Error in callback {func.__name__}: {e}", exc_info=True)
+            try:
+                await query.answer("❌ An error occurred. Please try again.", show_alert=True)
+            except Exception:
+                pass
+    return wrapper
+
+
+@app.on_callback_query(filters.regex("^start$") & ~app.bl_users)
+@lang.language()
+@safe_callback
+async def _start_callback(_, query: types.CallbackQuery):
+    """Handle start button callback - return to start message."""
+    await query.answer()
+    
+    _text = query.lang["start_pm"].format(query.from_user.first_name, app.name)
+    key = buttons.start_key(query.lang, True)
+    
+    try:
+        await query.edit_message_caption(
+            caption=_text,
+            reply_markup=key,
+        )
+    except Exception:
+        try:
+            await query.edit_message_text(
+                text=_text,
+                reply_markup=key,
+            )
+        except Exception:
+            pass
+
+
+@app.on_callback_query(filters.regex("cancel_dl") & ~app.bl_users)
+@lang.language()
+@safe_callback
+async def cancel_dl(_, query: types.CallbackQuery):
+    await query.answer()
+    await tg.cancel(query)
+
+
+@app.on_callback_query(filters.regex("controls") & ~app.bl_users)
+@lang.language()
+@safe_callback
+async def _controls(_, query: types.CallbackQuery):
+    args = query.data.split()
+    action, chat_id = args[1], int(args[2])
+    qaction = len(args) == 4
+    user = query.from_user.mention
+
+    # Handle close action first - allow any user to delete the message (no popup notification)
+    if action == "close":
+        await query.answer()
+        try:
+            await query.message.delete()
+        except Exception:
+            pass
+        return
+
+    # Check admin permissions for all other controls
+    # Inline permission check: sudo users, authorized users, or group admins
+    user_id = query.from_user.id
+    has_permission = False
+    
+    if user_id in app.sudoers:
+        has_permission = True
+    elif await db.is_auth(chat_id, user_id):
+        has_permission = True
+    else:
+        admins = await db.get_admins(chat_id)
+        if user_id in admins:
+            has_permission = True
+    
+    if not has_permission:
+        return await query.answer("⚠️ You don't have permission to use this.", show_alert=True)
+
+    if not await db.get_call(chat_id):
+        return await query.answer(query.lang["not_playing"], show_alert=True)
+
+    if action == "status":
+        return await query.answer()
+    
+    # Handle seek actions
+    if action.startswith("seek_"):
+        return await handle_seek(query, chat_id, action, user)
+    
+    # Handle loop action
+    if action == "loop":
+        return await handle_loop(query, chat_id, user)
+    
+    # Handle shuffle action
+    if action == "shuffle":
+        return await handle_shuffle(query, chat_id, user)
+    
+    if action == "queue":
+        items = queue.get_queue(chat_id)
+        upcoming = items[1:] if len(items) > 1 else []
+        if not upcoming:
+            return await query.answer("≡ Queue is empty", show_alert=True)
+        lines = ["<b>≡ Upcoming Queue</b>"]
+        for i, item in enumerate(upcoming[:15], 1):
+            lines.append(f"{i}. {item.title}")
+        await query.answer(f"Queue: {len(upcoming)} track(s)", show_alert=False)
+        try:
+            msg = await query.message.reply_text("\n".join(lines), quote=False)
+            await asyncio.sleep(8)
+            await msg.delete()
+        except Exception:
+            pass
+        return
+
+    if action == "autoplay":
+        return await handle_autoplay(query, chat_id, user)
+    
+    await query.answer(query.lang["processing"], show_alert=True)
+
+    if action == "pause":
+        if not await db.playing(chat_id):
+            return await query.answer(
+                query.lang["play_already_paused"], show_alert=True
+            )
+        if not await tune.pause(chat_id):
+            return await query.answer(query.lang["not_playing"], show_alert=True)
+        if qaction:
+            return await query.answer("⏸ Paused")
+        status = query.lang["paused"]
+        reply = query.lang["play_paused"].format(user)
+
+    elif action == "resume":
+        status = query.lang["playing"]
+        if await db.playing(chat_id):
+            return await query.answer(query.lang["play_not_paused"], show_alert=True)
+        if not await tune.resume(chat_id):
+            return await query.answer(query.lang["not_playing"], show_alert=True)
+        if qaction:
+            return await query.answer("▶ Resumed")
+        reply = query.lang["play_resumed"].format(user)
+
+    elif action == "skip":
+        await tune.play_next(chat_id)
+        status = query.lang["skipped"]
+        reply = query.lang["play_skipped"].format(user)
+
+    elif action == "force":
+        pos, media = queue.check_item(chat_id, args[3])
+        if not media or pos == -1:
+            return await query.edit_message_text(query.lang["play_expired"])
+
+        current = queue.get_current(chat_id)
+        m_id = current.message_id if current else None
+        queue.force_add(chat_id, media, remove=pos)
+        try:
+            await app.delete_messages(
+                chat_id=chat_id, message_ids=[
+                    m_id, media.message_id], revoke=True
+            )
+            media.message_id = None
+        except:
+            pass
+
+        msg = await app.send_message(chat_id=chat_id, text=query.lang["play_next"])
+        if not media.file_path:
+            media.file_path = await yt.download(
+                media.id,
+                video=getattr(media, "video", False),
+            )
+        media.message_id = msg.id
+        return await tune.play_media(chat_id, msg, media)
+
+    elif action == "replay":
+        media = queue.get_current(chat_id)
+        media.user = user
+        await tune.replay(chat_id)
+        status = query.lang["replayed"]
+        reply = query.lang["play_replayed"].format(user)
+
+    elif action == "stop":
+        await tune.stop(chat_id)
+        status = query.lang["stopped"]
+        reply = query.lang["play_stopped"].format(user)
+
+    try:
+        if action in ["skip", "replay", "stop"]:
+            sent_msg = None
+            try:
+                sent_msg = await query.message.reply_text(reply, quote=False)
+            except FloodWait as e:
+                # If FloodWait occurs, wait and retry once
+                await asyncio.sleep(e.value)
+                try:
+                    sent_msg = await query.message.reply_text(reply, quote=False)
+                except Exception:
+                    pass
+            except Exception:
+                pass
+            await query.message.delete()
+            
+            # Auto-delete the reply message after 5 seconds
+            if sent_msg:
+                await asyncio.sleep(5)
+                try:
+                    await sent_msg.delete()
+                except Exception:
+                    pass
+        else:
+            media = queue.get_current(chat_id)
+            if not media:
+                return
+            base_html = query.lang["play_media"].format(
+                media.url, media.title, media.duration, media.user
+            )
+            # Rich buttons live inside the message itself; update the same Rich Message.
+            if action == "pause":
+                await edit_player_message(
+                    query.message.chat.id, query.message.id, base_html, media,
+                    playing=False,
+                )
+            elif action == "resume":
+                await edit_player_message(
+                    query.message.chat.id, query.message.id, base_html, media,
+                    playing=True,
+                )
+            else:
+                await edit_player_message(
+                    query.message.chat.id, query.message.id, base_html, media,
+                    playing=await db.playing(chat_id),
+                )
+            return
+    except FloodWait as e:
+        # Handle FloodWait on edit_message_text
+        await asyncio.sleep(e.value)
+        try:
+            await query.edit_message_text(
+                f"{mtext}\n\n<blockquote>{reply}</blockquote>", reply_markup=keyboard
+            )
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+
+async def handle_seek(query: types.CallbackQuery, chat_id: int, action: str, user: str):
+    """Handle seek forward/backward actions."""
+    media = queue.get_current(chat_id)
+    if not media or media.is_live:
+        return await query.answer("⚠️ Cannot seek in live streams!", show_alert=True)
+    
+    if not media.duration_sec or media.duration_sec == 0:
+        return await query.answer("⚠️ Cannot seek in this track!", show_alert=True)
+    
+    # Determine seek amount and direction
+    if action == "seek_back_10":
+        seconds = -10
+        label = "« 10s"
+    elif action == "seek_back_30":
+        seconds = -30
+        label = "« 30s"
+    elif action == "seek_forward_10":
+        seconds = 10
+        label = "10s »"
+    elif action == "seek_forward_30":
+        seconds = 30
+        label = "30s »"
+    else:
+        return await query.answer("⚠️ Invalid seek action!", show_alert=True)
+    
+    # Calculate new position
+    current_time = getattr(media, 'time', 0)
+    new_time = max(0, min(current_time + seconds, media.duration_sec - 5))
+    
+    # Check if we're at the boundaries
+    if new_time == 0 and seconds < 0:
+        return await query.answer(f"⏮️ Already at the beginning!", show_alert=True)
+    if new_time >= media.duration_sec - 5 and seconds > 0:
+        return await query.answer(f"⏭️ Too close to the end!", show_alert=True)
+    
+    # Perform seek
+    success = await tune.seek_stream(chat_id, int(new_time))
+    if success:
+        # Format time display
+        import time as time_module
+        if media.duration_sec >= 3600:
+            time_str = time_module.strftime('%H:%M:%S', time_module.gmtime(new_time))
+        else:
+            time_str = time_module.strftime('%M:%S', time_module.gmtime(new_time))
+        
+        # Use callback answer to avoid FloodWait
+        _dir = "⏩ ꜰᴏʀᴡᴀʀᴅᴇᴅ" if seconds > 0 else "⏪ ʀᴇᴡɪɴᴅᴇᴅ"
+        await query.answer(f"Seeked to {time_str}", show_alert=True)
+        
+        # Try to send reply message with FloodWait handling and auto-delete after 5 seconds
+        try:
+            sent_msg = await query.message.reply_text(
+                f"<blockquote><b>{_dir}</b>\n\n⏱  ᴅᴜʀᴀᴛɪᴏɴ ╌ {time_str}\n👤  ʙʏ ╌ {user}</blockquote>",
+                quote=False
+            )
+            # Auto-delete after 5 seconds
+            await asyncio.sleep(5)
+            try:
+                await sent_msg.delete()
+            except Exception:
+                pass
+        except FloodWait as e:
+            # If rate limited, just skip the message since user already got feedback via callback
+            pass
+        except Exception:
+            pass
+
+
+async def handle_loop(query: types.CallbackQuery, chat_id: int, user: str):
+    """Handle loop mode toggling."""
+    current_loop = await db.get_loop(chat_id)
+    
+    # Cycle through loop modes: 0 (off) -> 1 (single) -> 10 (queue) -> 0
+    if current_loop == 0:
+        new_loop = 1
+        text = "🔂 Loop: Single Track"
+        message = f"🔂 Loop mode set to <b>Single Track</b>"
+    elif current_loop == 1:
+        new_loop = 10
+        text = "🔁 Loop: Queue"
+        message = f"🔁 Loop mode set to <b>Queue</b>"
+    else:
+        new_loop = 0
+        text = "➡️ Loop: Off"
+        message = f"➡️ Loop mode <b>Disabled</b>"
+    
+    await db.set_loop(chat_id, new_loop)
+    await query.answer(text, show_alert=False)
+    await query.message.reply_text(message, quote=False)
+
+
+async def handle_shuffle(query: types.CallbackQuery, chat_id: int, user: str):
+    """Handle queue shuffling."""
+    import random
+    
+    items = queue.get_queue(chat_id)
+    if not items or len(items) <= 1:
+        return await query.answer("⚠️ Queue is empty or has only one track!", show_alert=True)
+    
+    # Get current track and remove from list
+    current = items[0] if items else None
+    remaining = items[1:] if len(items) > 1 else []
+    
+    if not remaining:
+        return await query.answer("⚠️ No tracks to shuffle!", show_alert=True)
+    
+    # Shuffle remaining tracks
+    random.shuffle(remaining)
+    
+    # Rebuild queue with current track first
+    queue.clear(chat_id)
+    if current:
+        queue.add(chat_id, current)
+    for item in remaining:
+        queue.add(chat_id, item)
+    
+    await query.answer("🔀 Queue shuffled!", show_alert=False)
+    await query.message.reply_text(
+        f"🔀 Queue <b>shuffled</b> ({len(remaining)} tracks)",
+        quote=False
+    )
+
+
+async def handle_autoplay(query, chat_id: int, user: str):
+    """Toggle autoplay via inline button."""
+    current = await db.get_autoplay(chat_id)
+    new_state = not current
+    await db.set_autoplay(chat_id, new_state)
+    status = "✅ ON" if new_state else "⏹ OFF"
+    await query.answer(f"Autoplay {status}", show_alert=True)
+
+
+@app.on_callback_query(filters.regex(r"^help") & ~app.bl_users)
+@lang.language()
+async def _help(_, query: types.CallbackQuery):
+    await query.answer()
+    
+    # Handle plain "help" callback - show main menu
+    if query.data == "help":
+        try:
+            # Try to edit as photo message first
+            await query.edit_message_caption(
+                caption=query.lang["help_menu"], 
+                reply_markup=buttons.help_markup(query.lang)
+            )
+        except Exception:
+            # Fallback to text edit if not a photo message
+            try:
+                await query.edit_message_text(
+                    text=query.lang["help_menu"], 
+                    reply_markup=buttons.help_markup(query.lang)
+                )
+            except Exception:
+                pass
+        return
+    
+    category = query.data.replace("help_", "")
+    
+    if category == "main":
+        # Return to main help menu from category
+        try:
+            await query.edit_message_caption(
+                caption=query.lang["help_menu"], 
+                reply_markup=buttons.help_markup(query.lang)
+            )
+        except Exception:
+            try:
+                await query.edit_message_text(
+                    text=query.lang["help_menu"], 
+                    reply_markup=buttons.help_markup(query.lang)
+                )
+            except Exception:
+                pass
+        return
+
+    if category == "langs":
+        try:
+            await query.edit_message_caption(
+                caption=query.lang["lang_select"],
+                reply_markup=buttons.langs_markup(),
+            )
+        except Exception:
+            try:
+                await query.edit_message_text(
+                    text=query.lang["lang_select"],
+                    reply_markup=buttons.langs_markup(),
+                )
+            except Exception:
+                pass
+        return
+
+    # Handle all help categories
+    help_texts = {
+        "admins": query.lang["help_admins"],
+        "auth": query.lang["help_auth"],
+        "broadcast": query.lang["help_sudo"],  # Broadcast is sudo feature
+        "blchat": query.lang["help_blchat"],
+        "bluser": query.lang["help_bluser"],
+        "gban": query.lang["help_gban"],
+        "loop": query.lang["help_loop"],
+        "play": query.lang["help_play"],
+        "queue": query.lang["help_queue"],
+        "seek": query.lang["help_seek"],
+        "shuffle": query.lang["help_shuffle"],
+        "ping": query.lang["help_ping"],
+        "stats": query.lang["help_stats"],
+        "sudo": query.lang["help_sudo"],
+        "maintenance": query.lang["help_maintenance"],
+    }
+    
+    help_text = help_texts.get(category, query.lang["help_admins"])
+    
+    try:
+        await query.edit_message_caption(
+            caption=help_text,
+            reply_markup=buttons.help_markup(query.lang, True),
+        )
+    except Exception:
+        try:
+            await query.edit_message_text(
+                text=help_text,
+                reply_markup=buttons.help_markup(query.lang, True),
+            )
+        except Exception:
+            pass
+
+
+_LANG_NAMES = {
+    "en": "🇬🇧 English", "hi": "🇮🇳 Hindi", "te": "🇮🇳 Telugu",
+    "ko": "🇰🇷 Korean", "my": "🇲🇲 Myanmar", "id": "🇮🇩 Indonesian",
+    "pt": "🇧🇷 Portuguese", "ar": "🇸🇦 Arabic", "es": "🇪🇸 Spanish",
+    "fr": "🇫🇷 French", "ru": "🇷🇺 Russian", "de": "🇩🇪 German",
+    "tr": "🇹🇷 Turkish", "bn": "🇧🇩 Bengali", "th": "🇹🇭 Thai",
+    "vi": "🇻🇳 Vietnamese", "ja": "🇯🇵 Japanese", "zh": "🇨🇳 Chinese",
+    "ur": "🇵🇰 Urdu", "fa": "🇮🇷 Persian",
+}
+
+
+@app.on_callback_query(filters.regex(r"^setlang_") & ~app.bl_users)
+async def _setlang(_, query: types.CallbackQuery):
+    code = query.data.replace("setlang_", "")
+    if code not in _LANG_NAMES:
+        return await query.answer("❌ Invalid language.", show_alert=True)
+    lang_name = _LANG_NAMES[code]
+    await db.set_lang(query.from_user.id, code)
+    new_lang = lang.get_merged_lang(code)
+    confirmation = new_lang["lang_changed"].format(lang_name)
+    await query.answer()
+    try:
+        await query.edit_message_caption(
+            caption=confirmation,
+            reply_markup=buttons.langs_markup(),
+        )
+    except Exception:
+        try:
+            await query.edit_message_text(
+                text=confirmation,
+                reply_markup=buttons.langs_markup(),
+            )
+        except Exception:
+            pass
+
+
+@app.on_callback_query(filters.regex("^playmode$") & ~app.bl_users)
+@lang.language()
+@admin_check
+async def _playmode(_, query: types.CallbackQuery):
+    await query.answer(query.lang["processing"], show_alert=True)
+    chat_id = query.message.chat.id
+    admin_only = await db.get_play_mode(chat_id)
+    force_admin = await db.get_force_mode(chat_id)
+    _language = "en"
+    await db.set_play_mode(chat_id, admin_only)
+    await query.edit_message_reply_markup(
+        reply_markup=buttons.settings_markup(
+            query.lang,
+            not admin_only,
+            force_admin,
+            _language,
+            chat_id,
+        )
+    )
+
+
+@app.on_callback_query(filters.regex("^forcemode$") & ~app.bl_users)
+@lang.language()
+@admin_check
+async def _forcemode(_, query: types.CallbackQuery):
+    await query.answer(query.lang["processing"], show_alert=True)
+    chat_id = query.message.chat.id
+    admin_only = await db.get_play_mode(chat_id)
+    force_admin = await db.get_force_mode(chat_id)
+    _language = "en"
+    await db.set_force_mode(chat_id, force_admin)
+    await query.edit_message_reply_markup(
+        reply_markup=buttons.settings_markup(
+            query.lang,
+            admin_only,
+            not force_admin,
+            _language,
+            chat_id,
+        )
+    )
