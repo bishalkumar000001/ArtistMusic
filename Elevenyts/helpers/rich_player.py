@@ -265,6 +265,22 @@ async def edit_rich_message(message, text, markup=None, photo_file_id=None, **kw
     return False
 
 
+
+
+async def send_rich_message(chat_id: int, text: str, reply_markup=None, photo=None, media=None, reply_to_message_id=None, **kwargs):
+    """Backward-compatible Rich Message sender used by legacy plugins.
+
+    Older plugins import ``send_rich_message``; keep that API mapped to the
+    current player sender so startup does not fail after the Rich Player refactor.
+    """
+    return await send_player(
+        chat_id,
+        text,
+        photo=photo,
+        media=media,
+        reply_to_message_id=reply_to_message_id,
+        **kwargs,
+    )
 async def edit_player_message(chat_id, message_id, base_html, media, *args, **kwargs):
     return await edit_player(chat_id, message_id, base_html, media,
                              timer=kwargs.get("timer"),
