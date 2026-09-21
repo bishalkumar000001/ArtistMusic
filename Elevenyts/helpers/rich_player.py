@@ -76,33 +76,28 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
                   playing: bool = True, remove: bool = False) -> str:
     if remove:
         return ""
-    try:
-        from Elevenyts import queue
-        upcoming = max(0, len(queue.get_queue(chat_id)) - 1)
-    except Exception:
-        upcoming = 0
 
     time_style, replay_style, state_style, queue_style = _styles(playing)
     state = "pause" if playing else "resume"
     label = "Pause" if playing else "Resume"
     p = html.escape(progress_text(media, timer))
 
+    # Clean, compact player layout:
+    # 1) Progress / time
+    # 2) Pause/Resume, Replay, Shuffle, Skip
+    # 3) Loop, Close, Stop
     return (
         f'<tg-button-row align="center">'
         f'<tg-button type="callback_data" style="{time_style}" data="controls status {chat_id}">{p}</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="{replay_style}" data="controls seek_back_10 {chat_id}">&lt; 10s</tg-button>'
         f'<tg-button type="callback_data" style="{state_style}" data="controls {state} {chat_id}">{label}</tg-button>'
-        f'<tg-button type="callback_data" style="{replay_style}" data="controls seek_forward_10 {chat_id}">10s &gt;</tg-button>'
-        f'</tg-button-row>'
-        f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="{queue_style}" data="controls loop {chat_id}">Loop</tg-button>'
         f'<tg-button type="callback_data" style="{time_style}" data="controls replay {chat_id}">Replay</tg-button>'
         f'<tg-button type="callback_data" style="{replay_style}" data="controls shuffle {chat_id}">Shuffle</tg-button>'
         f'<tg-button type="callback_data" style="{queue_style}" data="controls skip {chat_id}">Skip</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
+        f'<tg-button type="callback_data" style="{queue_style}" data="controls loop {chat_id}">Loop</tg-button>'
         f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">Close</tg-button>'
         f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">Stop</tg-button>'
         f'</tg-button-row>'
