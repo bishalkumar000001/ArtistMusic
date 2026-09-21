@@ -119,9 +119,41 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
     )
 
 
+def _format_player_card(base_html: str) -> str:
+    """Arrange the current-playing card like the queue card.
+
+    Layout:
+      1. Header/status line in its own quote block.
+      2. Title, duration and requester in one details block.
+      3. Any remaining footer/powered-by content in its own block.
+
+    Existing blockquote wrappers are removed first so we never create nested
+    quote cards when a legacy template already contains them.
+    """
+    clean = _clean_base_html(base_html)
+    clean = re.sub(r"</?blockquote\b[^>]*>", "", clean, flags=re.I)
+    clean = re.sub(r"\n{3,}", "\n\n", clean).strip()
+    lines = [line.strip() for line in clean.splitlines() if line.strip()]
+
+    if len(lines) >= 5:
+        header = lines[0]
+        details = "<br>".join(lines[1:4])
+        footer = "<br>".join(lines[4:])
+        return (
+            f'<blockquote>{header}</blockquote>'
+            f'<blockquote>{details}</blockquote>'
+            f'<blockquote>{footer}</blockquote>'
+        )
+    if len(lines) >= 2:
+        header = lines[0]
+        details = "<br>".join(lines[1:])
+        return f'<blockquote>{header}</blockquote><blockquote>{details}</blockquote>'
+    return f'<blockquote>{clean}</blockquote>' if clean else ""
+
+
 def rich_html(base_html: str, chat_id: int, media, *, timer=None,
               playing=True, remove=False, queue_mode=False) -> str:
-    clean = _clean_base_html(base_html)
+    clean = _format_player_card(base_html)
     if remove:
         return clean
     return f"{clean}\n\n{controls_html(chat_id, media, timer=timer, playing=playing, queue_mode=queue_mode)}"
@@ -293,8 +325,30 @@ def queue_controls_html(chat_id: int) -> str:
 
 
 def queue_rich_html(base_html: str, chat_id: int) -> str:
+    """Format the queued-song message like the main Rich Player card.
+
+    The queue message keeps the existing localized title/duration/requester
+    text, but separates it into clean Rich Message quote blocks instead of
+    showing all fields as one long paragraph. Controls remain inside the card.
+    """
     clean = _clean_base_html(base_html)
-    return f"{clean}\n\n{queue_controls_html(chat_id)}"
+    lines = [line.strip() for line in clean.splitlines() if line.strip()]
+
+    if len(lines) >= 4:
+        header = lines[0]
+        details = "<br>".join(lines[1:4])
+        # Keep any extra localized content instead of silently dropping it.
+        if len(lines) > 4:
+            details += "<br>" + "<br>".join(lines[4:])
+        formatted = (
+            f'<blockquote>{header}</blockquote>'
+            f'<blockquote>{details}</blockquote>'
+        )
+    else:
+        # Safe fallback for a different locale/template.
+        formatted = f'<blockquote>{clean}</blockquote>'
+
+    return f"{formatted}\n\n{queue_controls_html(chat_id)}"
 
 
 async def edit_queue_rich_message(message, text: str, chat_id: int) -> bool:
