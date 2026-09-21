@@ -352,16 +352,36 @@ def queue_rich_html(base_html: str, chat_id: int) -> str:
 
 
 async def edit_queue_rich_message(message, text: str, chat_id: int) -> bool:
-    """Convert the existing /play status message into the queued-song Rich Message."""
+    """Replace the temporary /play message with a real Rich Message.
+
+    Queue controls must be created by ``sendRichMessage`` itself. Editing a
+    normal Pyrogram text message into a Rich Message can display the buttons
+    but does not reliably preserve their callback events. Creating a fresh
+    Rich Message gives the queue controls the same callback path as the main
+    player buttons.
+    """
     try:
-        await _request(
-            "editMessageText",
+        rich = {"html": queue_rich_html(text, int(chat_id))}
+        result = await _request(
+            "sendRichMessage",
             {
                 "chat_id": int(chat_id),
-                "message_id": int(message.id),
-                "rich_message": {"html": queue_rich_html(text, int(chat_id))},
+                "rich_message": rich,
             },
         )
+        # Remove the temporary searching/status message only after the Rich
+        # Message was successfully created.
+        try:
+            await _request(
+                "deleteMessage",
+                {"chat_id": int(chat_id), "message_id": int(message.id)},
+            )
+        except Exception:
+            pass
+        msg = result.get("result") or {}
+        mid = msg.get("message_id")
+        if mid:
+            _cache_message_media(int(chat_id), int(mid), result, None)
         return True
     except Exception:
         return False
