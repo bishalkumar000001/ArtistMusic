@@ -84,32 +84,28 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
 
     time_style, replay_style, state_style, queue_style = _styles(playing)
     state = "pause" if playing else "resume"
-    label = "Ⅱ Pause" if playing else "▶ Resume"
+    label = "Pause" if playing else "Resume"
     p = html.escape(progress_text(media, timer))
 
-    # Every action is a real Rich Message callback button.
     return (
         f'<tg-button-row align="center">'
         f'<tg-button type="callback_data" style="{time_style}" data="controls status {chat_id}">{p}</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="{replay_style}" data="controls seek_back_10 {chat_id}">« 10s</tg-button>'
+        f'<tg-button type="callback_data" style="{replay_style}" data="controls seek_back_10 {chat_id}">10s</tg-button>'
         f'<tg-button type="callback_data" style="{state_style}" data="controls {state} {chat_id}">{label}</tg-button>'
-        f'<tg-button type="callback_data" style="{queue_style}" data="controls skip {chat_id}">» Skip</tg-button>'
+        f'<tg-button type="callback_data" style="{replay_style}" data="controls seek_forward_10 {chat_id}">10s</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="{time_style}" data="controls replay {chat_id}">↻ Replay</tg-button>'
-        f'<tg-button type="callback_data" style="{replay_style}" data="controls seek_forward_10 {chat_id}">10s »</tg-button>'
-        f'<tg-button type="callback_data" style="{state_style}" data="controls queue {chat_id}">≡ Queue · {upcoming}</tg-button>'
+        f'<tg-button type="callback_data" style="{time_style}" data="controls replay {chat_id}">Replay</tg-button>'
+        f'<tg-button type="callback_data" style="{replay_style}" data="controls autoplay {chat_id}">Auto</tg-button>'
+        f'<tg-button type="callback_data" style="{queue_style}" data="controls skip {chat_id}">Skip</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="{queue_style}" data="controls loop {chat_id}">🔂 Loop</tg-button>'
-        f'<tg-button type="callback_data" style="{time_style}" data="controls shuffle {chat_id}">🔀 Shuffle</tg-button>'
-        f'<tg-button type="callback_data" style="{replay_style}" data="controls autoplay {chat_id}">⚡ Auto</tg-button>'
-        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">■ Stop</tg-button>'
-        f'</tg-button-row>'
-        f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">✕ Close</tg-button>'
+        f'<tg-button type="callback_data" style="{queue_style}" data="controls loop {chat_id}">Loop</tg-button>'
+        f'<tg-button type="callback_data" style="{time_style}" data="controls shuffle {chat_id}">Shuffle</tg-button>'
+        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">Stop</tg-button>'
+        f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">Close</tg-button>'
         f'</tg-button-row>'
     )
 
