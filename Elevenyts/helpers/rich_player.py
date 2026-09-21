@@ -272,6 +272,46 @@ async def edit_rich_message(message, text, markup=None, photo_file_id=None, **kw
 
 
 
+
+def queue_controls_html(chat_id: int) -> str:
+    """Controls used by the 'ADDED TO QUEUE' message itself.
+
+    These are Telegram Rich Message buttons, so they render inside the
+    message card instead of as a normal inline keyboard below it.
+    """
+    return (
+        f'<tg-button-row align="center">'
+        f'<tg-button type="callback_data" style="success" data="controls resume {chat_id}">▷</tg-button>'
+        f'<tg-button type="callback_data" style="primary" data="controls pause {chat_id}">∣ ∣</tg-button>'
+        f'<tg-button type="callback_data" style="primary" data="controls skip {chat_id}">&gt;&gt;</tg-button>'
+        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">▣</tg-button>'
+        f'</tg-button-row>'
+        f'<tg-button-row align="center">'
+        f'<tg-button type="callback_data" style="danger" data="controls close {chat_id}">🗑</tg-button>'
+        f'</tg-button-row>'
+    )
+
+
+def queue_rich_html(base_html: str, chat_id: int) -> str:
+    clean = _clean_base_html(base_html)
+    return f"{clean}\n\n{queue_controls_html(chat_id)}"
+
+
+async def edit_queue_rich_message(message, text: str, chat_id: int) -> bool:
+    """Convert the existing /play status message into the queued-song Rich Message."""
+    try:
+        await _request(
+            "editMessageText",
+            {
+                "chat_id": int(chat_id),
+                "message_id": int(message.id),
+                "rich_message": {"html": queue_rich_html(text, int(chat_id))},
+            },
+        )
+        return True
+    except Exception:
+        return False
+
 async def send_rich_message(chat_id: int, text: str, reply_markup=None, photo=None, media=None, reply_to_message_id=None, **kwargs):
     """Backward-compatible Rich Message sender used by legacy plugins.
 
