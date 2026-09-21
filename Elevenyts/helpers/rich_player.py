@@ -73,7 +73,7 @@ def _styles(playing: bool):
 
 
 def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
-                  playing: bool = True, remove: bool = False) -> str:
+                  playing: bool = True, remove: bool = False, queue_mode: bool = False) -> str:
     if remove:
         return ""
 
@@ -81,6 +81,21 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
     state = "pause" if playing else "resume"
     label = "Pause" if playing else "Resume"
     p = html.escape(progress_text(media, timer))
+
+    # Queue-message controls: match the existing queue keyboard, but render
+    # them inside the Rich Message itself instead of as a separate keyboard.
+    if queue_mode:
+        return (
+            f'<tg-button-row align="center">'
+            f'<tg-button type="callback_data" style="success" data="controls resume {chat_id}">▷</tg-button>'
+            f'<tg-button type="callback_data" style="primary" data="controls pause {chat_id}">∣ ∣</tg-button>'
+            f'<tg-button type="callback_data" style="primary" data="controls skip {chat_id}">>></tg-button>'
+            f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">▣</tg-button>'
+            f'</tg-button-row>'
+            f'<tg-button-row align="center">'
+            f'<tg-button type="callback_data" style="danger" data="controls close {chat_id}">🗑</tg-button>'
+            f'</tg-button-row>'
+        )
 
     # Clean, compact player layout:
     # 1) Progress / time
@@ -104,31 +119,12 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
     )
 
 
-def queue_controls_html(chat_id: int, *, playing: bool = True, remove: bool = False) -> str:
-    if remove:
-        return ""
-    return (
-        f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="success" data="controls resume {chat_id}">▷</tg-button>'
-        f'<tg-button type="callback_data" style="primary" data="controls pause {chat_id}">∣ ∣</tg-button>'
-        f'<tg-button type="callback_data" style="primary" data="controls skip {chat_id}">>></tg-button>'
-        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">▣</tg-button>'
-        f'</tg-button-row>'
-        f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="danger" data="controls close {chat_id}">🗑</tg-button>'
-        f'</tg-button-row>'
-    )
-
-def queue_rich_html(base_html: str, chat_id: int, *, playing: bool = True) -> str:
-    clean = _clean_base_html(base_html)
-    return f"{clean}\n\n{queue_controls_html(chat_id, playing=playing)}"
-
 def rich_html(base_html: str, chat_id: int, media, *, timer=None,
-              playing=True, remove=False) -> str:
+              playing=True, remove=False, queue_mode=False) -> str:
     clean = _clean_base_html(base_html)
     if remove:
         return clean
-    return f"{clean}\n\n{controls_html(chat_id, media, timer=timer, playing=playing)}"
+    return f"{clean}\n\n{controls_html(chat_id, media, timer=timer, playing=playing, queue_mode=queue_mode)}"
 
 
 async def _request(method: str, data: dict, file_path: Optional[str] = None) -> dict:
@@ -181,8 +177,8 @@ def _cache_message_media(chat_id, message_id, result, fallback):
         _PLAYER_MEDIA[(chat_id, message_id)] = fallback
 
 
-async def send_player(chat_id: int, base_html: str, photo=None, media=None, reply_to_message_id=None, *, playing=True, **kwargs) -> int:
-    player_html = rich_html(base_html, chat_id, media, playing=playing)
+async def send_player(chat_id: int, base_html: str, photo=None, media=None, reply_to_message_id=None, *, playing=True, queue_mode=False, **kwargs) -> int:
+    player_html = rich_html(base_html, chat_id, media, playing=playing, queue_mode=queue_mode)
     ref = _photo_source(chat_id, 0, media, photo)
     rich = {"html": player_html}
     if ref:
@@ -266,19 +262,6 @@ async def edit_rich_message(message, text, markup=None, photo_file_id=None, **kw
         except Exception:
             media = None
     if media is not None:
-        if kwargs.get("queue_mode", False):
-            ref = _photo_source(chat_id, message_id, media, photo_file_id)
-            body = queue_rich_html(text, chat_id, playing=kwargs.get("playing", True))
-            rich = {"html": body}
-            if ref:
-                rich["html"] = f'<img src="tg://photo?id=player_cover"/>\n{body}'
-                rich["media"] = [{"id": "player_cover", "media": {"type": "photo", "media": ref}}]
-            try:
-                result = await _request("editMessageText", {"chat_id": chat_id, "message_id": message_id, "rich_message": rich})
-                _cache_message_media(chat_id, message_id, result, ref)
-                return True
-            except Exception as e:
-                return "MESSAGE_NOT_MODIFIED" in str(e)
         return await edit_player(chat_id, message_id, text, media,
                                  timer=kwargs.get("timer"),
                                  playing=kwargs.get("playing", True),
