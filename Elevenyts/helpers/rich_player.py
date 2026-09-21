@@ -142,6 +142,11 @@ async def _request(method: str, data: dict, file_path: Optional[str] = None) -> 
 
 
 def _photo_source(chat_id, message_id, media, photo=None):
+    # Prefer Telegram's already-uploaded photo file_id. This is the key to
+    # keeping the cover attached when the Rich Message is edited repeatedly.
+    cached_file_id = _PLAYER_PHOTOS.get((chat_id, message_id))
+    if cached_file_id:
+        return cached_file_id
     cached = _PLAYER_MEDIA.get((chat_id, message_id))
     if cached:
         return cached
@@ -223,6 +228,21 @@ async def edit_player(chat_id: int, message_id: int, base_html: str, media, *, t
         except Exception as e:
             if "MESSAGE_NOT_MODIFIED" in str(e):
                 return True
+            # If an edit without media somehow happened, immediately retry
+            # once with the cached Telegram photo/file reference.
+            cached = _PLAYER_PHOTOS.get(key) or _PLAYER_MEDIA.get(key)
+            if cached and cached != ref:
+                try:
+                    rich["html"] = f'<img src="tg://photo?id=player_cover"/>\n{body}'
+                    rich["media"] = [{"id": "player_cover", "media": {"type": "photo", "media": cached}}]
+                    result = await _request("editMessageText", {
+                        "chat_id": chat_id,
+                        "message_id": message_id,
+                        "rich_message": rich,
+                    })
+                    return True
+                except Exception:
+                    pass
             return False
 
 
