@@ -305,26 +305,26 @@ async def edit_rich_message(message, text, markup=None, photo_file_id=None, **kw
 
 
 
-def queue_controls_html(chat_id: int) -> str:
-    """Controls used by the 'ADDED TO QUEUE' message itself.
+def queue_controls_html(chat_id: int, item_id: str) -> str:
+    """Controls for a queued song.
 
-    These are Telegram Rich Message buttons, so they render inside the
-    message card instead of as a normal inline keyboard below it.
+    Play Now occupies a full row. Stop and Close share the second row.
+    Play Now carries the queued item's ID so the callback can promote that
+    exact song without changing the relative order of the other waiting songs.
     """
+    safe_item_id = html.escape(str(item_id or ""), quote=True)
     return (
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="success" data="controls resume {chat_id}">▷</tg-button>'
-        f'<tg-button type="callback_data" style="primary" data="controls pause {chat_id}">∣ ∣</tg-button>'
-        f'<tg-button type="callback_data" style="primary" data="controls skip {chat_id}">&gt;&gt;</tg-button>'
-        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">▣</tg-button>'
+        f'<tg-button type="callback_data" style="success" data="queueplay {chat_id} {safe_item_id}">Play Now</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="danger" data="controls close {chat_id}">🗑</tg-button>'
+        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">Stop</tg-button>'
+        f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">Close</tg-button>'
         f'</tg-button-row>'
     )
 
 
-def queue_rich_html(base_html: str, chat_id: int) -> str:
+def queue_rich_html(base_html: str, chat_id: int, item_id: str = "") -> str:
     """Format the queued-song message like the main Rich Player card.
 
     The queue message keeps the existing localized title/duration/requester
@@ -348,10 +348,10 @@ def queue_rich_html(base_html: str, chat_id: int) -> str:
         # Safe fallback for a different locale/template.
         formatted = f'<blockquote>{clean}</blockquote>'
 
-    return f"{formatted}\n\n{queue_controls_html(chat_id)}"
+    return f"{formatted}\n\n{queue_controls_html(chat_id, item_id)}"
 
 
-async def edit_queue_rich_message(message, text: str, chat_id: int) -> bool:
+async def edit_queue_rich_message(message, text: str, chat_id: int, item_id: str = "") -> bool:
     """Replace the temporary /play message with a real Rich Message.
 
     Queue controls must be created by ``sendRichMessage`` itself. Editing a
@@ -361,7 +361,7 @@ async def edit_queue_rich_message(message, text: str, chat_id: int) -> bool:
     player buttons.
     """
     try:
-        rich = {"html": queue_rich_html(text, int(chat_id))}
+        rich = {"html": queue_rich_html(text, int(chat_id), item_id)}
         result = await _request(
             "sendRichMessage",
             {
