@@ -120,10 +120,9 @@ class YouTube:
             download_type = "video" if video else "audio"
             api_started = time.monotonic()
             logger.info(f"🚀 [API DIRECT] Downloading {download_type} for {video_id}")
-            endpoint = "/video-stream" if video else "/stream"
+            endpoint = "/download"
             api_endpoint = f"{self.api_url.rstrip('/')}{endpoint}"
             headers = {
-                "X-API-Key": self.artistbots_key,
                 "Accept": "audio/mpeg,video/mp4,application/octet-stream,*/*",
             }
 
@@ -132,7 +131,11 @@ class YouTube:
             ) as session:
                 async with session.get(
                     api_endpoint,
-                    params={"url": video_id},
+                    params={
+                        "url": video_id,
+                        "type": "video" if video else "audio",
+                        "api_key": self.artistbots_key,
+                    },
                     headers=headers,
                     timeout=aiohttp.ClientTimeout(total=self.api_stream_timeout),
                 ) as response:
