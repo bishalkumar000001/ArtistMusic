@@ -73,7 +73,7 @@ class Bot(pyrogram.Client):
             # Message.
             message = await super().send_message(chat_id, text, *args, reply_markup=None, **kwargs)
             try:
-                await rich_buttons.edit_text(message.chat.id, message.id, text or "", reply_markup)
+                await rich_buttons.edit_text(message.chat.id, message.id, text or "", reply_markup, client=self)
             except Exception:
                 # Never break a command if the Rich API is temporarily
                 # unavailable; the original message remains usable.
@@ -129,7 +129,7 @@ class Bot(pyrogram.Client):
     async def edit_message_text(self, chat_id, message_id, text=None, *args, reply_markup=None, **kwargs):
         if rich_buttons.is_inline_markup(reply_markup):
             try:
-                await rich_buttons.edit_text(chat_id, message_id, text or "", reply_markup)
+                await rich_buttons.edit_text(chat_id, message_id, text or "", reply_markup, client=self)
                 return await super().get_messages(chat_id, message_id)
             except Exception:
                 pass
@@ -140,11 +140,28 @@ class Bot(pyrogram.Client):
             try:
                 message = await super().get_messages(chat_id, message_id)
                 current_text = getattr(message, "text", None) or getattr(message, "caption", None) or ""
-                await rich_buttons.edit_text(chat_id, message_id, current_text, reply_markup)
+                await rich_buttons.edit_text(chat_id, message_id, current_text, reply_markup, client=self)
                 return message
             except Exception:
                 pass
         return await super().edit_message_reply_markup(chat_id, message_id, reply_markup=reply_markup, *args, **kwargs)
+
+
+    async def edit_message_media(self, chat_id, message_id, media, *args, caption=None, reply_markup=None, **kwargs):
+        # Rich-convert media edits too (e.g. /ping). This prevents the
+        # original photo/video from being replaced by a plain text message.
+        if rich_buttons.is_inline_markup(reply_markup):
+            try:
+                await rich_buttons.edit_media(
+                    chat_id, message_id, media, caption or "", reply_markup, client=self
+                )
+                return await super().get_messages(chat_id, message_id)
+            except Exception:
+                pass
+        return await super().edit_message_media(
+            chat_id, message_id, media, *args, caption=caption,
+            reply_markup=reply_markup, **kwargs
+        )
 
     async def boot(self) -> None:
         """
