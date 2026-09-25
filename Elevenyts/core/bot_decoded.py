@@ -17,7 +17,6 @@ import pyrogram
 from typing import Optional
 
 from Elevenyts import config, logger
-from Elevenyts.core import rich_buttons
 
 
 class Bot(pyrogram.Client):
@@ -64,38 +63,6 @@ class Bot(pyrogram.Client):
         self.name: Optional[str] = None
         self.username: Optional[str] = None
         self.mention: Optional[str] = None
-
-    async def _rich_after_send(self, message, text, markup):
-        if rich_buttons.is_inline_markup(markup):
-            try:
-                await rich_buttons.convert_existing(message, text or getattr(message, "caption", "") or "", markup)
-            except Exception:
-                pass
-        return message
-
-    async def send_message(self, chat_id, text=None, *args, reply_markup=None, **kwargs):
-        message = await super().send_message(chat_id, text, *args, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, text, reply_markup)
-
-    async def send_photo(self, chat_id, photo, *args, caption=None, reply_markup=None, **kwargs):
-        message = await super().send_photo(chat_id, photo, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
-
-    async def send_video(self, chat_id, video, *args, caption=None, reply_markup=None, **kwargs):
-        message = await super().send_video(chat_id, video, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
-
-    async def send_audio(self, chat_id, audio, *args, caption=None, reply_markup=None, **kwargs):
-        message = await super().send_audio(chat_id, audio, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
-
-    async def send_document(self, chat_id, document, *args, caption=None, reply_markup=None, **kwargs):
-        message = await super().send_document(chat_id, document, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
-
-    async def send_voice(self, chat_id, voice, *args, caption=None, reply_markup=None, **kwargs):
-        message = await super().send_voice(chat_id, voice, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
 
     async def boot(self) -> None:
         """
