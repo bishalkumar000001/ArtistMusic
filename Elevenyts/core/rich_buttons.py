@@ -118,8 +118,30 @@ def build_rich_payload(message, text: str, markup: Any):
     media = _media_from_message(message)
     if media:
         tag, kind, file_id = media
-        payload["html"] = f'<{tag} src="tg://media?id=rich_media"/><br>{body}'
-        payload["media"] = [{"id": "rich_media", "media": {"type": kind, "media": file_id}}]
+        # Rich HTML references attached media with tg://<type>?id=<id>.
+        # `tg://media?id=...` is not a valid Rich Message media URL and
+        # causes RICH_MESSAGE_PHOTO_URL_INVALID for photo messages.
+        rich_type = {
+            "photo": "photo",
+            "video": "video",
+            "animation": "video",
+            "audio": "audio",
+            "voice_note": "audio",
+            "document": "document",
+        }.get(kind, kind)
+        payload["html"] = f'<{tag} src="tg://{rich_type}?id=rich_media"/><br>{body}'
+        media_input_type = {
+            "photo": "photo",
+            "video": "video",
+            "animation": "animation",
+            "audio": "audio",
+            "voice_note": "voice_note",
+            "document": "document",
+        }.get(kind, kind)
+        payload["media"] = [{
+            "id": "rich_media",
+            "media": {"type": media_input_type, "media": file_id},
+        }]
     return payload
 
 
