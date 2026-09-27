@@ -66,12 +66,15 @@ class Bot(pyrogram.Client):
         self.mention: Optional[str] = None
 
     async def _rich_after_send(self, message, text, markup):
-        if rich_buttons.is_inline_markup(markup):
-            try:
-                await rich_buttons.convert_existing(message, text or getattr(message, "caption", "") or "", markup)
-            except Exception:
-                pass
-        return message
+        if not rich_buttons.is_inline_markup(markup):
+            return message
+        try:
+            return await rich_buttons.replace_with_rich(
+                message, text or getattr(message, "caption", "") or "", markup
+            )
+        except Exception as ex:
+            logger.warning(f"Rich button conversion failed: {ex}")
+            return message
 
     async def send_message(self, chat_id, text=None, *args, reply_markup=None, **kwargs):
         message = await super().send_message(chat_id, text, *args, reply_markup=reply_markup, **kwargs)
@@ -85,12 +88,12 @@ class Bot(pyrogram.Client):
         message = await super().send_video(chat_id, video, *args, caption=caption, reply_markup=reply_markup, **kwargs)
         return await self._rich_after_send(message, caption, reply_markup)
 
-    async def send_audio(self, chat_id, audio, *args, caption=None, reply_markup=None, **kwargs):
-        message = await super().send_audio(chat_id, audio, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
-
     async def send_animation(self, chat_id, animation, *args, caption=None, reply_markup=None, **kwargs):
         message = await super().send_animation(chat_id, animation, *args, caption=caption, reply_markup=reply_markup, **kwargs)
+        return await self._rich_after_send(message, caption, reply_markup)
+
+    async def send_audio(self, chat_id, audio, *args, caption=None, reply_markup=None, **kwargs):
+        message = await super().send_audio(chat_id, audio, *args, caption=caption, reply_markup=reply_markup, **kwargs)
         return await self._rich_after_send(message, caption, reply_markup)
 
     async def send_document(self, chat_id, document, *args, caption=None, reply_markup=None, **kwargs):
