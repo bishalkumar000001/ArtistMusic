@@ -19,11 +19,34 @@ def _api(method: str) -> str:
 
 
 def _style(button: Any) -> str:
+    """Return a pill-button color/style.
+
+    Existing explicit Pyrogram styles win.  For normal buttons (which usually
+    have no style set), use the same visual language as the music-player UI:
+    blue = primary/action, green = continue/secondary action, red = stop or
+    destructive action.  This changes presentation only; callbacks/URLs are
+    untouched.
+    """
     value = getattr(button, "style", None)
     name = getattr(value, "name", str(value or "")).lower()
     if "danger" in name:
         return "danger"
     if "success" in name:
+        return "success"
+
+    label = str(getattr(button, "text", "")).strip().lower()
+    danger_words = (
+        "stop", "delete", "remove", "cancel", "close", "reject",
+        "disconnect", "logout", "leave", "ban", "mute", "disable",
+    )
+    success_words = (
+        "play", "replay", "resume", "skip", "next", "loop", "confirm",
+        "yes", "enable", "join", "start", "download", "save", "back",
+    )
+
+    if any(word == label or word in label for word in danger_words):
+        return "danger"
+    if any(word == label or word in label for word in success_words):
         return "success"
     return "primary"
 
