@@ -89,6 +89,10 @@ class Bot(pyrogram.Client):
         message = await super().send_audio(chat_id, audio, *args, caption=caption, reply_markup=reply_markup, **kwargs)
         return await self._rich_after_send(message, caption, reply_markup)
 
+    async def send_animation(self, chat_id, animation, *args, caption=None, reply_markup=None, **kwargs):
+        message = await super().send_animation(chat_id, animation, *args, caption=caption, reply_markup=reply_markup, **kwargs)
+        return await self._rich_after_send(message, caption, reply_markup)
+
     async def send_document(self, chat_id, document, *args, caption=None, reply_markup=None, **kwargs):
         message = await super().send_document(chat_id, document, *args, caption=caption, reply_markup=reply_markup, **kwargs)
         return await self._rich_after_send(message, caption, reply_markup)

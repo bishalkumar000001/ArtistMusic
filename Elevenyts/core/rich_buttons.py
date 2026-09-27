@@ -1,14 +1,16 @@
-"""Safe Rich Message bridge for existing Pyrogram messages.
+"""Rich Message bridge for existing Pyrogram messages.
 
-The original bot remains responsible for sending/editing messages. Rich
-conversion happens only after the original message exists, so command startup,
-reply behaviour, media and returned Message objects stay unchanged.
+The bot's original Pyrogram keyboards remain the source of truth.  After a
+message is sent, an inline keyboard is converted into Telegram Rich Message
+buttons using the exact same button text and action data.
+
+Important: this module deliberately does not rewrite the bot's message text.
+Only the presentation of inline keyboards changes.
 """
 import html
-import re
-import urllib.parse
 from typing import Any
 import aiohttp
+
 from Elevenyts import config
 
 
@@ -36,49 +38,86 @@ def _ea(value: Any) -> str:
 
 
 def _button_html(button: Any) -> str:
+    """Convert one Pyrogram InlineKeyboardButton to one Rich button."""
     label = html.escape(str(getattr(button, "text", "Button")))
     style = _style(button)
+
     callback = _attr(button, "callback_data")
     if callback is not None:
-        return f'<tg-button type="callback_data" style="{style}" data="{_ea(callback)}">{label}</tg-button>'
+        return (
+            f'<tg-button type="callback_data" style="{style}" '
+            f'data="{_ea(callback)}">{label}</tg-button>'
+        )
+
     url = _attr(button, "url")
     if url is not None:
-        return f'<tg-button type="url" style="{style}" url="{_ea(url)}">{label}</tg-button>'
+        return (
+            f'<tg-button type="url" style="{style}" '
+            f'url="{_ea(url)}">{label}</tg-button>'
+        )
+
     copy = _attr(button, "copy_text")
     if copy is not None:
         copy = copy if isinstance(copy, str) else _attr(copy, "text")
         if copy is not None:
-            return f'<tg-button type="copy_text" style="{style}" text="{_ea(copy)}">{label}</tg-button>'
+            return (
+                f'<tg-button type="copy_text" style="{style}" '
+                f'text="{_ea(copy)}">{label}</tg-button>'
+            )
+
     web_app = _attr(button, "web_app")
     if web_app:
         url = _attr(web_app, "url")
         if url:
-            return f'<tg-button type="web_app" style="{style}" url="{_ea(url)}">{label}</tg-button>'
+            return (
+                f'<tg-button type="web_app" style="{style}" '
+                f'url="{_ea(url)}">{label}</tg-button>'
+            )
+
     switch = _attr(button, "switch_inline_query")
     if switch is not None:
-        return f'<tg-button type="switch_inline_query" style="{style}" query="{_ea(switch)}">{label}</tg-button>'
+        return (
+            f'<tg-button type="switch_inline_query" style="{style}" '
+            f'query="{_ea(switch)}">{label}</tg-button>'
+        )
+
     switch_current = _attr(button, "switch_inline_query_current_chat")
     if switch_current is not None:
-        return f'<tg-button type="switch_inline_query_current_chat" style="{style}" query="{_ea(switch_current)}">{label}</tg-button>'
+        return (
+            f'<tg-button type="switch_inline_query_current_chat" style="{style}" '
+            f'query="{_ea(switch_current)}">{label}</tg-button>'
+        )
+
+    # Unknown/unsupported button types remain visible rather than disappearing.
     return f'<tg-button type="disabled" style="{style}">{label}</tg-button>'
 
 
 def _body(text: str) -> str:
-    # Do not rebuild/clean the bot's message. Preserve every character and
-    # every existing HTML tag; only convert raw newlines to HTML line breaks.
-    s = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
-    return re.sub(r"\n", "<br>", s)
+    """Preserve existing text/HTML; only map real line breaks to <br>."""
+    return (
+        str(text or "")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+        .replace("\n", "<br>")
+    )
 
 
 def markup_to_rich_html(text: str, markup: Any) -> str | None:
+    """Build Rich Message HTML using the exact original keyboard rows."""
     rows = getattr(markup, "inline_keyboard", None)
     if not rows:
         return None
+
     parts = [_body(text)]
     for row in rows:
-        buttons = [_button_html(b) for b in row]
+        buttons = [_button_html(button) for button in row]
         if buttons:
-            parts.append('<tg-button-row align="center">' + "".join(buttons) + "</tg-button-row>")
+            parts.append(
+                '<tg-button-row align="center">'
+                + "".join(buttons)
+                + "</tg-button-row>"
+            )
+
     return "<br>".join(parts)
 
 
@@ -87,8 +126,10 @@ def is_inline_markup(markup: Any) -> bool:
 
 
 def _message_media(message):
+    """Return an existing Telegram media file_id, if the message has one."""
     if not message:
         return None
+
     for attr, kind, tag in (
         ("photo", "photo", "img"),
         ("video", "video", "video"),
@@ -101,6 +142,7 @@ def _message_media(message):
         fid = getattr(obj, "file_id", None) if obj else None
         if fid:
             return tag, kind, fid
+
     return None
 
 
@@ -108,12 +150,20 @@ def _rich_payload(message, text, markup):
     body = markup_to_rich_html(text, markup)
     if body is None:
         return None
+
     payload = {"html": body}
     media = _message_media(message)
+
     if media:
         tag, kind, fid = media
-        payload["html"] = f'<{tag} src="tg://media?id=existing_media"/><br>' + body
-        payload["media"] = [{"id": "existing_media", "media": {"type": kind, "media": fid}}]
+        payload["html"] = (
+            f'<{tag} src="tg://media?id=existing_media"/><br>{body}'
+        )
+        payload["media"] = [{
+            "id": "existing_media",
+            "media": {"type": kind, "media": fid},
+        }]
+
     return payload
 
 
@@ -122,26 +172,34 @@ async def _request(method: str, data: dict):
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.post(_api(method), json=data) as response:
             result = await response.json(content_type=None)
+
     if not result.get("ok"):
-        raise RuntimeError(result.get("description", f"Telegram {method} failed"))
+        raise RuntimeError(
+            result.get("description", f"Telegram {method} failed")
+        )
+
     return result
 
 
 async def convert_existing(message, text: str, markup: Any) -> bool:
-    """Convert the already-sent message in place.
+    """Convert an already-sent inline-keyboard message into a Rich Message.
 
-    Returning False is deliberately non-fatal: the original Pyrogram message
-    remains intact with its normal buttons.
+    Failure is intentionally non-fatal: the original Pyrogram message and
+    its normal inline keyboard remain available as the fallback.
     """
     payload = _rich_payload(message, text, markup)
     if not payload:
         return False
+
     try:
-        await _request("editMessageText", {
-            "chat_id": int(message.chat.id),
-            "message_id": int(message.id),
-            "rich_message": payload,
-        })
+        await _request(
+            "editMessageText",
+            {
+                "chat_id": int(message.chat.id),
+                "message_id": int(message.id),
+                "rich_message": payload,
+            },
+        )
         return True
     except Exception:
         return False
