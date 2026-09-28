@@ -130,6 +130,46 @@ def markup_to_rich_html(text: str, markup: Any) -> str | None:
     return body + "".join(row_html)
 
 
+def _reply_parameters_dict(value: Any) -> dict | None:
+    """Convert Pyrogram ReplyParameters objects into Bot API JSON data."""
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        source = value
+    else:
+        # Pyrogram's ReplyParameters is a typed object, not JSON serializable.
+        # Read only fields supported by Telegram's Bot API and omit unset ones.
+        fields = (
+            "message_id", "chat_id", "allow_sending_without_reply", "quote",
+            "quote_parse_mode", "quote_entities", "quote_position",
+            "checklist_task_id",
+        )
+        source = {field: getattr(value, field) for field in fields if getattr(value, field, None) is not None}
+    result = {}
+    allowed = {
+        "message_id", "chat_id", "allow_sending_without_reply", "quote",
+        "quote_parse_mode", "quote_entities", "quote_position", "checklist_task_id",
+    }
+    for key, item in source.items():
+        if key not in allowed or item is None:
+            continue
+        if key == "quote_entities":
+            converted = []
+            for entity in item:
+                if isinstance(entity, dict):
+                    converted.append(entity)
+                elif hasattr(entity, "to_dict"):
+                    converted.append(entity.to_dict())
+                else:
+                    converted.append({k: v for k, v in vars(entity).items() if not k.startswith("_")})
+            result[key] = converted
+        else:
+            result[key] = item
+    if "message_id" in result:
+        result["message_id"] = int(result["message_id"])
+    return result or None
+
+
 def _options(kwargs: dict) -> dict:
     allowed = {
         "message_thread_id", "direct_messages_topic_id", "disable_notification",
@@ -137,8 +177,9 @@ def _options(kwargs: dict) -> dict:
         "business_connection_id", "suggested_post_parameters",
     }
     result = {k: v for k, v in kwargs.items() if k in allowed and v is not None}
-    if kwargs.get("reply_parameters") is not None:
-        result["reply_parameters"] = kwargs["reply_parameters"]
+    reply_parameters = _reply_parameters_dict(kwargs.get("reply_parameters"))
+    if reply_parameters is not None:
+        result["reply_parameters"] = reply_parameters
     elif kwargs.get("reply_to_message_id"):
         result["reply_parameters"] = {"message_id": int(kwargs["reply_to_message_id"])}
     return result
