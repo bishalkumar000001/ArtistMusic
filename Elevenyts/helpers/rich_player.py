@@ -8,6 +8,7 @@ from typing import Optional
 import aiohttp
 
 from Elevenyts import config
+from Elevenyts.core.button_labels import get_label
 
 _PLAYER_PHOTOS: dict[tuple[int, int], str] = {}
 _PLAYER_MEDIA: dict[tuple[int, int], str] = {}
@@ -81,7 +82,7 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
 
     time_style, replay_style, state_style, queue_style = _styles(playing)
     state = "pause" if playing else "resume"
-    label = "Pause" if playing else "Resume"
+    label = get_label("pause", "Pause") if playing else get_label("resume", "Resume")
     p = html.escape(progress_text(media, timer))
 
     # Queue-message controls: match the existing queue keyboard, but render
@@ -89,13 +90,13 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
     if queue_mode:
         return (
             f'<tg-button-row align="center">'
-            f'<tg-button type="callback_data" style="success" data="controls resume {chat_id}">▷</tg-button>'
-            f'<tg-button type="callback_data" style="primary" data="controls pause {chat_id}">∣ ∣</tg-button>'
-            f'<tg-button type="callback_data" style="primary" data="controls skip {chat_id}">>></tg-button>'
-            f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">▣</tg-button>'
+            f'<tg-button type="callback_data" style="success" data="controls resume {chat_id}">{html.escape(get_label("queue_resume_icon", "▷"))}</tg-button>'
+            f'<tg-button type="callback_data" style="primary" data="controls pause {chat_id}">{html.escape(get_label("queue_pause_icon", "∣ ∣"))}</tg-button>'
+            f'<tg-button type="callback_data" style="primary" data="controls skip {chat_id}">{html.escape(get_label("queue_skip_icon", ">>"))}</tg-button>'
+            f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">{html.escape(get_label("queue_stop_icon", "▣"))}</tg-button>'
             f'</tg-button-row>'
             f'<tg-button-row align="center">'
-            f'<tg-button type="callback_data" style="danger" data="controls close {chat_id}">🗑</tg-button>'
+            f'<tg-button type="callback_data" style="danger" data="controls close {chat_id}">{html.escape(get_label("queue_close_icon", "🗑"))}</tg-button>'
             f'</tg-button-row>'
         )
 
@@ -104,7 +105,7 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
     # 2) Pause, Replay, Shuffle, Skip
     # 3) Loop, Close, Stop
     # 4) Autoplay: ON/OFF
-    autoplay_label = "ㅤㅤㅤㅤㅤㅤㅤAutoplay: ONㅤㅤㅤㅤㅤㅤㅤ" if autoplay else "ㅤㅤㅤㅤㅤㅤㅤAutoplay: OFFㅤㅤㅤㅤㅤㅤㅤ"
+    autoplay_label = get_label("autoplay_on", "ㅤㅤㅤㅤㅤㅤㅤAutoplay: ONㅤㅤㅤㅤㅤㅤㅤ") if autoplay else get_label("autoplay_off", "ㅤㅤㅤㅤㅤㅤㅤAutoplay: OFFㅤㅤㅤㅤㅤㅤㅤ")
     autoplay_style = "success" if autoplay else "primary"
     return (
         f'<tg-button-row align="center">'
@@ -112,17 +113,17 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
         f'<tg-button type="callback_data" style="{state_style}" data="controls {state} {chat_id}">{label}</tg-button>'
-        f'<tg-button type="callback_data" style="{time_style}" data="controls replay {chat_id}">Replay</tg-button>'
-        f'<tg-button type="callback_data" style="{replay_style}" data="controls shuffle {chat_id}">Shuffle</tg-button>'
-        f'<tg-button type="callback_data" style="{queue_style}" data="controls skip {chat_id}">Skip</tg-button>'
+        f'<tg-button type="callback_data" style="{time_style}" data="controls replay {chat_id}">{html.escape(get_label("replay", "Replay"))}</tg-button>'
+        f'<tg-button type="callback_data" style="{replay_style}" data="controls shuffle {chat_id}">{html.escape(get_label("shuffle", "Shuffle"))}</tg-button>'
+        f'<tg-button type="callback_data" style="{queue_style}" data="controls skip {chat_id}">{html.escape(get_label("skip", "Skip"))}</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="{queue_style}" data="controls loop {chat_id}">Loop</tg-button>'
-        f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">Close</tg-button>'
-        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">Stop</tg-button>'
+        f'<tg-button type="callback_data" style="{queue_style}" data="controls loop {chat_id}">{html.escape(get_label("loop", "Loop"))}</tg-button>'
+        f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">{html.escape(get_label("close", "Close"))}</tg-button>'
+        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">{html.escape(get_label("stop", "Stop"))}</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="{autoplay_style}" data="controls autoplay {chat_id}">{autoplay_label}</tg-button>'
+        f'<tg-button type="callback_data" style="{autoplay_style}" data="controls autoplay {chat_id}">{html.escape(autoplay_label)}</tg-button>'
         f'</tg-button-row>'
     )
 
@@ -334,11 +335,11 @@ def queue_controls_html(chat_id: int, item_id: str) -> str:
     safe_item_id = html.escape(str(item_id or ""), quote=True)
     return (
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="success" data="queueplay|{chat_id}|{safe_item_id}">ㅤㅤㅤㅤPʟᴀʏ Nᴏᴡㅤㅤㅤㅤ</tg-button>'
+        f'<tg-button type="callback_data" style="success" data="queueplay|{chat_id}|{safe_item_id}">{html.escape(get_label("play_now", "ㅤㅤㅤㅤPʟᴀʏ Nᴏᴡㅤㅤㅤㅤ"))}</tg-button>'
         f'</tg-button-row>'
         f'<tg-button-row align="center">'
-        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">ㅤㅤSᴛᴏᴘㅤㅤ</tg-button>'
-        f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">ㅤㅤCʟᴏsᴇㅤㅤ</tg-button>'
+        f'<tg-button type="callback_data" style="danger" data="controls stop {chat_id}">{html.escape(get_label("queue_stop", "ㅤㅤSᴛᴏᴘㅤㅤ"))}</tg-button>'
+        f'<tg-button type="callback_data" style="primary" data="controls close {chat_id}">{html.escape(get_label("queue_close", "ㅤㅤCʟᴏsᴇㅤㅤ"))}</tg-button>'
         f'</tg-button-row>'
     )
 
