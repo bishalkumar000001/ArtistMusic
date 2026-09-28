@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 import aiohttp
 from Elevenyts import config
+from Elevenyts.core.button_labels import display_label
 
 log = logging.getLogger("Elevenyts")
 
@@ -48,7 +49,7 @@ def _style(button: Any) -> str:
 
 
 def _button_html(button: Any) -> str:
-    label = html.escape(str(getattr(button, "text", "Button")))
+    label = html.escape(display_label(getattr(button, "text", "Button")))
     style = _style(button)
     callback = _attr(button, "callback_data")
     if callback is not None:
