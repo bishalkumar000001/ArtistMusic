@@ -17,7 +17,7 @@ import pyrogram
 from typing import Optional
 
 from Elevenyts import config, logger
-from Elevenyts.helpers import rich_buttons
+from Elevenyts.core import rich_buttons
 
 
 class Bot(pyrogram.Client):
