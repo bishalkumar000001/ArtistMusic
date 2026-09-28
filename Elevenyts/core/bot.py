@@ -58,7 +58,8 @@ class Bot(pyrogram.Client):
     async def _send_rich_text_if_needed(self, chat_id, text, markup, args, kwargs):
         if not rich_buttons.is_inline_markup(markup) or args:
             return None
-        result = await rich_buttons.send_rich_text(chat_id, text or "", markup, **kwargs)
+        sender = getattr(rich_buttons, "send_rich_text", None) or getattr(rich_buttons, "send_rich_for_text")
+        result = await sender(chat_id, text or "", markup, **kwargs)
         if result is None:
             return None
         return await self._fetch_rich_message(chat_id, result)
@@ -66,9 +67,8 @@ class Bot(pyrogram.Client):
     async def _send_rich_media_if_needed(self, chat_id, media, text, markup, kind, args, kwargs):
         if not rich_buttons.is_inline_markup(markup) or args:
             return None
-        result = await rich_buttons.send_rich_media(
-            chat_id, text or "", markup, kind, media, **kwargs
-        )
+        sender = getattr(rich_buttons, "send_rich_media", None) or getattr(rich_buttons, "send_rich_for_media")
+        result = await sender(chat_id, text or "", markup, kind, media, **kwargs)
         if result is None:
             return None
         return await self._fetch_rich_message(chat_id, result)
