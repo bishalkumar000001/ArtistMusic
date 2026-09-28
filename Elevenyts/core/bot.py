@@ -86,54 +86,70 @@ class Bot(pyrogram.Client):
                 logger.warning("Rich button conversion failed: %s", ex)
         return message
 
+    @staticmethod
+    def _bind_positional(args, kwargs, names):
+        """Normalize Pyrogram's positional reply_* arguments to keywords.
+
+        Message.reply_photo/reply/send_message pass optional arguments positionally.
+        The Rich Message path needs the same values as keywords so it can send the
+        Rich Message directly instead of first sending a normal keyboard message.
+        """
+        values = dict(kwargs)
+        for name, value in zip(names, args):
+            if name not in values:
+                values[name] = value
+        return values
+
     async def send_message(self, chat_id, text=None, *args, reply_markup=None, **kwargs):
-        rich = await self._send_rich_text_if_needed(chat_id, text, reply_markup, args, kwargs)
+        names = (
+            "parse_mode", "entities", "disable_web_page_preview", "disable_notification",
+            "reply_to_message_id", "schedule_date", "protect_content", "reply_markup",
+            "message_thread_id", "reply_parameters", "business_connection_id",
+            "message_effect_id", "allow_paid_broadcast", "direct_messages_topic_id",
+            "suggested_post_parameters",
+        )
+        kwargs = self._bind_positional(args, kwargs, names)
+        reply_markup = kwargs.pop("reply_markup", reply_markup)
+        rich = await self._send_rich_text_if_needed(chat_id, text, reply_markup, (), kwargs)
         if rich is not None:
             return rich
-        message = await super().send_message(chat_id, text, *args, reply_markup=reply_markup, **kwargs)
+        message = await super().send_message(chat_id, text, reply_markup=reply_markup, **kwargs)
         return await self._rich_after_send(message, text, reply_markup)
 
-    async def send_photo(self, chat_id, photo, *args, caption=None, reply_markup=None, **kwargs):
-        rich = await self._send_rich_media_if_needed(chat_id, photo, caption, reply_markup, "photo", args, kwargs)
+    async def _send_media_wrapper(self, method, chat_id, media, args, caption, reply_markup, kwargs, kind):
+        names = (
+            "caption", "parse_mode", "caption_entities", "has_spoiler", "disable_notification",
+            "reply_to_message_id", "schedule_date", "protect_content", "reply_markup",
+            "message_thread_id", "business_connection_id", "message_effect_id",
+            "allow_paid_broadcast", "reply_parameters", "direct_messages_topic_id",
+        )
+        kwargs = self._bind_positional(args, kwargs, names)
+        caption = kwargs.pop("caption", caption)
+        reply_markup = kwargs.pop("reply_markup", reply_markup)
+        rich = await self._send_rich_media_if_needed(chat_id, media, caption, reply_markup, kind, (), kwargs)
         if rich is not None:
             return rich
-        message = await super().send_photo(chat_id, photo, *args, caption=caption, reply_markup=reply_markup, **kwargs)
+        sender = getattr(super(Bot, self), method)
+        message = await sender(chat_id, media, caption=caption, reply_markup=reply_markup, **kwargs)
         return await self._rich_after_send(message, caption, reply_markup)
+
+    async def send_photo(self, chat_id, photo, *args, caption=None, reply_markup=None, **kwargs):
+        return await self._send_media_wrapper("send_photo", chat_id, photo, args, caption, reply_markup, kwargs, "photo")
 
     async def send_video(self, chat_id, video, *args, caption=None, reply_markup=None, **kwargs):
-        rich = await self._send_rich_media_if_needed(chat_id, video, caption, reply_markup, "video", args, kwargs)
-        if rich is not None:
-            return rich
-        message = await super().send_video(chat_id, video, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
+        return await self._send_media_wrapper("send_video", chat_id, video, args, caption, reply_markup, kwargs, "video")
 
     async def send_audio(self, chat_id, audio, *args, caption=None, reply_markup=None, **kwargs):
-        rich = await self._send_rich_media_if_needed(chat_id, audio, caption, reply_markup, "audio", args, kwargs)
-        if rich is not None:
-            return rich
-        message = await super().send_audio(chat_id, audio, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
+        return await self._send_media_wrapper("send_audio", chat_id, audio, args, caption, reply_markup, kwargs, "audio")
 
     async def send_animation(self, chat_id, animation, *args, caption=None, reply_markup=None, **kwargs):
-        rich = await self._send_rich_media_if_needed(chat_id, animation, caption, reply_markup, "animation", args, kwargs)
-        if rich is not None:
-            return rich
-        message = await super().send_animation(chat_id, animation, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
+        return await self._send_media_wrapper("send_animation", chat_id, animation, args, caption, reply_markup, kwargs, "animation")
 
     async def send_document(self, chat_id, document, *args, caption=None, reply_markup=None, **kwargs):
-        rich = await self._send_rich_media_if_needed(chat_id, document, caption, reply_markup, "document", args, kwargs)
-        if rich is not None:
-            return rich
-        message = await super().send_document(chat_id, document, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
+        return await self._send_media_wrapper("send_document", chat_id, document, args, caption, reply_markup, kwargs, "document")
 
     async def send_voice(self, chat_id, voice, *args, caption=None, reply_markup=None, **kwargs):
-        rich = await self._send_rich_media_if_needed(chat_id, voice, caption, reply_markup, "voice", args, kwargs)
-        if rich is not None:
-            return rich
-        message = await super().send_voice(chat_id, voice, *args, caption=caption, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
+        return await self._send_media_wrapper("send_voice", chat_id, voice, args, caption, reply_markup, kwargs, "voice")
 
     async def edit_message_text(self, chat_id, message_id, text, *args, reply_markup=None, **kwargs):
         message = await super().edit_message_text(chat_id, message_id, text, *args, reply_markup=reply_markup, **kwargs)
