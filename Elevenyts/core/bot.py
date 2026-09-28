@@ -151,13 +151,35 @@ class Bot(pyrogram.Client):
     async def send_voice(self, chat_id, voice, *args, caption=None, reply_markup=None, **kwargs):
         return await self._send_media_wrapper("send_voice", chat_id, voice, args, caption, reply_markup, kwargs, "voice")
 
+    async def _edit_rich_directly(self, chat_id, message_id, text, markup):
+        """Edit an existing message directly as a Rich Message, without a normal-message flash."""
+        if not rich_buttons.is_inline_markup(markup):
+            return None
+        existing = await self.get_messages(chat_id, message_id)
+        if not existing:
+            raise RuntimeError(f"Cannot find message {message_id} in chat {chat_id} for Rich Message edit")
+        converted = await rich_buttons.convert_existing(existing, text or "", markup)
+        if not converted:
+            raise RuntimeError(f"Direct Rich Message edit failed for message {message_id}")
+        try:
+            return await self.get_messages(chat_id, message_id)
+        except Exception:
+            return existing
+
     async def edit_message_text(self, chat_id, message_id, text, *args, reply_markup=None, **kwargs):
-        message = await super().edit_message_text(chat_id, message_id, text, *args, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, text, reply_markup)
+        # Help/back navigation changes the same message. Send the Rich edit first
+        # instead of editing to a normal inline keyboard and converting afterwards.
+        rich = await self._edit_rich_directly(chat_id, message_id, text, reply_markup)
+        if rich is not None:
+            return rich
+        return await super().edit_message_text(chat_id, message_id, text, *args, reply_markup=reply_markup, **kwargs)
 
     async def edit_message_caption(self, chat_id, message_id, caption=None, *args, reply_markup=None, **kwargs):
-        message = await super().edit_message_caption(chat_id, message_id, caption=caption, *args, reply_markup=reply_markup, **kwargs)
-        return await self._rich_after_send(message, caption, reply_markup)
+        # The existing message's media is retained by convert_existing().
+        rich = await self._edit_rich_directly(chat_id, message_id, caption or "", reply_markup)
+        if rich is not None:
+            return rich
+        return await super().edit_message_caption(chat_id, message_id, caption=caption, *args, reply_markup=reply_markup, **kwargs)
 
     async def boot(self) -> None:
         await super().start()
