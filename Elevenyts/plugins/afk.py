@@ -174,6 +174,86 @@ async def _sticker_to_jpeg(client, sticker_file_id: str) -> Optional[str]:
                 pass
 
 
+async def _sticker_to_mp4(client, sticker) -> Optional[str]:
+    """Convert animated/video Telegram stickers to MP4 so the AFK card can be a caption.
+
+    Video stickers are normally WebM and can be converted by ffmpeg. Animated TGS
+    stickers are first rendered to GIF when python-lottie provides lottie_convert.py.
+    If conversion tools are unavailable, callers fall back to sending the original sticker.
+    """
+    token = uuid.uuid4().hex
+    base = os.path.join(TMP_DIR, f"stk_{token}")
+    downloaded = None
+    input_path = None
+    gif_path = base + ".gif"
+    mp4_path = base + ".mp4"
+    try:
+        downloaded = await client.download_media(sticker.file_id, file_name=base)
+        if not downloaded or not os.path.exists(downloaded):
+            return None
+
+        is_animated = bool(getattr(sticker, "is_animated", False))
+        input_path = base + (".tgs" if is_animated else ".webm")
+        if os.path.abspath(downloaded) != os.path.abspath(input_path):
+            import shutil
+            shutil.copyfile(downloaded, input_path)
+
+        source_for_ffmpeg = input_path
+        if is_animated:
+            # python-lottie installs the lottie_convert.py command. It can render
+            # Telegram's gzipped TGS vector animation to GIF for video encoding.
+            try:
+                proc = await asyncio.to_thread(
+                    subprocess.run,
+                    ["lottie_convert.py", input_path, gif_path],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=60,
+                )
+                if proc.returncode != 0 or not os.path.exists(gif_path):
+                    return None
+                source_for_ffmpeg = gif_path
+            except Exception:
+                return None
+
+        try:
+            proc = await asyncio.to_thread(
+                subprocess.run,
+                [
+                    "ffmpeg", "-y", "-i", source_for_ffmpeg,
+                    "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+                    "-t", "15", "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart", mp4_path,
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=90,
+            )
+            if proc.returncode != 0 or not os.path.exists(mp4_path) or os.path.getsize(mp4_path) == 0:
+                return None
+        except Exception:
+            return None
+
+        try:
+            sent = await client.send_video(chat_id="me", video=mp4_path, disable_notification=True)
+            file_id = sent.video.file_id if sent and sent.video else None
+            try:
+                if sent:
+                    await sent.delete()
+            except Exception:
+                pass
+            return file_id
+        except Exception:
+            return None
+    finally:
+        for path in (downloaded, input_path, gif_path, mp4_path):
+            try:
+                if path and os.path.exists(path):
+                    os.remove(path)
+            except Exception:
+                pass
+
+
 async def _extract_afk_media(client, message: Message) -> Optional[str]:
     candidates = [message]
     if message.reply_to_message:
@@ -313,9 +393,24 @@ async def _extract_media_data(message: Message) -> Dict[str, Any]:
     if message.voice:
         return {"media_type": "voice", "media_file_id": message.voice.file_id, "caption": message.caption or ""}
     if message.sticker:
-        converted = await _sticker_to_jpeg(app, message.sticker.file_id)
-        if converted:
-            return {"media_type": "photo", "media_file_id": converted, "caption": message.caption or ""}
+        sticker = message.sticker
+        # Static WebP stickers can be converted to a photo so the AFK card
+        # appears as the photo caption. Animated/video stickers cannot carry
+        # captions; preserve the original sticker and send the card separately.
+        is_animated = bool(getattr(sticker, "is_animated", False))
+        is_video = bool(getattr(sticker, "is_video", False))
+        if not is_animated and not is_video:
+            converted = await _sticker_to_jpeg(app, sticker.file_id)
+            if converted:
+                return {"media_type": "photo", "media_file_id": converted, "caption": message.caption or ""}
+        else:
+            # Convert animated/video stickers to MP4 so the AFK card can be
+            # attached as a real Telegram video caption instead of a second message.
+            converted_video = await _sticker_to_mp4(app, sticker)
+            if converted_video:
+                return {"media_type": "video", "media_file_id": converted_video, "caption": message.caption or ""}
+        # Safe fallback if conversion tools are missing or conversion fails.
+        return {"media_type": "sticker", "media_file_id": sticker.file_id, "caption": message.caption or ""}
     if message.document and not getattr(message.document, "mime_type", "") == "image/webp":
         return {"media_type": "document", "media_file_id": message.document.file_id, "caption": message.caption or ""}
     if message.text or message.caption:
@@ -340,6 +435,19 @@ async def _send_afk_media(chat_id: int, reply_to: int, media_payload: Dict[str, 
         return await _safe_send(app.send_voice, chat_id=chat_id, voice=media_file_id, caption=caption, parse_mode=ParseMode.HTML, reply_to_message_id=reply_to)
     if media_type == "document":
         return await _safe_send(app.send_document, chat_id=chat_id, document=media_file_id, caption=caption, parse_mode=ParseMode.HTML, reply_to_message_id=reply_to)
+    if media_type == "sticker":
+        # Telegram stickers do not support captions. Keep the original sticker
+        # (including animated/video stickers) and attach the AFK card as a
+        # text reply to the sticker so its context remains clear.
+        sent_sticker = await _safe_send(
+            app.send_sticker,
+            chat_id=chat_id,
+            sticker=media_file_id,
+            reply_to_message_id=reply_to,
+        )
+        if caption:
+            await _send_text_message(chat_id, caption, sent_sticker.id if sent_sticker else reply_to)
+        return sent_sticker
     return await _send_text_message(chat_id, caption or "", reply_to)
 
 
