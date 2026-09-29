@@ -438,7 +438,12 @@ async def _send_afk_media(chat_id: int, reply_to: int, media_payload: Dict[str, 
             # Convert the temporary upload into a reusable Telegram file_id before deleting it.
             uploaded_id = None
             if sent and media_type == "photo" and sent.photo:
-                uploaded_id = sent.photo[-1].file_id
+                photo_obj = sent.photo
+                # Kurigram/Pyrogram exposes Message.photo as a single Photo object.
+                # Some wrappers may expose a sequence; support both shapes safely.
+                if isinstance(photo_obj, (list, tuple)):
+                    photo_obj = photo_obj[-1] if photo_obj else None
+                uploaded_id = getattr(photo_obj, "file_id", None)
             elif sent and media_type == "video" and sent.video:
                 uploaded_id = sent.video.file_id
             if uploaded_id:
