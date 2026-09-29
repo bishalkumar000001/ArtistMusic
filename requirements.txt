@@ -28,4 +28,4 @@ ffmpeg
 # Bundled FFmpeg fallback for converting Telegram sticker media to captioned uploads
 imageio-ffmpeg>=0.6.0
 # Converts animated TGS Telegram stickers before MP4 upload
-python-lottie>=0.12.0
+lottie>=0.7.2
