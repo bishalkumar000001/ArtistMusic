@@ -16,7 +16,7 @@
 
 from pyrogram import filters, types
 
-from Elevenyts import app, db, tune
+from Elevenyts import app, db, tune, lang
 from Elevenyts.helpers import can_manage_vc
 
 
@@ -129,6 +129,7 @@ async def _sq_build(chat_id: int, user: str, count: int = 5):
 
 
 @app.on_message(_sq_filters.command(["smartqueue", "smartq"]) & _sq_filters.group & ~app.bl_users)
+@lang.language()
 @_sq_checkUB
 async def _smartqueue_command(_, message: _sq_types.Message):
     if not await db.get_call(message.chat.id):
@@ -151,6 +152,7 @@ async def _smartqueue_command(_, message: _sq_types.Message):
 
 
 @app.on_message(_sq_filters.command("album") & _sq_filters.group & ~app.bl_users)
+@lang.language()
 @_sq_checkUB
 async def _album_command(_, message: _sq_types.Message):
     if len(message.command) < 2:
