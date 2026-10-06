@@ -125,6 +125,10 @@ def controls_html(chat_id: int, media, *, timer: Optional[str] = None,
         f'<tg-button-row align="center">'
         f'<tg-button type="callback_data" style="{autoplay_style}" data="controls autoplay {chat_id}">{html.escape(autoplay_label)}</tg-button>'
         f'</tg-button-row>'
+        f'<tg-button-row align="center">'
+        f'<tg-button type="callback_data" style="success" data="smartqueue|{chat_id}">🧠 Smart Queue</tg-button>'
+        f'<tg-button type="callback_data" style="primary" data="albumhelp|{chat_id}">💿 Album Mode</tg-button>'
+        f'</tg-button-row>'
     )
 
 
