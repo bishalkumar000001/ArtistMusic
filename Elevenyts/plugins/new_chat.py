@@ -4,6 +4,7 @@
 from pyrogram import filters, types
 from pyrogram.errors import ChatAdminRequired, ChannelPrivate
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pathlib import Path
 
 from Elevenyts import app, config, db
 
@@ -11,13 +12,116 @@ from Elevenyts import app, config, db
 # ==========================================
 # 👋 NEW MEMBER WELCOME
 # ==========================================
+async def _make_welcome_image(member, members_count):
+    """Create a personalized Juno X welcome image with the member's PFP."""
+    from pathlib import Path
+    from html import escape
+    import os
+    import tempfile
+    from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
+    base_path = Path(__file__).resolve().parent.parent / "helpers" / "welcome.png"
+    image = Image.open(base_path).convert("RGBA")
+    draw = ImageDraw.Draw(image)
+
+    # Fonts already shipped with the project.
+    font_dir = Path(__file__).resolve().parent.parent / "helpers"
+    try:
+        bold = str(font_dir / "Raleway-Bold.ttf")
+        regular = str(font_dir / "Inter-Light.ttf")
+        value_font_path = bold
+    except Exception:
+        value_font_path = None
+        regular = None
+
+    def font(size, bold_font=False):
+        path = value_font_path if bold_font else regular
+        try:
+            return ImageFont.truetype(path, size) if path else ImageFont.load_default()
+        except Exception:
+            return ImageFont.load_default()
+
+    # The circular avatar is inside the decorative ring of welcome.png.
+    avatar_box = (225, 207, 590, 572)
+    ax1, ay1, ax2, ay2 = avatar_box
+    aw, ah = ax2 - ax1, ay2 - ay1
+
+    avatar_path = None
+    try:
+        if getattr(member, "photo", None) and getattr(member.photo, "big_file_id", None):
+            avatar_path = await app.download_media(member.photo.big_file_id)
+    except Exception as e:
+        print(f"Could not download PFP for {member.id}: {e}")
+
+    try:
+        if avatar_path and os.path.exists(str(avatar_path)):
+            avatar = Image.open(str(avatar_path)).convert("RGB")
+            # Center-crop to a square and resize smoothly.
+            side = min(avatar.size)
+            left = (avatar.width - side) // 2
+            top = (avatar.height - side) // 2
+            avatar = avatar.crop((left, top, left + side, top + side)).resize((aw, ah), Image.Resampling.LANCZOS)
+        else:
+            # Generic fallback avatar when the member has no profile photo.
+            avatar = Image.new("RGB", (aw, ah), (20, 35, 75))
+            ad = ImageDraw.Draw(avatar)
+            cx, cy = aw // 2, ah // 2
+            ad.ellipse((cx-70, cy-95, cx+70, cy+45), fill=(205, 220, 245))
+            ad.rounded_rectangle((cx-125, cy+20, cx+125, cy+205), radius=75, fill=(115, 135, 180))
+            # subtle glow
+            glow = Image.new("RGBA", avatar.size, (0,0,0,0))
+            gd = ImageDraw.Draw(glow)
+            gd.ellipse((15,15,aw-15,ah-15), outline=(0,220,255,150), width=12)
+            glow = glow.filter(ImageFilter.GaussianBlur(7))
+            avatar = Image.alpha_composite(avatar.convert("RGBA"), glow).convert("RGB")
+
+        mask = Image.new("L", (aw, ah), 0)
+        md = ImageDraw.Draw(mask)
+        md.ellipse((0, 0, aw, ah), fill=255)
+        image.paste(avatar.convert("RGBA"), (ax1, ay1), mask)
+    finally:
+        if avatar_path:
+            try:
+                Path(avatar_path).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+    # Cover only the template's example values; keep the labels/design intact.
+    cover = (935, 460, 1415, 510)
+    cover2 = (935, 515, 1415, 565)
+    cover3 = (1015, 610, 1415, 665)
+    for box in (cover, cover2, cover3):
+        # Match the dark glass panel and add a very subtle transparency.
+        draw.rounded_rectangle(box, radius=20, fill=(21, 35, 92, 225))
+
+    def fit_text(text, max_width, start_size=40, min_size=20):
+        size = start_size
+        while size > min_size:
+            f = font(size, True)
+            if draw.textbbox((0,0), text, font=f)[2] <= max_width:
+                return f
+            size -= 1
+        return font(min_size, True)
+
+    name = " ".join(x for x in [member.first_name, member.last_name] if x) or "Friend"
+    username_value = f"@{member.username}" if member.username else str(member.id)
+    total_value = str(members_count)
+
+    # Dynamic values: real member name, username or ID, and current member count.
+    value_color = (65, 240, 255, 255)
+    draw.text((945, 470), name, font=fit_text(name, 430, 38, 20), fill=value_color)
+    draw.text((950, 525), username_value, font=fit_text(username_value, 420, 36, 20), fill=value_color)
+    draw.text((1030, 620), total_value, font=fit_text(total_value, 300, 38, 22), fill=(245, 250, 255, 255))
+
+    # Temporary per-user file; Telegram receives this personalized image.
+    out = Path(tempfile.gettempdir()) / f"junox_welcome_{member.id}.png"
+    image.convert("RGB").save(out, "PNG", optimize=True)
+    return str(out)
+
+
 @app.on_message(filters.new_chat_members & filters.group)
 async def welcome_new_members(_, message: types.Message):
-    """Welcome real users who join a group.
-
-    The handler is deliberately fail-safe: a MongoDB problem must never stop
-    the Telegram welcome event from being processed.
-    """
+    """Welcome real users with a personalized PFP/name/username image."""
     try:
         setting = await db.cache.find_one({"_id": f"welcome_{message.chat.id}"})
         welcome_enabled = (
@@ -25,7 +129,6 @@ async def welcome_new_members(_, message: types.Message):
             if setting else config.WELCOME_ENABLED
         )
     except Exception as e:
-        # If MongoDB is temporarily unavailable, use the environment default.
         welcome_enabled = config.WELCOME_ENABLED
         print(f"Welcome setting DB read failed: {e}; using default={welcome_enabled}")
 
@@ -33,18 +136,20 @@ async def welcome_new_members(_, message: types.Message):
         return
 
     for member in message.new_chat_members:
-        # Ignore the music bot itself; that event is handled below.
         if member.id == app.id:
             continue
 
+        image_path = None
         try:
             try:
                 members_count = await app.get_chat_members_count(message.chat.id)
             except Exception:
                 members_count = "Unknown"
 
-            name = member.first_name or "Friend"
-            username = f"@{member.username}" if member.username else "No username"
+            image_path = await _make_welcome_image(member, members_count)
+            from html import escape
+            name = escape(" ".join(x for x in [member.first_name, member.last_name] if x) or "Friend")
+            username = f"@{escape(member.username)}" if member.username else f"<code>{member.id}</code>"
 
             caption = f"""<b>╭━━━〔 ✨ NEW MEMBER 〕━━━╮</b>
 
@@ -64,20 +169,21 @@ async def welcome_new_members(_, message: types.Message):
                 [[InlineKeyboardButton("👤 VIEW MEMBER", url=f"tg://user?id={member.id}")]]
             )
 
-            # Resolve the bundled image from the actual source file location,
-            # so it works on Heroku/Docker regardless of the current directory.
-            from pathlib import Path
-            image_path = Path(__file__).resolve().parent.parent / "helpers" / "welcome.png"
-
             await app.send_photo(
                 chat_id=message.chat.id,
-                photo=str(image_path),
+                photo=image_path,
                 caption=caption,
                 reply_markup=keyboard,
             )
             print(f"Welcome sent for user {member.id} in chat {message.chat.id}")
         except Exception as e:
             print(f"Failed to send welcome for user {member.id}: {type(e).__name__}: {e}")
+        finally:
+            if image_path:
+                try:
+                    Path(image_path).unlink(missing_ok=True)
+                except Exception:
+                    pass
 
 
 # ==========================================
