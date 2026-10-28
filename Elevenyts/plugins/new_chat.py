@@ -13,29 +13,40 @@ from Elevenyts import app, config, db
 # ==========================================
 @app.on_message(filters.new_chat_members & filters.group)
 async def welcome_new_members(_, message: types.Message):
-    # Per-group ON/OFF setting. If a group has never changed the setting,
-    # use WELCOME_ENABLED from the environment as the default.
-    setting = await db.cache.find_one({"_id": f"welcome_{message.chat.id}"})
-    welcome_enabled = setting.get("enabled", config.WELCOME_ENABLED) if setting else config.WELCOME_ENABLED
+    """Welcome real users who join a group.
+
+    The handler is deliberately fail-safe: a MongoDB problem must never stop
+    the Telegram welcome event from being processed.
+    """
+    try:
+        setting = await db.cache.find_one({"_id": f"welcome_{message.chat.id}"})
+        welcome_enabled = (
+            setting.get("enabled", config.WELCOME_ENABLED)
+            if setting else config.WELCOME_ENABLED
+        )
+    except Exception as e:
+        # If MongoDB is temporarily unavailable, use the environment default.
+        welcome_enabled = config.WELCOME_ENABLED
+        print(f"Welcome setting DB read failed: {e}; using default={welcome_enabled}")
+
     if not welcome_enabled:
         return
 
     for member in message.new_chat_members:
-        # Do not welcome the bot itself here; its own join notification is handled below.
+        # Ignore the music bot itself; that event is handled below.
         if member.id == app.id:
             continue
 
-        chat = message.chat
         try:
-            members_count = await app.get_chat_members_count(chat.id)
-        except Exception:
-            members_count = "Unknown"
+            try:
+                members_count = await app.get_chat_members_count(message.chat.id)
+            except Exception:
+                members_count = "Unknown"
 
-        name = member.first_name or "Friend"
-        username = f"@{member.username}" if member.username else "No username"
-        user_link = member.mention
+            name = member.first_name or "Friend"
+            username = f"@{member.username}" if member.username else "No username"
 
-        caption = f"""<b>╭━━━〔 ✨ NEW MEMBER 〕━━━╮</b>
+            caption = f"""<b>╭━━━〔 ✨ NEW MEMBER 〕━━━╮</b>
 
 <b>👋 Welcome to Our Group!</b>
 
@@ -49,20 +60,24 @@ async def welcome_new_members(_, message: types.Message):
 <b>🎵 Juno X music</b>
 <b>╰━━━━━━━━━━━━━━━━━━━━╯</b>"""
 
-        keyboard = InlineKeyboardMarkup(
-            [[InlineKeyboardButton("👤 VIEW MEMBER", url=f"tg://user?id={member.id}")]]
-        )
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("👤 VIEW MEMBER", url=f"tg://user?id={member.id}")]]
+            )
 
-        try:
-            # Use the bundled Juno X welcome artwork.
+            # Resolve the bundled image from the actual source file location,
+            # so it works on Heroku/Docker regardless of the current directory.
+            from pathlib import Path
+            image_path = Path(__file__).resolve().parent.parent / "helpers" / "welcome.png"
+
             await app.send_photo(
-                chat_id=chat.id,
-                photo=config.WELCOME_IMG,
+                chat_id=message.chat.id,
+                photo=str(image_path),
                 caption=caption,
                 reply_markup=keyboard,
             )
+            print(f"Welcome sent for user {member.id} in chat {message.chat.id}")
         except Exception as e:
-            print(f"Failed to send welcome message: {e}")
+            print(f"Failed to send welcome for user {member.id}: {type(e).__name__}: {e}")
 
 
 # ==========================================
@@ -74,42 +89,59 @@ async def welcome_setting(_, message: types.Message):
     if not user:
         return
 
-    # Owner can always change it. Group admins can also change it.
     is_owner = user.id == config.OWNER_ID
     is_admin = False
     if not is_owner:
         try:
             member = await app.get_chat_member(message.chat.id, user.id)
-            is_admin = bool(member.privileges and (member.privileges.can_change_info or member.privileges.can_delete_messages))
+            is_admin = bool(
+                member.privileges
+                and (
+                    member.privileges.can_change_info
+                    or member.privileges.can_delete_messages
+                )
+            )
         except Exception:
             is_admin = False
 
     if not (is_owner or is_admin):
-        return await message.reply_text("❌ Only the group admins can change the welcome setting.")
+        return await message.reply_text(
+            "❌ Only the group admins can change the welcome setting."
+        )
 
     if len(message.command) < 2 or message.command[1].lower() not in {"on", "off"}:
-        current = await db.cache.find_one({"_id": f"welcome_{message.chat.id}"})
-        enabled = current.get("enabled", config.WELCOME_ENABLED) if current else config.WELCOME_ENABLED
+        try:
+            current = await db.cache.find_one({"_id": f"welcome_{message.chat.id}"})
+            enabled = current.get("enabled", config.WELCOME_ENABLED) if current else config.WELCOME_ENABLED
+        except Exception:
+            enabled = config.WELCOME_ENABLED
         status = "ON 🟢" if enabled else "OFF 🔴"
         return await message.reply_text(
             f"<b>Welcome System: {status}</b>\n\nUse <code>/welcome on</code> or <code>/welcome off</code>."
         )
 
     enabled = message.command[1].lower() == "on"
-    await db.cache.update_one(
-        {"_id": f"welcome_{message.chat.id}"},
-        {"$set": {"enabled": enabled}},
-        upsert=True,
-    )
+    try:
+        await db.cache.update_one(
+            {"_id": f"welcome_{message.chat.id}"},
+            {"$set": {"enabled": enabled}},
+            upsert=True,
+        )
+    except Exception as e:
+        return await message.reply_text(
+            f"❌ Could not save the setting to MongoDB.\n<code>{e}</code>"
+        )
 
-    status = "ON 🟢" if enabled else "OFF 🔴"
-    text = (
-        "✅ <b>Welcome system is now ON.</b>\nNew members will receive the Juno X music welcome message."
-        if enabled
-        else
-        "🔴 <b>Welcome system is now OFF.</b>\nNew members will not receive the welcome message."
-    )
-    await message.reply_text(text)
+    if enabled:
+        await message.reply_text(
+            "✅ <b>Welcome system is now ON.</b>\n"
+            "New members will receive the Juno X music welcome message."
+        )
+    else:
+        await message.reply_text(
+            "🔴 <b>Welcome system is now OFF.</b>\n"
+            "New members will not receive the welcome message."
+        )
 
 
 # ==========================================
