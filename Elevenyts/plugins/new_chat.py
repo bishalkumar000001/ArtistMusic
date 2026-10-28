@@ -1,127 +1,165 @@
 # ==========================================================
-# New chat + new member welcome system for Juno X music
+# New chat + Juno X personalized welcome system
 # ==========================================================
-from pyrogram import filters, types
-from pyrogram.errors import ChatAdminRequired, ChannelPrivate
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pathlib import Path
+from html import escape
+import os
+import tempfile
+
+from pyrogram import filters, types
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from Elevenyts import app, config, db
 
 
-# ==========================================
-# 👋 NEW MEMBER WELCOME
-# ==========================================
+# ----------------------------------------------------------
+# Personalized welcome image
+# ----------------------------------------------------------
 async def _make_welcome_image(member, members_count):
-    """Create a personalized Juno X welcome image with the member's PFP."""
-    from pathlib import Path
-    from html import escape
-    import os
-    import tempfile
     from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-    base_path = Path(__file__).resolve().parent.parent / "helpers" / "welcome.png"
+    helpers = Path(__file__).resolve().parent.parent / "helpers"
+    base_path = helpers / "welcome.png"
     image = Image.open(base_path).convert("RGBA")
     draw = ImageDraw.Draw(image)
 
-    # Fonts already shipped with the project.
-    font_dir = Path(__file__).resolve().parent.parent / "helpers"
-    try:
-        bold = str(font_dir / "Raleway-Bold.ttf")
-        regular = str(font_dir / "Inter-Light.ttf")
-        value_font_path = bold
-    except Exception:
-        value_font_path = None
-        regular = None
+    # Fonts included in the project. Noto Sans is used first because it
+    # supports a much wider range of names than the decorative template font.
+    regular_path = helpers / "NotoSans-Regular.ttf"
+    bold_path = helpers / "NotoSans-Bold.ttf"
+    fallback_regular = helpers / "Inter-Light.ttf"
+    fallback_bold = helpers / "Raleway-Bold.ttf"
 
-    def font(size, bold_font=False):
-        path = value_font_path if bold_font else regular
-        try:
-            return ImageFont.truetype(path, size) if path else ImageFont.load_default()
-        except Exception:
-            return ImageFont.load_default()
+    def load_font(size, bold=False):
+        paths = [bold_path if bold else regular_path,
+                 fallback_bold if bold else fallback_regular]
+        for path in paths:
+            try:
+                if path.exists():
+                    return ImageFont.truetype(str(path), size)
+            except Exception:
+                continue
+        return ImageFont.load_default()
 
-    # The circular avatar is inside the decorative ring of welcome.png.
-    avatar_box = (225, 207, 590, 572)
+    def clean_name(user):
+        first = (getattr(user, "first_name", None) or "").strip()
+        last = (getattr(user, "last_name", None) or "").strip()
+        return " ".join(x for x in (first, last) if x)
+
+    display_name = clean_name(member)
+    if not display_name:
+        # Telegram accounts can have no first/last name. Never leave the
+        # image field blank in that case.
+        display_name = f"User {member.id}"
+
+    username_value = (
+        f"@{member.username}" if getattr(member, "username", None)
+        else str(member.id)
+    )
+    total_value = str(members_count)
+
+    # ------------------------------------------------------
+    # Avatar: exact circle in the supplied Juno X template.
+    # ------------------------------------------------------
+    avatar_box = (208, 204, 577, 573)
     ax1, ay1, ax2, ay2 = avatar_box
     aw, ah = ax2 - ax1, ay2 - ay1
-
     avatar_path = None
+
     try:
-        if getattr(member, "photo", None) and getattr(member.photo, "big_file_id", None):
-            avatar_path = await app.download_media(member.photo.big_file_id)
+        photo = getattr(member, "photo", None)
+        file_id = getattr(photo, "big_file_id", None) if photo else None
+        if file_id:
+            avatar_path = await app.download_media(file_id)
     except Exception as e:
-        print(f"Could not download PFP for {member.id}: {e}")
+        print(f"[WELCOME] PFP download failed for {member.id}: {e}")
 
     try:
         if avatar_path and os.path.exists(str(avatar_path)):
             avatar = Image.open(str(avatar_path)).convert("RGB")
-            # Center-crop to a square and resize smoothly.
             side = min(avatar.size)
             left = (avatar.width - side) // 2
             top = (avatar.height - side) // 2
-            avatar = avatar.crop((left, top, left + side, top + side)).resize((aw, ah), Image.Resampling.LANCZOS)
+            avatar = avatar.crop((left, top, left + side, top + side))
+            avatar = avatar.resize((aw, ah), Image.Resampling.LANCZOS).convert("RGBA")
         else:
-            # Generic fallback avatar when the member has no profile photo.
-            avatar = Image.new("RGB", (aw, ah), (20, 35, 75))
+            # Clean fallback avatar when the Telegram account has no PFP.
+            avatar = Image.new("RGBA", (aw, ah), (17, 31, 65, 255))
             ad = ImageDraw.Draw(avatar)
             cx, cy = aw // 2, ah // 2
-            ad.ellipse((cx-70, cy-95, cx+70, cy+45), fill=(205, 220, 245))
-            ad.rounded_rectangle((cx-125, cy+20, cx+125, cy+205), radius=75, fill=(115, 135, 180))
-            # subtle glow
-            glow = Image.new("RGBA", avatar.size, (0,0,0,0))
-            gd = ImageDraw.Draw(glow)
-            gd.ellipse((15,15,aw-15,ah-15), outline=(0,220,255,150), width=12)
-            glow = glow.filter(ImageFilter.GaussianBlur(7))
-            avatar = Image.alpha_composite(avatar.convert("RGBA"), glow).convert("RGB")
+            ad.ellipse((cx - 62, cy - 105, cx + 62, cy + 19), fill=(225, 235, 250, 255))
+            ad.rounded_rectangle((cx - 120, cy - 2, cx + 120, cy + 190), radius=65,
+                                 fill=(76, 122, 195, 255))
 
         mask = Image.new("L", (aw, ah), 0)
         md = ImageDraw.Draw(mask)
-        md.ellipse((0, 0, aw, ah), fill=255)
-        image.paste(avatar.convert("RGBA"), (ax1, ay1), mask)
+        md.ellipse((0, 0, aw - 1, ah - 1), fill=255)
+        image.paste(avatar, (ax1, ay1), mask)
     finally:
         if avatar_path:
             try:
-                Path(avatar_path).unlink(missing_ok=True)
+                Path(str(avatar_path)).unlink(missing_ok=True)
             except Exception:
                 pass
 
-    # Cover only the template's example values; keep the labels/design intact.
-    cover = (935, 460, 1415, 510)
-    cover2 = (935, 515, 1415, 565)
-    cover3 = (1015, 610, 1415, 665)
-    for box in (cover, cover2, cover3):
-        # Match the dark glass panel and add a very subtle transparency.
-        draw.rounded_rectangle(box, radius=20, fill=(21, 35, 92, 225))
+    # ------------------------------------------------------
+    # Remove the template's example values while preserving its glass
+    # background. A blurred copy of the same region is pasted over the
+    # placeholders, so there are no visible boxes/seams.
+    # ------------------------------------------------------
+    blurred = image.filter(ImageFilter.GaussianBlur(10))
+    value_regions = [
+        (932, 452, 1450, 518),   # Name value
+        (950, 522, 1450, 588),   # Username value
+        (1008, 592, 1450, 660),  # Total members value
+    ]
+    for x1, y1, x2, y2 in value_regions:
+        image.paste(blurred.crop((x1, y1, x2, y2)), (x1, y1))
+    draw = ImageDraw.Draw(image)
 
-    def fit_text(text, max_width, start_size=40, min_size=20):
-        size = start_size
-        while size > min_size:
-            f = font(size, True)
-            if draw.textbbox((0,0), text, font=f)[2] <= max_width:
-                return f
-            size -= 1
-        return font(min_size, True)
+    cyan = (61, 239, 255, 255)
+    white = (248, 251, 255, 255)
 
-    name = " ".join(x for x in [member.first_name, member.last_name] if x) or "Friend"
-    username_value = f"@{member.username}" if member.username else str(member.id)
-    total_value = str(members_count)
+    def text_width(text, font):
+        b = draw.textbbox((0, 0), text, font=font)
+        return b[2] - b[0]
 
-    # Dynamic values: real member name, username or ID, and current member count.
-    value_color = (65, 240, 255, 255)
-    draw.text((945, 470), name, font=fit_text(name, 430, 38, 20), fill=value_color)
-    draw.text((950, 525), username_value, font=fit_text(username_value, 420, 36, 20), fill=value_color)
-    draw.text((1030, 620), total_value, font=fit_text(total_value, 300, 38, 22), fill=(245, 250, 255, 255))
+    def fit_text(text, max_width, max_size=34, min_size=18):
+        # Keep every value on one clean line; shrink long names/usernames.
+        for size in range(max_size, min_size - 1, -1):
+            font = load_font(size, bold=True)
+            if text_width(text, font) <= max_width:
+                return font
+        return load_font(min_size, bold=True)
 
-    # Temporary per-user file; Telegram receives this personalized image.
+    # Values begin after the fixed labels (Name / Username / Total Members).
+    name_font = fit_text(display_name, 455, 34, 18)
+    user_font = fit_text(username_value, 445, 32, 18)
+    total_font = fit_text(total_value, 330, 34, 20)
+
+    # Vertical positions are centered inside each glass row.
+    def centered_y(y1, y2, font):
+        box = draw.textbbox((0, 0), "Ag", font=font)
+        h = box[3] - box[1]
+        return y1 + ((y2 - y1 - h) // 2) - box[1]
+
+    draw.text((948, centered_y(452, 517, name_font)), display_name,
+              font=name_font, fill=cyan)
+    draw.text((960, centered_y(522, 587, user_font)), username_value,
+              font=user_font, fill=cyan)
+    draw.text((1030, centered_y(592, 660, total_font)), total_value,
+              font=total_font, fill=white)
+
     out = Path(tempfile.gettempdir()) / f"junox_welcome_{member.id}.png"
     image.convert("RGB").save(out, "PNG", optimize=True)
     return str(out)
 
 
+# ----------------------------------------------------------
+# NEW MEMBER WELCOME
+# ----------------------------------------------------------
 @app.on_message(filters.new_chat_members & filters.group)
 async def welcome_new_members(_, message: types.Message):
-    """Welcome real users with a personalized PFP/name/username image."""
     try:
         setting = await db.cache.find_one({"_id": f"welcome_{message.chat.id}"})
         welcome_enabled = (
@@ -130,7 +168,7 @@ async def welcome_new_members(_, message: types.Message):
         )
     except Exception as e:
         welcome_enabled = config.WELCOME_ENABLED
-        print(f"Welcome setting DB read failed: {e}; using default={welcome_enabled}")
+        print(f"[WELCOME] DB setting read failed: {e}; default={welcome_enabled}")
 
     if not welcome_enabled:
         return
@@ -143,31 +181,32 @@ async def welcome_new_members(_, message: types.Message):
         try:
             try:
                 members_count = await app.get_chat_members_count(message.chat.id)
-            except Exception:
-                members_count = "Unknown"
+            except Exception as e:
+                print(f"[WELCOME] Member count failed: {e}")
+                members_count = "-"
 
             image_path = await _make_welcome_image(member, members_count)
-            from html import escape
-            name = escape(" ".join(x for x in [member.first_name, member.last_name] if x) or "Friend")
-            username = f"@{escape(member.username)}" if member.username else f"<code>{member.id}</code>"
 
-            caption = f"""<b>╭━━━〔 ✨ NEW MEMBER 〕━━━╮</b>
+            first = (member.first_name or "").strip()
+            last = (member.last_name or "").strip()
+            name = " ".join(x for x in (first, last) if x) or f"User {member.id}"
+            username = f"@{escape(member.username)}" if member.username else "Not available"
 
-<b>👋 Welcome to Our Group!</b>
-
-<b>👤 Name:</b> {name}
-<b>🆔 ID:</b> <code>{member.id}</code>
-<b>🔗 Username:</b> {username}
-<b>👥 Total Members:</b> {members_count}
-
-<b>💙 Enjoy the group and have fun!</b>
-
-<b>🎵 Juno X music</b>
-<b>╰━━━━━━━━━━━━━━━━━━━━╯</b>"""
-
-            keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("👤 VIEW MEMBER", url=f"tg://user?id={member.id}")]]
+            caption = (
+                "<b>╭━━━〔 ✨ NEW MEMBER 〕━━━╮</b>\n\n"
+                "👋 <b>Welcome to Our Group!</b>\n\n"
+                f"👤 <b>Name:</b> {escape(name)}\n"
+                f"🆔 <b>ID:</b> <code>{member.id}</code>\n"
+                f"🔗 <b>Username:</b> {username if member.username else f'<code>{member.id}</code>'}\n"
+                f"👥 <b>Total Members:</b> {members_count}\n\n"
+                "💙 <b>Enjoy the group and have fun!</b>\n\n"
+                "🎵 <b>Juno X music</b>\n"
+                "<b>╰━━━━━━━━━━━━━━━━━━━━╯</b>"
             )
+
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("👤 VIEW MEMBER", url=f"tg://user?id={member.id}")]
+            ])
 
             await app.send_photo(
                 chat_id=message.chat.id,
@@ -175,9 +214,10 @@ async def welcome_new_members(_, message: types.Message):
                 caption=caption,
                 reply_markup=keyboard,
             )
-            print(f"Welcome sent for user {member.id} in chat {message.chat.id}")
+            print(f"[WELCOME] Sent: chat={message.chat.id} user={member.id} name={name}")
+
         except Exception as e:
-            print(f"Failed to send welcome for user {member.id}: {type(e).__name__}: {e}")
+            print(f"[WELCOME] Failed for user {member.id}: {type(e).__name__}: {e}")
         finally:
             if image_path:
                 try:
@@ -186,9 +226,9 @@ async def welcome_new_members(_, message: types.Message):
                     pass
 
 
-# ==========================================
-# ⚙️ /WELCOME ON|OFF (GROUP ADMINS / OWNER)
-# ==========================================
+# ----------------------------------------------------------
+# /WELCOME ON | OFF
+# ----------------------------------------------------------
 @app.on_message(filters.command("welcome") & filters.group)
 async def welcome_setting(_, message: types.Message):
     user = message.from_user
@@ -201,19 +241,16 @@ async def welcome_setting(_, message: types.Message):
         try:
             member = await app.get_chat_member(message.chat.id, user.id)
             is_admin = bool(
-                member.privileges
-                and (
-                    member.privileges.can_change_info
-                    or member.privileges.can_delete_messages
+                member.privileges and (
+                    member.privileges.can_change_info or
+                    member.privileges.can_delete_messages
                 )
             )
         except Exception:
             is_admin = False
 
     if not (is_owner or is_admin):
-        return await message.reply_text(
-            "❌ Only the group admins can change the welcome setting."
-        )
+        return await message.reply_text("❌ Only the group admins can change the welcome setting.")
 
     if len(message.command) < 2 or message.command[1].lower() not in {"on", "off"}:
         try:
@@ -235,156 +272,28 @@ async def welcome_setting(_, message: types.Message):
         )
     except Exception as e:
         return await message.reply_text(
-            f"❌ Could not save the setting to MongoDB.\n<code>{e}</code>"
+            f"❌ Could not save the setting to MongoDB.\n<code>{escape(str(e))}</code>"
         )
 
-    if enabled:
-        await message.reply_text(
-            "✅ <b>Welcome system is now ON.</b>\n"
-            "New members will receive the Juno X music welcome message."
-        )
-    else:
-        await message.reply_text(
-            "🔴 <b>Welcome system is now OFF.</b>\n"
-            "New members will not receive the welcome message."
-        )
+    await message.reply_text(
+        "✅ <b>Welcome system is now ON.</b>\nNew members will receive the Juno X welcome message."
+        if enabled else
+        "🔴 <b>Welcome system is now OFF.</b>\nNew members will not receive the welcome message."
+    )
 
 
-# ==========================================
-# 🟢 BOT ADDED IN GROUP
-# ==========================================
+# ----------------------------------------------------------
+# BOT ADDED IN GROUP
+# ----------------------------------------------------------
 @app.on_message(filters.new_chat_members & filters.group)
 async def new_chat_member(_, message: types.Message):
     for member in message.new_chat_members:
         if member.id == app.id:
-            chat = message.chat
-            chat_name = chat.title
-            chat_id = chat.id
-            chat_username = f"@{chat.username}" if chat.username else "ᴘʀɪᴠᴀᴛᴇ ɢʀᴏᴜᴘ"
-
             try:
-                members_count = await app.get_chat_members_count(chat_id)
-            except Exception:
-                members_count = "ᴜɴᴋɴᴏᴡɴ"
-
-            added_by = message.from_user
-            added_by_name = added_by.mention if added_by else "ᴜɴᴋɴᴏᴡɴ"
-
-            try:
-                if chat.username:
-                    chat_link = f"https://t.me/{chat.username}"
-                else:
-                    bot_member = await app.get_chat_member(chat_id, app.id)
-                    if bot_member.privileges and bot_member.privileges.can_invite_users:
-                        chat_link = await app.export_chat_invite_link(chat_id)
-                    else:
-                        chat_link = "❌ ɴᴏ ɪɴᴠɪᴛᴇ ᴘᴇʀᴍɪssɪᴏɴ"
-            except ChatAdminRequired:
-                chat_link = "❌ ʙᴏᴛ ɴᴏᴛ ᴀᴅᴍɪɴ"
-            except Exception:
-                chat_link = "❌ ᴜɴᴀʙʟᴇ ᴛᴏ ɢᴇᴛ ʟɪɴᴋ"
-
-            text = f"""<blockquote>🟢 <b>˹˹𝐉𝐮𝐧𝐨 𝐗 ᴍᴜꜱɪᴄ˼ ᴀᴅᴅᴇᴅ ɪɴ ᴀ ɴᴇᴡ ɢʀᴏᴜᴘ</b></blockquote>
-
-<blockquote>
-🔖 <b>ᴄʜᴀᴛ ɴᴀᴍᴇ:</b> {chat_name}
-🆔 <b>ᴄʜᴀᴛ ɪᴅ:</b> <code>{chat_id}</code>
-👤 <b>ᴄʜᴀᴛ ᴜꜱᴇʀɴᴀᴍᴇ:</b> {chat_username}
-🔗 <b>ᴄʜᴀᴛ ʟɪɴᴋ:</b> {chat_link}
-👥 <b>ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀs:</b> {members_count}
-🤵 <b>ᴀᴅᴅᴇᴅ ʙʏ:</b> {added_by_name}
-</blockquote>"""
-
-            try:
-                await app.send_photo(
-                    chat_id=config.LOGGER_ID,
-                    photo=config.START_IMG,
-                    caption=text,
+                await message.reply_text(
+                    f"🎉 <b>Thanks for adding me to {escape(message.chat.title or 'the group')}!</b>\n\n"
+                    "🎵 <b>Juno X music</b> is ready to play.\n"
+                    "Use the bot's music commands to get started!"
                 )
             except Exception as e:
-                print(f"Failed to send new chat notification: {e}")
-            break
-
-
-# ==========================================
-# 🔴 BOT REMOVED
-# ==========================================
-@app.on_message(filters.left_chat_member & filters.group)
-async def left_chat_member(_, message: types.Message):
-    if message.left_chat_member.id == app.id:
-        chat = message.chat
-        chat_name = chat.title
-        chat_id = chat.id
-        chat_username = f"@{chat.username}" if chat.username else "ᴘʀɪᴠᴀᴛᴇ ɢʀᴏᴜᴘ"
-        removed_by = message.from_user
-        removed_by_name = removed_by.mention if removed_by else "ᴜɴᴋɴᴏᴡɴ"
-
-        try:
-            if chat.username:
-                chat_link = f"https://t.me/{chat.username}"
-            else:
-                bot_member = await app.get_chat_member(chat_id, app.id)
-                if bot_member.privileges and bot_member.privileges.can_invite_users:
-                    chat_link = await app.export_chat_invite_link(chat_id)
-                else:
-                    chat_link = "❌ ɴᴏ ɪɴᴠɪᴛᴇ ᴘᴇʀᴍɪssɪᴏɴ"
-        except Exception:
-            chat_link = "❌ ᴜɴᴀʙʟᴇ ᴛᴏ ɢᴇᴛ ʟɪɴᴋ"
-
-        text = f"""<blockquote>🔴 <b>˹𝐉𝐮𝐧𝐨 𝐗 ᴍᴜꜱɪᴄ˼ ʀᴇᴍᴏᴠᴇᴅ ꜰʀᴏᴍ ᴀ ɢʀᴏᴜᴘ</b></blockquote>
-
-<blockquote>
-🔖 <b>ᴄʜᴀᴛ ɴᴀᴍᴇ:</b> {chat_name}
-🆔 <b>ᴄʜᴀᴛ ɪᴅ:</b> <code>{chat_id}</code>
-👤 <b>ᴄʜᴀᴛ ᴜꜱᴇʀɴᴀᴍᴇ:</b> {chat_username}
-🔗 <b>ᴄʜᴀᴛ ʟɪɴᴋ:</b> {chat_link}
-🚫 <b>ʀᴇᴍᴏᴠᴇᴅ ʙʏ:</b> {removed_by_name}
-</blockquote>"""
-
-        try:
-            await app.send_photo(
-                chat_id=config.LOGGER_ID,
-                photo=config.START_IMG,
-                caption=text,
-            )
-        except Exception as e:
-            print(f"Failed to send left chat notification: {e}")
-
-
-# ==========================================
-# 🔗 /LINK COMMAND (OWNER ONLY)
-# ==========================================
-@app.on_message(filters.command("link") & filters.private)
-async def get_group_link(_, message: types.Message):
-    if message.from_user.id != config.OWNER_ID:
-        return await message.reply_text("❌ You are not authorized.")
-
-    if len(message.command) < 2:
-        return await message.reply_text("⚠️ Usage:\n/link <group_id>")
-
-    try:
-        chat_id = int(message.command[1])
-    except Exception:
-        return await message.reply_text("❌ Invalid group ID")
-
-    try:
-        chat = await app.get_chat(chat_id)
-        if chat.username:
-            link = f"https://t.me/{chat.username}"
-        else:
-            bot_member = await app.get_chat_member(chat_id, app.id)
-            if bot_member.privileges and bot_member.privileges.can_invite_users:
-                link = await app.export_chat_invite_link(chat_id)
-            else:
-                return await message.reply_text("❌ No invite permission")
-
-        await message.reply_text(
-            f"🔗 <b>Group Link:</b>\n{link}",
-            disable_web_page_preview=True,
-        )
-    except ChannelPrivate:
-        await message.reply_text("❌ Bot is not in that group")
-    except ChatAdminRequired:
-        await message.reply_text("❌ Bot is not admin")
-    except Exception as e:
-        await message.reply_text(f"❌ Error:\n{e}")
+                print(f"[BOT-ADDED] Failed: {e}")
