@@ -410,9 +410,14 @@ async def _send_welcome(client, update: ChatMemberUpdated, user) -> None:
         async with _get_card_sem():
             img = await asyncio.to_thread(build_pic, avatar, name, user.id, uname_txt)
 
+        # Build the Telegram HTML mention ourselves.  Do NOT use user.mention here,
+        # because the welcome caption is sent through the Bot API with parse_mode=HTML.
+        # An explicit, quoted href keeps the <a> tag from appearing as plain text.
+        safe_name = html.escape(name)
+        mention = f'<a href="tg://user?id={user.id}">{safe_name}</a>'
         caption = CAPTION_TXT.format(
             chat_title=html.escape(str(update.chat.title)),
-            mention=user.mention,
+            mention=mention,
             uid=user.id,
             uname=html.escape(user.username or str(user.id)),
             count=members,
