@@ -38,6 +38,7 @@ if sys.platform != "win32":
 from Elevenyts import (tune, app, config, db,
                    logger, stop, userbot, yt)
 from Elevenyts.plugins import all_modules
+from Elevenyts.Artistbots import all_modules as artistbots_modules
 
 
 # HTTP Server for Render health checks
@@ -96,7 +97,15 @@ async def main():
                 importlib.import_module(f"Elevenyts.plugins.{module}")
             except Exception as e:
                 logger.error(f"Failed to load plugin {module}: {e}", exc_info=True)
-        logger.info(f"🔌 Loaded {len(all_modules)} plugin modules.")
+
+        # Load the full Artistbots group-management system alongside the music bot.
+        for module in artistbots_modules:
+            try:
+                importlib.import_module(f"Elevenyts.Artistbots.{module}")
+            except Exception as e:
+                logger.error(f"Failed to load Artistbots module {module}: {e}", exc_info=True)
+
+        logger.info(f"🔌 Loaded {len(all_modules)} music modules + {len(artistbots_modules)} group-management modules.")
 
         # Step 8: Load sudo users and blacklisted users from database
         sudoers = await db.get_sudoers()
