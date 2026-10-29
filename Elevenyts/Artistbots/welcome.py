@@ -414,7 +414,7 @@ async def _send_welcome(client, update: ChatMemberUpdated, user) -> None:
             chat_title=html.escape(str(update.chat.title)),
             mention=user.mention,
             uid=user.id,
-            uname=html.html.escape(user.username or str(user.id)),
+            uname=html.escape(user.username or str(user.id)),
             count=members,
         )
 
