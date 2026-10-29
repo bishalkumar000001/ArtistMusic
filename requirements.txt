@@ -29,3 +29,5 @@ ffmpeg
 imageio-ffmpeg>=0.6.0
 # Converts animated TGS Telegram stickers before MP4 upload
 lottie>=0.7.2
+
+fonttools>=4.50.0

@@ -79,11 +79,6 @@ class Config:
         # Moderation
         self.EXCLUDED_USERNAMES: List[str] = getenv("EXCLUDED_USERNAMES", "").split()
 
-        # Welcome message
-        # Set WELCOME_ENABLED=True to welcome new members, False to disable it.
-        self.WELCOME_ENABLED: bool = self._str_to_bool(getenv("WELCOME_ENABLED", "True"))
-        self.WELCOME_IMG: str = getenv("WELCOME_IMG", "Elevenyts/helpers/welcome.png")
-
     def _parse_video_height(self) -> int:
         default_height = 1080
         raw_value = getenv("VIDEO_MAX_HEIGHT", str(default_height))
