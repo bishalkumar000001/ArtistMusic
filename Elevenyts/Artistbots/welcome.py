@@ -29,6 +29,7 @@ from pyrogram.types import (
 )
 
 from Elevenyts import app, config, db, logger
+from Elevenyts.core import rich_buttons
 
 from ._textimg import draw_text
 
@@ -423,15 +424,32 @@ async def _send_welcome(client, update: ChatMemberUpdated, user) -> None:
             count=members,
         )
 
-        buttons = [
-            [styled_button(BTN_VIEW, f"tg://openmessage?user_id={user.id}", "primary")],
-            [styled_button(BTN_ADD, f"https://t.me/{app.username}?startgroup=true", "success")],
-        ]
+        # Use the bot's existing Rich Button system for this welcome message.
+        # Do not bypass it with a normal inline keyboard: Rich Buttons are sent
+        # directly as Telegram Rich Message HTML so the buttons render in the
+        # same system as the music player.
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton(BTN_VIEW, url=f"tg://user?id={user.id}")],
+                [InlineKeyboardButton(BTN_ADD, url=f"https://t.me/{app.username}?startgroup=true")],
+            ]
+        )
 
         try:
-            sent = await _send_media_colored(cid, img, caption, buttons)
-            if not sent:  # Bot API failed -> normal (uncolored) buttons via pyrogram
-                sent = await client.send_photo(cid, img, caption=caption, reply_markup=_to_markup(buttons))
+            sent = await rich_buttons.send_rich_media(
+                cid,
+                caption,
+                reply_markup,
+                "photo",
+                img,
+            )
+            if not sent:
+                # Safety fallback if Telegram's Rich Message endpoint is unavailable.
+                sent = await client.send_photo(
+                    cid, img, caption=caption, reply_markup=reply_markup
+                )
+            else:
+                sent = sent.get("result", sent)
         except TopicClosed:
             return
 
